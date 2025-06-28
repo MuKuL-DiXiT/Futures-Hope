@@ -14,17 +14,18 @@ router.post('/', verifyRefreshToken, async (req, res, next) => {
     const { accessToken, refreshToken } = generateToken(OG);
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
-      sameSite: 'Lax',
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 1000 // 1 hour
+      sameSite: 'None',      
+      secure: true,          
+      maxAge: 60 * 60 * 1000  // 1 hour
     });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      sameSite: 'Lax',
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      sameSite: 'None',       
+      secure: true,           
+      maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days
     });
+
     return res.json({
       accessToken,
       refreshToken: refreshToken
