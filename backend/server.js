@@ -7,6 +7,7 @@ const { Server } = require('socket.io');
 const chatSocketHandler = require('./sockets/chatSocket');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const passport = require('passport');
 const User = require('./models/Users');
 
@@ -31,11 +32,20 @@ app.set("io", io);
 app.use(express.json());
 app.use(cookieParser());
 app.use(session({
-  secret: 'your_secret_here',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false } // set true if using HTTPS
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGO_URI,
+    collectionName: 'sessions',
+  }),
+  cookie: {
+    secure: false, // true if using HTTPS
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+  }
 }));
+
 app.use(passport.initialize());
 app.use(passport.session());
 
