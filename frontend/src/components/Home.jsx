@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import { FaSignOutAlt } from "react-icons/fa";
 import { Heart, MessageCircle, Share2, Trash, LogOut } from "lucide-react";
 import { useNavigate, NavLink } from "react-router-dom";
-import { map } from "zod/v4";
 import { io } from "socket.io-client";
 const socket = io(import.meta.env.VITE_BACKEND_URL, {
   transports: ["websocket"],
