@@ -15,7 +15,7 @@ const app = express();
 
 // CORS Middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL,
+  origin: process.env.CLIENT_URL.replace(/\/$/, ""), // remove trailing slash if present
   credentials: true,
 }));
 
