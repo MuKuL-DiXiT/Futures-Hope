@@ -7,8 +7,8 @@ const generateToken = (user) => {
     email: user.email,
   };
 
- const accessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
-const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' }); 
+  const accessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+  const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
 
 
   return { accessToken, refreshToken };
