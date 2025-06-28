@@ -46,19 +46,20 @@ router.get('/callback', passport.authenticate('google', {
   // User authenticated successfully here, set tokens and redirect
   const { accessToken, refreshToken } = generateToken(req.user);
 
-  res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      sameSite: 'Lax',
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 1000 //1 hour
-    });
+ res.cookie('accessToken', accessToken, {
+  httpOnly: true,
+  sameSite: 'None',       // ✅ Must be 'None' for cross-origin
+  secure: true,           // ✅ Must be true for cross-origin cookies to work
+  maxAge: 60 * 60 * 1000  // 1 hour
+});
 
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      sameSite: 'Lax',
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    });
+res.cookie('refreshToken', refreshToken, {
+  httpOnly: true,
+  sameSite: 'None',       // ✅ Must be 'None' for cross-origin
+  secure: true,           // ✅ Must be true for cross-origin
+  maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days
+});
+
 
   res.redirect(process.env.CLIENT_URL + '/home');
 
