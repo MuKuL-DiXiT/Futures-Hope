@@ -9,8 +9,6 @@ router.use(express.json());
 
 router.post('/', verifyRefreshToken, async (req, res, next) => {
   try {
-    console.log("tgvbhujhbgvfcvbhjhnbv ghb v");
-    console.log(req.user);
     const OG = await USER.findOne({ email: req.user.email });
     if (!OG) return res.status(404).json({ error: 'User not found' });
     const { accessToken, refreshToken } = generateToken(OG);

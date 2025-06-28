@@ -9,38 +9,38 @@ const router = express.Router();
 router.post('/', upload.single('profilePic'), async (req, res, next) => {
   try {
     const { firstname, lastname, age, mobile, email, password, gender } = req.body;
-    
+
     // Basic validation
     if (!firstname || !lastname || !age || !mobile || !email || !password || !gender) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'All fields are required' 
+      return res.status(400).json({
+        success: false,
+        error: 'All fields are required'
       });
     }
 
     // Age validation
     if (parseInt(age) < 13 || parseInt(age) > 150) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Age must be between 13 and 150' 
+      return res.status(400).json({
+        success: false,
+        error: 'Age must be between 13 and 150'
       });
     }
 
     // Password validation (at least 8 characters, includes uppercase, lowercase, and number)
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
     if (!passwordRegex.test(password)) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Password must be at least 8 characters long and include uppercase, lowercase, and number' 
+      return res.status(400).json({
+        success: false,
+        error: 'Password must be at least 8 characters long and include uppercase, lowercase, and number'
       });
     }
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'User with this email already exists' 
+      return res.status(400).json({
+        success: false,
+        error: 'User with this email already exists'
       });
     }
 
@@ -74,16 +74,16 @@ router.post('/', upload.single('profilePic'), async (req, res, next) => {
     // Set cookies
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
-      sameSite: 'Lax',
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 1000 // 1 hour
+      sameSite: 'None',      
+      secure: true,          
+      maxAge: 60 * 60 * 1000  // 1 hour
     });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      sameSite: 'Lax',
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      sameSite: 'None',       
+      secure: true,           
+      maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days
     });
 
     // Return success response (excluding password)
