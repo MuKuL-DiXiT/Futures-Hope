@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { Bell, CheckCircle, User2Icon, UserPlus } from "lucide-react";
 import { NavLink } from "react-router-dom";
-
+export const socket = io(import.meta.env.VITE_BACKEND_URL, {
+  withCredentials: true,
+  transports: ["websocket"], 
+});
 
 const Notification = () => {
   const [unseen, setUnseen] = useState([]);
