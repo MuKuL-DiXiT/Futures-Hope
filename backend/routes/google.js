@@ -60,7 +60,8 @@ router.get('/callback', passport.authenticate('google', {
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
-  res.redirect('http://localhost:5173/home');
+  res.redirect(process.env.CLIENT_URL + '/home');
+
 });
 
 module.exports = router;
