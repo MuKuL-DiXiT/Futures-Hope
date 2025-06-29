@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const CreateCommunityForm = () => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [bonds, setBonds] = useState([]);
   const [selectedMembers, setSelectedMembers] = useState([]);
@@ -54,9 +55,7 @@ const CreateCommunityForm = () => {
   useEffect(() => {
     const fetchBonds = async () => {
       try {
-        const response = await secureFetch('/auth/bond/allBondsAndCommunities', {
-          method: 'GET'
-        });
+        const response = await secureFetch("/auth/bond/allBondsAndCommunities");
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
         setBonds(data.bonds);
@@ -102,7 +101,7 @@ const CreateCommunityForm = () => {
     selectedModerators.forEach(id => payload.append('moderators', id));
 
     try {
-      const navigate = useNavigate();
+      
       await secureFetch('/auth/community', {
         method:"POST",
         body:payload,
@@ -152,7 +151,7 @@ const CreateCommunityForm = () => {
                 name="profilePic"
                 accept="image/*"
                 onChange={handleInputChange}
-                className="w-full"
+                className="w-full bg-gradient-to-br from-slate-300 to-amber-500"
               />
               {formData.profilePic && (
                 <img src={URL.createObjectURL(formData.profilePic)} alt="preview" className="mt-2 w-16 h-16 rounded-full border border-amber-200" />
@@ -196,8 +195,8 @@ const CreateCommunityForm = () => {
                         className="h-5 w-5 text-green-600"
                       />
                       <label htmlFor={`member-${bond._id}`} className="ml-3 text-sm text-amber-700 flex items-center">
-                        <img src={bond.profilePic} alt="" className="w-10 h-10 rounded-full mr-3" />
-                        {bond.name}
+                        <img src={bond.profilePic || '/tree.webp'}alt="" className="w-10 h-10 rounded-full mr-3" />
+                        {bond.firstname + " "+ bond.lastname}
                       </label>
                     </div>
                   ))}
@@ -229,7 +228,7 @@ const CreateCommunityForm = () => {
                       <label htmlFor={`mod-${bond._id}`} className="ml-3 text-sm text-amber-700 flex items-center">
                         <img src={bond.profilePic} className="w-8 h-8 rounded-full" />
                           
-                        {bond.name}
+                        {bond.firstname + " "+ bond.lastname}
                       </label>
                     </div>
                   ))}
