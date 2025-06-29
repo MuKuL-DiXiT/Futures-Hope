@@ -99,7 +99,7 @@ export default function Messages() {
   const createChat = async (targetId) => {
     setLoading(true);
     try {
-      const response = await secureFetch(`/auth/chat/access/${targetId}`, {
+      const response = await secureFetch(`/auth/chat/access`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: targetId }),
