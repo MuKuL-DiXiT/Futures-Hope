@@ -54,12 +54,12 @@ const CreateCommunityForm = () => {
   useEffect(() => {
     const fetchBonds = async () => {
       try {
-        const response = await secureFetch('/auth/bond/user', {
+        const response = await secureFetch('/auth/bond/allBondsAndCommunities', {
           method: 'GET'
         });
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
-        setBonds(data);
+        setBonds(data.bonds);
         setIsLoading(false);
       } catch (err) {
         setError('Failed to fetch your connections');
