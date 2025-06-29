@@ -232,7 +232,7 @@ router.post("/:postId/share", verifyAccessToken, async (req, res) => {
   const { recipients } = req.body;
   console.log(recipients);
   const senderId = req.user._id;
-  const link = `${process.env.FRONTEND_URL || "http://localhost:5173"}/post/${postId}`;
+  const link = `${process.env.CLIENT_URL}/post/${postId}`;
 const io = req.io;
   try {
 
