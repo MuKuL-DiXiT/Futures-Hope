@@ -111,7 +111,7 @@ export default function Messages() {
   };
 
   const searchUsers = async () => {
-    const res = await secureFetch(`/auth/posts/search/users?query=${encodeURIComponent(searchTerm)}`, {
+    const res = await secureFetch(`/auth/posts/searchShare/bonds?query=${searchTerm}`, {
       method: "GET",
     });
     const data = await res.json();
