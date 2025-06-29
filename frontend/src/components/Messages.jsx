@@ -22,6 +22,7 @@ export default function Messages() {
   const currentUserId = chatData?.userId;
   const messagesEndRef = useRef(null);
   const [showOptions, setShowOptions] = useState(null);
+  const timeoutRef = useRef(null);
   const [community, setCommunity] = useState("");
 
   async function secureFetch(path, options = {}) {
@@ -49,7 +50,6 @@ export default function Messages() {
         const data = await response.json();
         setChatData(data);
       } catch (error) {
-        console.error("Error fetching chat data:", error);
         setError(error.message);
       } finally {
         setLoading(false);
@@ -72,28 +72,9 @@ export default function Messages() {
         )
       }));
     };
-
-    const handleMessageDeleted = (messageId) => {
-      setChatMessages(prev =>
-        prev.map(msg =>
-          msg._id === messageId
-            ? { ...msg, deleted: true, content: "This message was deleted" }
-            : msg
-        )
-      );
-    };
-
     socket.on("receiveMessage", handleReceiveMessage);
-    socket.on("messageDeleted", handleMessageDeleted);
-
-    if (chatOpened) {
-      socket.emit("markAsSeen", { chatId: chatOpened });
-    }
-
-    return () => {
-      socket.off("receiveMessage", handleReceiveMessage);
-      socket.off("messageDeleted", handleMessageDeleted);
-    };
+    if (chatOpened) socket.emit("markAsSeen", { chatId: chatOpened });
+    return () => socket.off("receiveMessage", handleReceiveMessage);
   }, [chatOpened]);
 
   const getMessages = async (chatId) => {
@@ -112,34 +93,47 @@ export default function Messages() {
     }
   };
 
-  const markMessagesAsRead = async () => {
-    if (!chatOpened) return;
-    try {
-      await secureFetch(`/auth/chat/markasread/${chatOpened}`, { method: "PATCH" });
-      setChatData(prevData => ({
-        ...prevData,
-        chats: prevData.chats.map(chat =>
-          chat._id === chatOpened
-            ? {
-              ...chat,
-              lastMessage: {
-                ...chat.lastMessage,
-                readBy: Array.isArray(chat.lastMessage?.readBy) && chat.lastMessage.readBy.some(entry => entry.user === currentUserId)
-                  ? chat.lastMessage.readBy
-                  : [...(chat.lastMessage?.readBy || []), { user: currentUserId, readAt: new Date() }],
-              }
-            }
-            : chat
-        )
-      }));
-    } catch (err) {
-      console.error("Failed to mark messages as read:", err);
-    }
+  const searchUsers = async () => {
+    if (!searchTerm) return setResults([]);
+    const res = await secureFetch(`/auth/posts/searchShare/bonds?query=${searchTerm}`);
+    const data = await res.json();
+    setResults(data.users || data);
   };
 
   useEffect(() => {
-    markMessagesAsRead();
-  }, [chatOpened, currentUserId]);
+    const delayDebounce = setTimeout(() => {
+      searchUsers();
+    }, 500);
+    return () => clearTimeout(delayDebounce);
+  }, [searchTerm]);
+
+  const createChat = async (targetId) => {
+    setLoading(true);
+    try {
+      const response = await secureFetch(`/auth/chat/access`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: targetId }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        socket.emit("joinRoom", data._id);
+        setPanelStatus(true);
+        setChatOpened(data._id);
+        setChatWith(data.participants.find((p) => p._id !== currentUserId));
+        getMessages(data._id);
+      }
+    } catch (error) {
+      console.error("Couldn't create/fetch chat:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteMessage = (messageId) => {
+    socket.emit("deleteMessage", messageId);
+    setShowOptions(null);
+  };
 
   const parseTextWithLinks = (text) => {
     const urlRegex = /https?:\/\/[^\s]+/g;
@@ -157,20 +151,49 @@ export default function Messages() {
     return parts;
   };
 
-  const isMessageUnread = (lastMessage, currentUserId) => {
-    if (!lastMessage || typeof lastMessage !== "object") return false;
-    if (!Array.isArray(lastMessage.readBy)) return true;
-    return !lastMessage.readBy.some(entry => entry.user?.toString() === currentUserId?.toString());
+  const isUnread = (msg) => {
+    if (!msg || typeof msg !== "object") return false;
+    if (!Array.isArray(msg.readBy)) return true;
+    return !msg.readBy?.some((r) => (r.user?._id || r.user) === currentUserId);
   };
 
-  // Close options menu when clicking elsewhere
   useEffect(() => {
-    const handleClickOutside = () => setShowOptions(null);
-    if (showOptions) {
-      document.addEventListener('click', handleClickOutside);
-      return () => document.removeEventListener('click', handleClickOutside);
-    }
-  }, [showOptions]);
+    if (chatOpened) messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+  }, [chatMessages, chatOpened]);
+
+  useEffect(() => {
+    const markMessagesAsRead = async () => {
+      if (!chatOpened) return;
+      try {
+        await secureFetch(`/auth/chat/markasread/${chatOpened}`, { method: "PATCH" });
+      } catch (err) {
+        console.error("Failed to mark messages as read:", err);
+      }
+    };
+    markMessagesAsRead();
+  }, [chatOpened]);
+
+  useEffect(() => {
+    const handleMessageDeleted = ({ messageId }) => {
+      setChatMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg._id === messageId ? { ...msg, deleted: true } : msg
+        )
+      );
+    };
+    socket.on("messageDeleted", handleMessageDeleted);
+    return () => socket.off("messageDeleted", handleMessageDeleted);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.target.closest(".message-block")) {
+        setShowOptions(null);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-full md:pl-32 pt-0 md:pt-0">
@@ -206,7 +229,7 @@ export default function Messages() {
           {chatData?.chats?.map((chat) => {
             const otherUser = chat.isGroupChat ? null : chat.participants.find((p) => p._id !== chatData.userId);
             const lastMsg = chat.lastMessage || "----";
-            const hasUnreadMessage = isMessageUnread(lastMsg, currentUserId);
+            const hasUnreadMessage = isUnread(lastMsg);
 
             return (
               <div key={chat._id}>
