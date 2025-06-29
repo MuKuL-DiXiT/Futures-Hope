@@ -253,7 +253,7 @@ export default function Messages() {
                       {chat.isGroupChat ? chat.groupName : `${otherUser?.firstname || ""} ${otherUser?.lastname || ""}`.trim()}
                     </strong>
                     <p className="text-xs text-wrap text-amber-700">
-                      {hasUnreadMessage ? (
+                      {(hasUnreadMessage  && (lastMsg.sender!=chatData.userId))? (
                         <span className="flex items-center justify-center text-red-600 gap-1">
                           <span className="text-4xl leading-none">•</span>
                           <span className="text-xs">new message</span>
@@ -345,7 +345,7 @@ export default function Messages() {
                     }
                   }}
                   placeholder="Type a message..."
-                  className="flex-1 p-2 border rounded-full bg-black/40 md:mb-8 outline-none"
+                  className="flex-1 p-2 border rounded-full bg-black/40 mb-8 outline-none"
                 />
                 <button
                   onClick={() => {
