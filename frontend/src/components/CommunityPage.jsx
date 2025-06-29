@@ -145,103 +145,101 @@ export default function CommunityProfile({ comId }) {
 
   return (
     <div className="min-h-screen min-w-full md:px-30  flex flex-col items-center bg-transparent">
-      {/* Floating Decorative Elements */}
-      
-
-      {/* Hero Section */}
-      <div className="relative w-full md:w-5/6 p-0 sm:px-32 rounded-b-3xl overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-green-800 via-green-700 to-emerald-800"></div>
-        <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-
-        {/* Organic Shape Overlay */}
-        <div className="absolute inset-0">
-          <svg viewBox="0 0 1200 600" className="w-full h-full">
-            <path d="M0,300 C300,100 600,500 1200,200 L1200,600 L0,600 Z" fill="rgba(34, 197, 94, 0.1)" />
-          </svg>
-        </div>
-
-        <div className="relative px-8 py-20">
-          <div className="max-w-6xl mx-auto">
-            <div className="flex flex-col lg:flex-row items-center gap-12">
-              {/* Profile Image */}
-              <div className="relative group">
-                <div className="absolute -inset-4 bg-gradient-to-r from-amber-400 to-green-400 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
-                <div className="relative w-48 h-48 bg-white rounded-full p-3 shadow-2xl">
-                  <img
-                    src={community.profilePic}
-                    alt={community.name}
-                    className="w-full h-full rounded-full object-cover border-4 border-green-100"
-                  />
-                </div>
-              </div>
-
-              {/* Community Info */}
-              <div className="flex-1 text-center lg:text-left">
-                <div className='flex justify-start gap-8 sm:gap-24'>
-                  <div>
-                    <h1 className="text-3xl lg:text-5xl font-bold text-white mb-6 tracking-tight">
-                      {community.name}
-                      <div className="h-1 w-32 bg-gradient-to-r from-amber-400 to-green-400 mx-auto lg:mx-0 mt-4 rounded-full"></div>
-                    </h1>
-                    <p className="text-xl text-green-100 leading-relaxed max-w-2xl mb-8">
-                      {community.description}
-                    </p>
-                  </div>
-                  {
-                    (community.creator._id != userId) &&
-                    (
-                      <button className='p-3 bg-white/30 max-h-16 rounded-xl  hover:shadow-white hover:shadow-xl transition-shadow duration-1000'
-                        onClick={() => joinCommunity()}>
-                        {joinStatus === 'none'
-                          ? 'Join Us'
-                          : joinStatus === 'pending'
-                            ? 'Withdraw'
-                            : 'Leave Community'}
-                      </button>
-                    )
-                  }
-                </div>
+      /* Floating Decorative Elements */
 
 
-                {/* Stats */}
-                <div className="flex flex-wrap gap-8 justify-center lg:justify-start">
-                  <div className="bg-white bg-opacity-20 backdrop-blur-md rounded-2xl px-6 py-4 border border-white border-opacity-30">
-                    <div className="text-3xl font-bold text-white">{community.members.length}</div>
-                    <div className="text-green-200 text-sm">Members</div>
-                  </div>
-                  <div className="bg-white bg-opacity-20 backdrop-blur-md rounded-2xl px-6 py-4 border border-white border-opacity-30">
-                    <div className="text-3xl font-bold text-white">{community.moderators?.length || 0}</div>
-                    <div className="text-green-200 text-sm">Guardians</div>
-                  </div>
-                  {
-                    (userId === community.creator._id) && (
-                      <form onSubmit={handleSubmit} className='flex flex-col items-center gap-4 mb-12 justify-center  bg-white bg-opacity-20 backdrop-blur-md rounded-2xl px-6 py-4 border border-white border-opacity-30'>
-                        <label className="cursor-pointer inline-flex items-center gap-2 text-yellow-600 hover:text-green-900">
-                          <ImagePlay className="w-5 h-5" />
-                          <span className="font-medium">select QR image</span>
-                          <input
-                            type="file"
-                            onChange={handleFileChange}
-                            className="hidden"
-                          />
-                        </label>
-                        <button className="px-4 py-2 bg-white/30 text-black rounded-lg hover:bg-green-600 transition-colors">
-                          Upload QR Code
-                        </button>
-                      </form>
+        {/* Hero Section */}
+        <div className="relative w-full md:w-5/6 p-0 sm:px-32 rounded-b-3xl overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-green-800 via-green-700 to-emerald-800"></div>
+          <div className="absolute inset-0 bg-black bg-opacity-20"></div>
 
-                    )
-                  }
-                </div>
+          {/* Organic Shape Overlay */}
+          <div className="absolute inset-0">
+            <svg viewBox="0 0 1200 600" className="w-full h-full">
+          <path d="M0,300 C300,100 600,500 1200,200 L1200,600 L0,600 Z" fill="rgba(34, 197, 94, 0.1)" />
+            </svg>
+          </div>
+
+          <div className="relative px-4 sm:px-8 py-10 sm:py-20">
+            <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col lg:flex-row items-center gap-8 sm:gap-12">
+            {/* Profile Image */}
+            <div className="relative group mb-6 lg:mb-0">
+              <div className="absolute -inset-2 sm:-inset-4 bg-gradient-to-r from-amber-400 to-green-400 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
+              <div className="relative w-32 h-32 sm:w-48 sm:h-48 bg-white rounded-full p-2 sm:p-3 shadow-2xl">
+            <img
+              src={community.profilePic}
+              alt={community.name}
+              className="w-full h-full rounded-full object-cover border-4 border-green-100"
+            />
               </div>
             </div>
 
+            {/* Community Info */}
+            <div className="flex-1 w-full text-center lg:text-left">
+              <div className='flex flex-col sm:flex-row sm:justify-start gap-4 sm:gap-8 md:gap-24'>
+            <div className="flex-1">
+              <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-white mb-4 sm:mb-6 tracking-tight">
+                {community.name}
+                <div className="h-1 w-24 sm:w-32 bg-gradient-to-r from-amber-400 to-green-400 mx-auto lg:mx-0 mt-3 sm:mt-4 rounded-full"></div>
+              </h1>
+              <p className="text-base sm:text-xl text-green-100 leading-relaxed max-w-2xl mb-6 sm:mb-8">
+                {community.description}
+              </p>
+            </div>
+            {
+              (community.creator._id !== userId) &&
+              (
+                <button
+              className='p-2 sm:p-3 bg-white/30 max-h-16 rounded-xl hover:shadow-white hover:shadow-xl transition-shadow duration-1000 w-full sm:w-auto'
+              onClick={() => joinCommunity()}>
+              {joinStatus === 'none'
+                ? 'Join Us'
+                : joinStatus === 'pending'
+                  ? 'Withdraw'
+                  : 'Leave Community'}
+                </button>
+              )
+            }
+              </div>
+
+              {/* Stats */}
+              <div className="flex flex-wrap gap-4 sm:gap-8 justify-center lg:justify-start mt-4">
+            <div className="bg-white bg-opacity-20 backdrop-blur-md rounded-2xl px-4 sm:px-6 py-3 sm:py-4 border border-white border-opacity-30 min-w-[100px]">
+              <div className="text-2xl sm:text-3xl font-bold text-white">{community.members.length}</div>
+              <div className="text-green-200 text-xs sm:text-sm">Members</div>
+            </div>
+            <div className="bg-white bg-opacity-20 backdrop-blur-md rounded-2xl px-4 sm:px-6 py-3 sm:py-4 border border-white border-opacity-30 min-w-[100px]">
+              <div className="text-2xl sm:text-3xl font-bold text-white">{community.moderators?.length || 0}</div>
+              <div className="text-green-200 text-xs sm:text-sm">Guardians</div>
+            </div>
+            {
+              (userId === community.creator._id) && (
+                <form onSubmit={handleSubmit} className='flex flex-col items-center gap-2 sm:gap-4 mb-8 sm:mb-12 justify-center bg-white bg-opacity-20 backdrop-blur-md rounded-2xl px-4 sm:px-6 py-3 sm:py-4 border border-white border-opacity-30'>
+              <label className="cursor-pointer inline-flex items-center gap-2 text-yellow-600 hover:text-green-900">
+                <ImagePlay className="w-5 h-5" />
+                <span className="font-medium text-xs sm:text-base">select QR image</span>
+                <input
+                  type="file"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </label>
+              <button className="px-3 sm:px-4 py-1 sm:py-2 bg-white/30 text-black rounded-lg hover:bg-green-600 transition-colors text-xs sm:text-base">
+                Upload QR Code
+              </button>
+                </form>
+              )
+            }
+              </div>
+            </div>
+          </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="relative max-w-7xl mx-auto px-8 -mt-16">
-        {/* Creator Section */}
+        <div className="relative max-w-7xl mx-auto px-2 sm:px-8 -mt-8 sm:-mt-16">
+          {/* Creator Section */}
         <div className="mb-12">
           <div className="bg-gradient-to-br mb-5 from-amber-100 via-green-50 to-emerald-100 rounded-3xl p-8 shadow-xl border border-amber-200 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-400 to-emerald-400 rounded-full -translate-y-16 translate-x-16 opacity-10"></div>

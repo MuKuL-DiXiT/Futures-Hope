@@ -13,6 +13,7 @@ import Notification from './components/Notification';
 import CommunityPageWrapper from './components/CommunityPageWrapper';
 import SinglePost from './components/SinglePost';
 import Connections from './components/Connections';
+import BraveWarningBanner from './components/BraveWarningBanner';
 
 // This component needs to be inside BrowserRouter
 function Layout() {
@@ -28,6 +29,7 @@ function Layout() {
           </>
         )}
       </div>
+      <BraveWarningBanner />
       <Routes >
         <Route path="/" element={<Landing />} />
         <Route path="/signup" element={<Signup />} />
