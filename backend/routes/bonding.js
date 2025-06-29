@@ -122,6 +122,24 @@ router.get('/allBondsAndCommunities', verifyAccessToken, async (req, res, next) 
     next(err);
   }
 });
+router.get('/user', verifyAccessToken, async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+
+    const bonds = await Bond.find({
+      status: 'accepted',
+      $or: [{ requester: userId }, { receiver: userId }]
+    })
+    .populate('requester', 'firstname lastname profilePic email _id')
+    .populate('receiver', 'firstname lastname profilePic email _id');
+
+
+    res.status(200).json(bonds);
+  } catch (err) {
+    console.error('Internal error:', err);
+    next(err);
+  }
+});
 
 
 // Get pending bond requests for a user (received)
