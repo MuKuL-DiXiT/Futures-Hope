@@ -171,7 +171,7 @@ export default function Messages() {
       }
     };
     markMessagesAsRead();
-  }, [chatOpened]);
+  }, [chatOpened, messageContent]);
 
   useEffect(() => {
     const handleMessageDeleted = ({ messageId }) => {
