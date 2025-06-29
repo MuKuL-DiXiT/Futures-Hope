@@ -22,7 +22,6 @@ export default function Messages() {
   const currentUserId = chatData?.userId;
   const messagesEndRef = useRef(null);
   const [showOptions, setShowOptions] = useState(null);
-  const timeoutRef = useRef(null);
   const [community, setCommunity] = useState("");
 
   async function secureFetch(path, options = {}) {
@@ -64,11 +63,10 @@ export default function Messages() {
       if (newMessage.chat._id?.toString() === chatOpened?.toString()) {
         setChatMessages((prev) => [...prev, newMessage]);
       }
-      // Update chat list to reflect new message
       setChatData(prevData => ({
         ...prevData,
-        chats: prevData.chats.map(chat => 
-          chat._id === newMessage.chat._id 
+        chats: prevData.chats.map(chat =>
+          chat._id === newMessage.chat._id
             ? { ...chat, lastMessage: newMessage }
             : chat
         )
@@ -76,9 +74,9 @@ export default function Messages() {
     };
 
     const handleMessageDeleted = (messageId) => {
-      setChatMessages(prev => 
-        prev.map(msg => 
-          msg._id === messageId 
+      setChatMessages(prev =>
+        prev.map(msg =>
+          msg._id === messageId
             ? { ...msg, deleted: true, content: "This message was deleted" }
             : msg
         )
@@ -87,7 +85,7 @@ export default function Messages() {
 
     socket.on("receiveMessage", handleReceiveMessage);
     socket.on("messageDeleted", handleMessageDeleted);
-    
+
     if (chatOpened) {
       socket.emit("markAsSeen", { chatId: chatOpened });
     }
@@ -114,67 +112,32 @@ export default function Messages() {
     }
   };
 
-  const searchUsers = async () => {
-    if (!searchTerm) return setResults([]);
-    const res = await secureFetch(`/auth/posts/searchShare/bonds?query=${searchTerm}`);
-    const data = await res.json();
-    setResults(data.users);
-  };
-
-  useEffect(() => {
-    searchUsers();
-  }, [searchTerm]);
-
-  const createChat = async (targetId) => {
-    setLoading(true);
+  const markMessagesAsRead = async () => {
+    if (!chatOpened) return;
     try {
-      const response = await secureFetch(`/auth/chat/access`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: targetId }),
-      });
-      if (response.ok) {
-        const data = await response.json();
-        socket.emit("joinRoom", data._id);
-        setPanelStatus(true);
-        setChatOpened(data._id);
-        setChatWith(data.participants.find((p) => p._id == targetId));
-        getMessages(data._id);
-      }
-    } catch (error) {
-      console.error("Couldn't create/fetch chat:", error);
-    } finally {
-      setLoading(false);
+      await secureFetch(`/auth/chat/markasread/${chatOpened}`, { method: "PATCH" });
+      setChatData(prevData => ({
+        ...prevData,
+        chats: prevData.chats.map(chat =>
+          chat._id === chatOpened
+            ? {
+              ...chat,
+              lastMessage: {
+                ...chat.lastMessage,
+                readBy: Array.isArray(chat.lastMessage?.readBy) && chat.lastMessage.readBy.some(entry => entry.user === currentUserId)
+                  ? chat.lastMessage.readBy
+                  : [...(chat.lastMessage?.readBy || []), { user: currentUserId, readAt: new Date() }],
+              }
+            }
+            : chat
+        )
+      }));
+    } catch (err) {
+      console.error("Failed to mark messages as read:", err);
     }
   };
 
   useEffect(() => {
-    if (chatOpened) messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
-  }, [chatMessages, chatOpened]);
-
-  useEffect(() => {
-    const markMessagesAsRead = async () => {
-      if (!chatOpened) return;
-      try {
-        await secureFetch(`/auth/chat/markasread/${chatOpened}`, { method: "PATCH" });
-        // Update the chat data to mark messages as read
-        setChatData(prevData => ({
-          ...prevData,
-          chats: prevData.chats.map(chat => 
-            chat._id === chatOpened 
-              ? { 
-                  ...chat, 
-                  lastMessage: typeof chat.lastMessage === 'object' 
-                    ? { ...chat.lastMessage, readBy: [...(chat.lastMessage.readBy || []), currentUserId] }
-                    : chat.lastMessage
-                }
-              : chat
-          )
-        }));
-      } catch (err) {
-        console.error("Failed to mark messages as read:", err);
-      }
-    };
     markMessagesAsRead();
   }, [chatOpened, currentUserId]);
 
@@ -194,11 +157,10 @@ export default function Messages() {
     return parts;
   };
 
-  // Helper function to check if message is unread
   const isMessageUnread = (lastMessage, currentUserId) => {
     if (!lastMessage || typeof lastMessage !== "object") return false;
-    if (!lastMessage.readBy || !Array.isArray(lastMessage.readBy)) return true;
-    return !lastMessage.readBy.includes(currentUserId);
+    if (!Array.isArray(lastMessage.readBy)) return true;
+    return !lastMessage.readBy.some(entry => entry.user?.toString() === currentUserId?.toString());
   };
 
   // Close options menu when clicking elsewhere
@@ -245,7 +207,7 @@ export default function Messages() {
             const otherUser = chat.isGroupChat ? null : chat.participants.find((p) => p._id !== chatData.userId);
             const lastMsg = chat.lastMessage || "----";
             const hasUnreadMessage = isMessageUnread(lastMsg, currentUserId);
-            
+
             return (
               <div key={chat._id}>
                 <button

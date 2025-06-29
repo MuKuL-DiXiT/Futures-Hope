@@ -27,38 +27,54 @@ const CreateCommunityForm = () => {
   ];
 
   async function secureFetch(path, options = {}) {
-    const baseUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
-    const url = `${baseUrl}${path}`;
+  const baseUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+  const url = `${baseUrl}${path}`;
 
-    let res = await fetch(url, { ...options, credentials: "include" });
+  // Prevent forcing Content-Type if it's FormData
+  const isFormData = options.body instanceof FormData;
 
-    if (res.status === 401) {
-      console.log('Session expired, attempting refresh...');
-      try {
-        const refresh = await fetch(`${baseUrl}/auth/refresh`, {
-          method: "POST",
+  const headers = isFormData
+    ? {} // Let browser set the headers
+    : { "Content-Type": "application/json", ...(options.headers || {}) };
+
+  let res = await fetch(url, {
+    ...options,
+    credentials: "include",
+    headers,
+  });
+
+  if (res.status === 401) {
+    console.log('Session expired, attempting refresh...');
+    try {
+      const refresh = await fetch(`${baseUrl}/auth/refresh`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (refresh.ok) {
+        console.log('Session refreshed successfully');
+        return fetch(url, {
+          ...options,
+          credentials: "include",
+          headers,
+        });
+      } else {
+        console.log('Refresh failed, logging out...');
+        await fetch(`${baseUrl}/auth/logout`, {
+          method: "GET",
           credentials: "include",
         });
-
-        if (refresh.ok) {
-          console.log('Session refreshed successfully');
-          return fetch(url, { ...options, credentials: "include" });
-        } else {
-          console.log('Refresh failed, logging out...');
-          await fetch(`${baseUrl}/auth/logout`, {
-            method: "GET",
-            credentials: "include",
-          });
-          throw new Error("Session expired. Please log in again.");
-        }
-      } catch (refreshError) {
-        console.error('Error during refresh:', refreshError);
-        throw new Error("Authentication failed. Please log in again.");
+        throw new Error("Session expired. Please log in again.");
       }
+    } catch (refreshError) {
+      console.error('Error during refresh:', refreshError);
+      throw new Error("Authentication failed. Please log in again.");
     }
-
-    return res;
   }
+
+  return res;
+}
+
 
   useEffect(() => {
     const fetchBonds = async () => {
