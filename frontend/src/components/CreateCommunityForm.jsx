@@ -23,32 +23,32 @@ const CreateCommunityForm = () => {
     { id: 'moderators', title: "Choose moderators" }
   ];
 
- async function secureFetch(path, options = {}) {
-  const baseUrl = import.meta.env.VITE_BACKEND_URL;
-  const url = `${baseUrl}${path}`;
+  async function secureFetch(path, options = {}) {
+    const baseUrl = import.meta.env.VITE_BACKEND_URL;
+    const url = `${baseUrl}${path}`;
 
-  let res = await fetch(url, { ...options, credentials: "include" });
+    let res = await fetch(url, { ...options, credentials: "include" });
 
-  if (res.status === 401) {
-    const refresh = await fetch(`${baseUrl}/auth/refresh`, {
-      method: "POST",
-      credentials: "include",
-    });
-
-    if (refresh.ok) {
-      return fetch(url, { ...options, credentials: "include" }); // retry original request
-    } else {
-      await fetch(`${baseUrl}/auth/logout`, {
-        method: "GET",
+    if (res.status === 401) {
+      const refresh = await fetch(`${baseUrl}/auth/refresh`, {
+        method: "POST",
         credentials: "include",
       });
 
-      throw new Error("Session expired. Logged out.");
-    }
-  }
+      if (refresh.ok) {
+        return fetch(url, { ...options, credentials: "include" }); // retry original request
+      } else {
+        await fetch(`${baseUrl}/auth/logout`, {
+          method: "GET",
+          credentials: "include",
+        });
 
-  return res;
-}
+        throw new Error("Session expired. Logged out.");
+      }
+    }
+
+    return res;
+  }
 
 
 
@@ -58,8 +58,19 @@ const CreateCommunityForm = () => {
         const response = await secureFetch("/auth/bond/allBondsAndCommunities");
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
-        setBonds(data.bonds);
+
+        const userRes = await secureFetch("/auth/extractUser");
+        const userData = await userRes.json();
+        const currUserId = userData._id;
+        const filteredBonds = data.bonds.map(bond => {
+          const isRequester = bond.requester._id === currUserId;
+          const otherUser = isRequester ? bond.receiver : bond.requester;
+          return otherUser;
+        });
+
+        setBonds(filteredBonds);
         setIsLoading(false);
+
       } catch (err) {
         setError('Failed to fetch your connections');
         setIsLoading(false);
@@ -101,10 +112,10 @@ const CreateCommunityForm = () => {
     selectedModerators.forEach(id => payload.append('moderators', id));
 
     try {
-      
+
       await secureFetch('/auth/community', {
-        method:"POST",
-        body:payload,
+        method: "POST",
+        body: payload,
       });
       alert('Community created successfully!');
       navigate(0);
@@ -195,8 +206,8 @@ const CreateCommunityForm = () => {
                         className="h-5 w-5 text-green-600"
                       />
                       <label htmlFor={`member-${bond._id}`} className="ml-3 text-sm text-amber-700 flex items-center">
-                        <img src={bond.profilePic || '/tree.webp'}alt="" className="w-10 h-10 rounded-full mr-3" />
-                        {bond.firstname + " "+ bond.lastname}
+                        <img src={bond.profilePic || '/tree.webp'} alt="" className="w-10 h-10 rounded-full mr-3" />
+                        {bond.firstname + " " + bond.lastname}
                       </label>
                     </div>
                   ))}
@@ -227,8 +238,8 @@ const CreateCommunityForm = () => {
                       />
                       <label htmlFor={`mod-${bond._id}`} className="ml-3 text-sm text-amber-700 flex items-center">
                         <img src={bond.profilePic} className="w-8 h-8 rounded-full" />
-                          
-                        {bond.firstname + " "+ bond.lastname}
+
+                        {bond.firstname + " " + bond.lastname}
                       </label>
                     </div>
                   ))}
