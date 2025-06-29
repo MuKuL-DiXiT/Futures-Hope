@@ -1,13 +1,13 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-  firstname: { type: String, required: true },
-  lastname: { type: String, required: true },
-  age: { type: Number, required: true },
-  email: { type: String, required: true, unique: true },
-  mobile: { type: String, required: true, unique: true },
+  firstname: { type: String },   // Not required for Google users
+  lastname: { type: String },    // Not required for Google users
+  age: { type: Number },         // Not required for Google users
+  email: { type: String, required: true, unique: true }, // email is always required
+  mobile: { type: String, unique: true, sparse: true },  // optional, unique only if present
   password: { type: String },  // Not required for Google users
-  googleId: { type: String, unique: true, sparse: true }, // new for Google OAuth
+  googleId: { type: String, unique: true, sparse: true }, // for Google OAuth
   
   profilePic: { type: String, default: '' }, // profile picture URL
   
