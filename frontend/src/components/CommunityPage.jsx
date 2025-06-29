@@ -149,7 +149,7 @@ export default function CommunityProfile({ comId }) {
 
 
         {/* Hero Section */}
-        <div className="relative w-full md:w-5/6 p-0 sm:px-32 rounded-b-3xl overflow-hidden">
+        <div className="relative w-full max-w-7xl px-4 sm:px-6 lg:px-20 mx-auto rounded-b-3xl overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-green-800 via-green-700 to-emerald-800"></div>
           <div className="absolute inset-0 bg-black bg-opacity-20"></div>
 
