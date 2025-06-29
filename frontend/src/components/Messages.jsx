@@ -115,7 +115,7 @@ export default function Messages() {
       method: "GET",
     });
     const data = await res.json();
-    setResults(data);
+    setResults(data.users);
   };
 
   useEffect(() => {
