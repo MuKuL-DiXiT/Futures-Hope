@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
 import { Send, ArrowLeft, Trash } from "lucide-react";
 import { NavLink } from 'react-router-dom';
+
 const socket = io(import.meta.env.VITE_BACKEND_URL, {
   transports: ["websocket"],
   withCredentials: true,
@@ -63,10 +64,38 @@ export default function Messages() {
       if (newMessage.chat._id?.toString() === chatOpened?.toString()) {
         setChatMessages((prev) => [...prev, newMessage]);
       }
+      // Update chat list to reflect new message
+      setChatData(prevData => ({
+        ...prevData,
+        chats: prevData.chats.map(chat => 
+          chat._id === newMessage.chat._id 
+            ? { ...chat, lastMessage: newMessage }
+            : chat
+        )
+      }));
     };
+
+    const handleMessageDeleted = (messageId) => {
+      setChatMessages(prev => 
+        prev.map(msg => 
+          msg._id === messageId 
+            ? { ...msg, deleted: true, content: "This message was deleted" }
+            : msg
+        )
+      );
+    };
+
     socket.on("receiveMessage", handleReceiveMessage);
-    socket.emit("markAsSeen", { chatId: chatOpened });
-    return () => socket.off("receiveMessage", handleReceiveMessage);
+    socket.on("messageDeleted", handleMessageDeleted);
+    
+    if (chatOpened) {
+      socket.emit("markAsSeen", { chatId: chatOpened });
+    }
+
+    return () => {
+      socket.off("receiveMessage", handleReceiveMessage);
+      socket.off("messageDeleted", handleMessageDeleted);
+    };
   }, [chatOpened]);
 
   const getMessages = async (chatId) => {
@@ -128,12 +157,26 @@ export default function Messages() {
       if (!chatOpened) return;
       try {
         await secureFetch(`/auth/chat/markasread/${chatOpened}`, { method: "PATCH" });
+        // Update the chat data to mark messages as read
+        setChatData(prevData => ({
+          ...prevData,
+          chats: prevData.chats.map(chat => 
+            chat._id === chatOpened 
+              ? { 
+                  ...chat, 
+                  lastMessage: typeof chat.lastMessage === 'object' 
+                    ? { ...chat.lastMessage, readBy: [...(chat.lastMessage.readBy || []), currentUserId] }
+                    : chat.lastMessage
+                }
+              : chat
+          )
+        }));
       } catch (err) {
         console.error("Failed to mark messages as read:", err);
       }
     };
     markMessagesAsRead();
-  }, [chatOpened]);
+  }, [chatOpened, currentUserId]);
 
   const parseTextWithLinks = (text) => {
     const urlRegex = /https?:\/\/[^\s]+/g;
@@ -150,6 +193,22 @@ export default function Messages() {
     if (lastIndex < text.length) parts.push({ text: text.slice(lastIndex), isLink: false });
     return parts;
   };
+
+  // Helper function to check if message is unread
+  const isMessageUnread = (lastMessage, currentUserId) => {
+    if (!lastMessage || typeof lastMessage !== "object") return false;
+    if (!lastMessage.readBy || !Array.isArray(lastMessage.readBy)) return true;
+    return !lastMessage.readBy.includes(currentUserId);
+  };
+
+  // Close options menu when clicking elsewhere
+  useEffect(() => {
+    const handleClickOutside = () => setShowOptions(null);
+    if (showOptions) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [showOptions]);
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-full md:pl-32 pt-0 md:pt-0">
@@ -185,6 +244,8 @@ export default function Messages() {
           {chatData?.chats?.map((chat) => {
             const otherUser = chat.isGroupChat ? null : chat.participants.find((p) => p._id !== chatData.userId);
             const lastMsg = chat.lastMessage || "----";
+            const hasUnreadMessage = isMessageUnread(lastMsg, currentUserId);
+            
             return (
               <div key={chat._id}>
                 <button
@@ -207,7 +268,7 @@ export default function Messages() {
                       {chat.isGroupChat ? chat.groupName : `${otherUser?.firstname || ""} ${otherUser?.lastname || ""}`.trim()}
                     </strong>
                     <p className="text-xs text-wrap text-amber-700">
-                      {typeof lastMsg === "object" && lastMsg.readBy && !lastMsg.readBy.includes(currentUserId) ? (
+                      {hasUnreadMessage ? (
                         <span className="flex items-center justify-center text-red-600 gap-1">
                           <span className="text-4xl leading-none">•</span>
                           <span className="text-xs">new message</span>
@@ -216,7 +277,6 @@ export default function Messages() {
                         typeof lastMsg === "object" ? lastMsg.content : lastMsg
                       )}
                     </p>
-
                   </div>
                 </button>
               </div>
@@ -252,23 +312,33 @@ export default function Messages() {
                       className="max-w-xs p-2 bg-green-600 text-white rounded-lg relative"
                       onContextMenu={(e) => {
                         e.preventDefault();
-                        if (isOtherUser(msg)) setShowOptions(msg._id);
+                        if (msg.sender._id === currentUserId && !msg.deleted) {
+                          setShowOptions(msg._id);
+                        }
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
                       }}
                     >
-                      {msg.deleted ? <i className="text-xs">This message was deleted *</i> : parseTextWithLinks(msg.content).map((part, idx) =>
-                        part.isLink ? (
-                          <a key={idx} href={part.text} className="underline text-blue-200" target="_blank" rel="noreferrer">{part.text}</a>
-                        ) : (
-                          <span key={idx}>{part.text}</span>
+                      {msg.deleted ? (
+                        <i className="text-xs">This message was deleted</i>
+                      ) : (
+                        parseTextWithLinks(msg.content).map((part, idx) =>
+                          part.isLink ? (
+                            <a key={idx} href={part.text} className="underline text-blue-200" target="_blank" rel="noreferrer">{part.text}</a>
+                          ) : (
+                            <span key={idx}>{part.text}</span>
+                          )
                         )
                       )}
                       {showOptions === msg._id && msg.sender._id === currentUserId && !msg.deleted && (
                         <div
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             socket.emit("deleteMessage", msg._id);
                             setShowOptions(null);
                           }}
-                          className="absolute top-full mt-1 right-0 bg-white text-red-600 text-sm px-2 py-1 rounded shadow"
+                          className="absolute top-full mt-1 right-0 bg-white text-red-600 text-sm px-2 py-1 rounded shadow cursor-pointer hover:bg-gray-100 z-10"
                         >
                           <Trash className="inline w-4 h-4 mr-1" /> Delete
                         </div>
@@ -290,7 +360,7 @@ export default function Messages() {
                     }
                   }}
                   placeholder="Type a message..."
-                  className="flex-1 p-2 border rounded-full bg-black/40 md:mb-8 mb-16 outline-none"
+                  className="flex-1 p-2 border rounded-full bg-black/40 md:mb-8 outline-none"
                 />
                 <button
                   onClick={() => {
@@ -298,7 +368,7 @@ export default function Messages() {
                     socket.emit("sendMessage", { chatId: chatOpened, content: messageContent });
                     setMessageContent("");
                   }}
-                  className="text-white bg-green-600 px-4 py-2 rounded-full"
+                  className="text-white bg-green-600 px-4 mb-8 py-2 rounded-full"
                 >
                   <Send className="w-4 h-4" />
                 </button>
@@ -310,4 +380,3 @@ export default function Messages() {
     </div>
   );
 }
-
