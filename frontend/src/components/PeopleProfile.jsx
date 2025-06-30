@@ -400,7 +400,7 @@ export default function PeopleProfile({ userId }) {
             });
             if (response.ok) {
                 const data = await response.json();
-                navigate('/messages', { state: { chatId: data._id } });
+                navigate('/messages', { state: { chat: data } });
             }
         } catch (error) {
             console.error("Couldn't create/fetch chat:", error);
