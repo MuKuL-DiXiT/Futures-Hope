@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Heart, Share2, MessageCircle, X, Trash } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { Heart, Share2, MessageCircle, X, Trash, Send } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
 
 export default function PeopleProfile({ userId }) {
-
+    const navigate = useNavigate();
     const [userData, setUserData] = useState(null);
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -23,31 +23,31 @@ export default function PeopleProfile({ userId }) {
     const [BondStatus, setBondStatus] = useState({});
 
     async function secureFetch(path, options = {}) {
-  const baseUrl = import.meta.env.VITE_BACKEND_URL;
-  const url = `${baseUrl}${path}`;
+        const baseUrl = import.meta.env.VITE_BACKEND_URL;
+        const url = `${baseUrl}${path}`;
 
-  let res = await fetch(url, { ...options, credentials: "include" });
+        let res = await fetch(url, { ...options, credentials: "include" });
 
-  if (res.status === 401) {
-    const refresh = await fetch(`${baseUrl}/auth/refresh`, {
-      method: "POST",
-      credentials: "include",
-    });
+        if (res.status === 401) {
+            const refresh = await fetch(`${baseUrl}/auth/refresh`, {
+                method: "POST",
+                credentials: "include",
+            });
 
-    if (refresh.ok) {
-      return fetch(url, { ...options, credentials: "include" }); // retry original request
-    } else {
-      await fetch(`${baseUrl}/auth/logout`, {
-        method: "GET",
-        credentials: "include",
-      });
+            if (refresh.ok) {
+                return fetch(url, { ...options, credentials: "include" }); // retry original request
+            } else {
+                await fetch(`${baseUrl}/auth/logout`, {
+                    method: "GET",
+                    credentials: "include",
+                });
 
-      throw new Error("Session expired. Logged out.");
+                throw new Error("Session expired. Logged out.");
+            }
+        }
+
+        return res;
     }
-  }
-
-  return res;
-}
     useEffect(() => {
         // Check if the user is bonded
         const checkBondStatus = async () => {
@@ -390,9 +390,24 @@ export default function PeopleProfile({ userId }) {
             </div>
         );
     }
-
-    // Show login screen only after we've confirmed user is not logged in
-
+    const sendMessage = async (targetId) => {
+        setLoading(true);
+        try {
+            const response = await secureFetch(`/auth/chat/access`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId: targetId }),
+            });
+            if (response.ok) {
+                const data = await response.json();
+                navigate('/messages', { state: { chatId: data._id } });
+            }
+        } catch (error) {
+            console.error("Couldn't create/fetch chat:", error);
+        } finally {
+            setLoading(false);
+        }
+    }
 
     return (
         <div className="max-w-6xl mx-auto px-6 py-12 relative mb-10">
@@ -426,22 +441,31 @@ export default function PeopleProfile({ userId }) {
                     </div>
 
                     {/* Bond Button */}
-                    <button
-                        onClick={toggleBond}
-                        className="text-sm px-4 py-1 border rounded text-white bg-green-600 hover:bg-green-700 self-center sm:self-auto"
-                    >
-                        {BondStatus.status ? (
-                            BondStatus.status === "accepted" ? (
-                                <span>Unbond</span>
-                            ) : BondStatus.requester === userId ? (
-                                <span>Accept</span>
+
+                    <div className="felx justify-around flex-wrap">
+                        <button
+                            onClick={sendMessage}
+                            className="text-sm px-4 py-1 border rounded text-white bg-green-600 hover:bg-green-700 self-center sm:self-auto"
+                        >
+                            {BondStatus.status ? (
+                                BondStatus.status === "accepted" ? (
+                                    <span>Unbond</span>
+                                ) : BondStatus.requester === userId ? (
+                                    <span>Accept</span>
+                                ) : (
+                                    <span>Withdraw</span>
+                                )
                             ) : (
-                                <span>Withdraw</span>
-                            )
-                        ) : (
-                            <span>Bond</span>
-                        )}
-                    </button>
+                                <span>Bond</span>
+                            )}
+                        </button>
+                        {(BondStatus == "accepted") && <button
+                            onClick={toggleBond}
+                            className="text-sm px-4 py-1 border rounded text-white bg-green-600 hover:bg-green-700 self-center sm:self-auto"
+                        >
+                            Message<Send />
+                        </button>}
+                    </div>
                 </div>
             </div>
 

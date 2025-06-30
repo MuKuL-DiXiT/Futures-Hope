@@ -460,7 +460,7 @@ export default function Home() {
                               </div>
                             )}
                             <br />
-                            {c.replies?.length > 0 && repliesOpen && (
+                            {c.replies?.length > 0 && (
                               <div className="ml-4 mt-1 max-h-32 bg-transparent p-3 rounded-md overflow-y-auto space-y-1">
                                 {c.replies.map((r) => (
                                   <div key={r._id} className="flex gap-1">

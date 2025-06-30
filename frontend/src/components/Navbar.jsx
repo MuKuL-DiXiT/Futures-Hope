@@ -96,7 +96,7 @@ export default function Navbar() {
         />
 
         {/* Mobile bottom nav */}
-        <div className="fixed bottom-0 left-0 right-0 bg-transparent shadow-sm flex justify-around items-center h-14 md845:hidden z-50">
+        <div className="fixed bottom-0 left-0 right-0 bg-white/40 rounded-t-md shadow-sm flex justify-around items-center h-14 md845:hidden z-50">
           {links.map((link, index) => (
             <NavLink to={link.to} className={navclass} key={index}>
               <span className="text-xl">
