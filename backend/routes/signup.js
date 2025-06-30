@@ -1,92 +1,88 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
-const User = require('../models/Users'); // Adjust path as needed
-const upload = require('../middlewares/multer_middleware')
+const User = require('../models/Users');
+const upload = require('../middlewares/multer_middleware');
 const { generateToken } = require('../controllers/jwtController');
+const { z } = require('zod');
+
 const router = express.Router();
 
-// Signup route with endpoint "/"
+// Zod schema
+const signupSchema = z.object({
+  firstname: z.string().min(1, "Firstname is required"),
+  lastname: z.string().min(1, "Lastname is required"),
+  age: z.coerce.number().int().min(13).max(150),
+  mobile: z
+    .string()
+    .regex(/^\d{10}$/, "Mobile must be exactly 10 digits"),
+  email: z.string().email("Invalid email"),
+  password: z
+    .string()
+    .min(8)
+    .regex(/[a-z]/, "Must include lowercase")
+    .regex(/[A-Z]/, "Must include uppercase")
+    .regex(/\d/, "Must include number"),
+  gender: z.enum(["male", "female", "other"]),
+});
+
+
 router.post('/', upload.single('profilePic'), async (req, res, next) => {
   try {
-    const { firstname, lastname, age, mobile, email, password, gender } = req.body;
+    // ✅ Validate and sanitize input
+    const result = signupSchema.safeParse(req.body);
 
-    // Basic validation
-    if (!firstname || !lastname || !age || !mobile || !email || !password || !gender) {
+    if (!result.success) {
       return res.status(400).json({
         success: false,
-        error: 'All fields are required'
+        error: result.error.errors[0].message, // Send first validation error
       });
     }
 
-    // Age validation
-    if (parseInt(age) < 13 || parseInt(age) > 150) {
-      return res.status(400).json({
-        success: false,
-        error: 'Age must be between 13 and 150'
-      });
-    }
+    const { firstname, lastname, age, mobile, email, password, gender } = result.data;
 
-    // Password validation (at least 8 characters, includes uppercase, lowercase, and number)
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-    if (!passwordRegex.test(password)) {
-      return res.status(400).json({
-        success: false,
-        error: 'Password must be at least 8 characters long and include uppercase, lowercase, and number'
-      });
-    }
-
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        error: 'User with this email already exists'
+        error: 'User with this email already exists',
       });
     }
 
-    // Hash password
-    const saltRounds = 12;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create user object
     const userData = {
       firstname,
       lastname,
-      age: parseInt(age),
+      age,
       mobile,
       email,
       password: hashedPassword,
-      gender
+      gender,
     };
 
-    // Add profile picture URL if uploaded
     if (req.file) {
-      userData.profilePic = req.file.path; // Cloudinary URL
+      userData.profilePic = req.file.path;
     }
 
-    // Create new user
     const newUser = new User(userData);
     await newUser.save();
 
-    // Generate JWT tokens
     const { accessToken, refreshToken } = generateToken(newUser);
 
-    // Set cookies
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
-      sameSite: 'None',      
-      secure: true,          
-      maxAge: 60 * 60 * 1000  // 1 hour
+      sameSite: 'None',
+      secure: true,
+      maxAge: 60 * 60 * 1000,
     });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      sameSite: 'None',       
-      secure: true,           
-      maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days
+      sameSite: 'None',
+      secure: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    // Return success response (excluding password)
     const userResponse = {
       _id: newUser._id,
       firstname: newUser.firstname,
@@ -95,17 +91,16 @@ router.post('/', upload.single('profilePic'), async (req, res, next) => {
       age: newUser.age,
       mobile: newUser.mobile,
       gender: newUser.gender,
-      profilePic: newUser.profilePic
+      profilePic: newUser.profilePic,
     };
 
     res.status(201).json({
       success: true,
       message: 'User created successfully',
-      user: userResponse
+      user: userResponse,
     });
-
   } catch (err) {
-    next(err); // Pass error to error handler middleware
+    next(err);
   }
 });
 
