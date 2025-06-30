@@ -64,10 +64,11 @@ export default function Messages() {
     socket.emit("joinRoom", initialChatId);
     setPanelStatus(true);
     setChatOpened(initialChatId);
-    const chat = data.chats.find((c) => c._id === initialChatId);
+    const chat = chatData.chats.find((c) => c._id === initialChatId);
     setChatWith(chat?.participants?.find((p) => p._id !== currentUserId));
     getMessages(initialChatId);
   }
+
   const createChat = async (targetId) => {
     setLoading(true);
     try {
