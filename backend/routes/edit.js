@@ -25,3 +25,5 @@ router.post('/', verifyAccessToken, upload.single('profilePic'), async (req, res
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+module.exports = router;
