@@ -62,6 +62,87 @@ router.post('/', verifyAccessToken, upload.single('profilePic'), async (req, res
     res.status(500).json({ error: error.message });
   }
 });
+
+//join request
+router.post('/:id/join', verifyAccessToken, async (req, res) => {
+  try {
+    const community = await Community.findById(req.params.id);
+    const communityId = req.params.id;
+    const userId = req.user._id;
+    if (community.members.map(m => m.toString()).includes(userId)) {
+      await Community.findByIdAndUpdate(
+        communityId,
+        { $pull: { members: userId } },
+        { new: true }
+      );
+    }
+    const io = req.io;
+    // Check if already exists
+    const existing = await Join.findOne({ user: userId, community: communityId });
+    if (existing) {
+      await Join.findOneAndDelete({ user: userId, community: communityId });
+      return res.status(200).json({ message: 'you left the community' });
+    }
+    console.log('hello')
+
+    // Create join request
+    const joinRequest = await Join.create({
+      user: userId,
+      community: communityId,
+      status: 'pending'
+    });
+
+    // Notify the creator
+    const requester = await User.findById(userId);
+
+    const notification = await Notification.create({
+      user: community.creator,
+      type: "join",
+      from: requester._id,
+      message: `${requester.firstname + " " + requester.lastname} requested to join ${community.name}`,
+    });
+
+    // Emit to the creator if online
+    io.to(`user_${community.creator}`).emit('notify', {
+      from: {
+        _id: userId,
+        firstname: requester.firstname,
+        lastname: requester.lastname,
+        profilePic: requester.profilePic
+      },
+      message: notification.message,
+      type: notification.type,
+      createdAt: notification.createdAt
+    });
+
+    res.status(201).json({ message: 'Join request sent' });
+
+  } catch (err) {
+    console.error("Join request error:", err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+//join status
+router.get('/:id/status', verifyAccessToken, async (req, res) => {
+  try {
+    const userId = req.user._id.toString();
+    const community = await Community.findById(req.params.id);
+    if (community.members.map(m => m.toString()).includes(userId)) {
+      return res.status(200).json({ status: "joined" });
+    }
+    const join = await Join.findOne({ user: req.user._id, community: req.params.id });
+    if (!join) {
+      return res.status(200).json({ status: "none" });
+    }
+    return res.status(200).json({ status: join.status });
+  } catch (err) {
+    console.error("Error:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+});
+
+
 //all requests
 router.get('/allRequests', verifyAccessToken, async (req, res) => {
   try {
@@ -210,84 +291,6 @@ router.get('/allUsers/:comId', verifyAccessToken, async (res, req) => {
   }
 });
 
-//join request
-router.post('/:id/join', verifyAccessToken, async (req, res) => {
-  try {
-    const community = await Community.findById(req.params.id);
-    const communityId = req.params.id;
-    const userId = req.user._id;
-    if (community.members.map(m => m.toString()).includes(userId)) {
-      await Community.findByIdAndUpdate(
-        communityId,
-        { $pull: { members: userId } },
-        { new: true }
-      );
-    }
-    const io = req.io;
-    // Check if already exists
-    const existing = await Join.findOne({ user: userId, community: communityId });
-    if (existing) {
-      await Join.findOneAndDelete({ user: userId, community: communityId });
-      return res.status(200).json({ message: 'you left the community' });
-    }
-    console.log('hello')
-
-    // Create join request
-    const joinRequest = await Join.create({
-      user: userId,
-      community: communityId,
-      status: 'pending'
-    });
-
-    // Notify the creator
-    const requester = await User.findById(userId);
-
-    const notification = await Notification.create({
-      user: community.creator,
-      type: "join",
-      from: requester._id,
-      message: `${requester.firstname + " " + requester.lastname} requested to join ${community.name}`,
-    });
-
-    // Emit to the creator if online
-    io.to(`user_${community.creator}`).emit('notify', {
-      from: {
-        _id: userId,
-        firstname: requester.firstname,
-        lastname: requester.lastname,
-        profilePic: requester.profilePic
-      },
-      message: notification.message,
-      type: notification.type,
-      createdAt: notification.createdAt
-    });
-
-    res.status(201).json({ message: 'Join request sent' });
-
-  } catch (err) {
-    console.error("Join request error:", err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-//join status
-router.get('/:id/status', verifyAccessToken, async (req, res) => {
-  try {
-    const userId = req.user._id.toString();
-    const community = await Community.findById(req.params.id);
-    if (community.members.map(m => m.toString()).includes(userId)) {
-      return res.status(200).json({ status: "joined" });
-    }
-    const join = await Join.findOne({ user: req.user._id, community: req.params.id });
-    if (!join) {
-      return res.status(200).json({ status: "none" });
-    }
-    return res.status(200).json({ status: join.status });
-  } catch (err) {
-    console.error("Error:", err);
-    return res.status(500).json({ message: "Server error" });
-  }
-});
 
 
 

@@ -82,6 +82,7 @@ app.use('/auth/chat', require('./routes/chatRoute'));
 app.use('/auth/bond', require('./routes/bonding'));
 app.use('/auth/notification', require('./routes/notify'));
 app.use('/auth/payment', require('./routes/paymentRoutes'));
+app.use('/auth/editProfile', require('./routes/edit'));
 
 // Error handler
 app.use(require('./middlewares/errorHandler'));
