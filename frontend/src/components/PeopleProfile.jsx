@@ -442,9 +442,9 @@ export default function PeopleProfile({ userId }) {
 
                     {/* Bond Button */}
 
-                    <div className="felx justify-around flex-wrap">
+                    <div className="flex justify-around flex-wrap">
                         <button
-                            onClick={sendMessage}
+                            onClick={toggleBond}
                             className="text-sm px-4 py-1 border rounded text-white bg-green-600 hover:bg-green-700 self-center sm:self-auto"
                         >
                             {BondStatus.status ? (
@@ -459,13 +459,17 @@ export default function PeopleProfile({ userId }) {
                                 <span>Bond</span>
                             )}
                         </button>
-                        {(BondStatus == "accepted") && <button
-                            onClick={toggleBond}
-                            className="text-sm px-4 py-1 border rounded text-white bg-green-600 hover:bg-green-700 self-center sm:self-auto"
-                        >
-                            Message<Send />
-                        </button>}
+
+                        {BondStatus.status === "accepted" && (
+                            <button
+                                onClick={() => sendMessage(userId)}
+                                className="text-sm px-4 py-1 border rounded text-white bg-green-600 hover:bg-green-700 self-center sm:self-auto"
+                            >
+                                Message <Send className="inline w-4 h-4 ml-1" />
+                            </button>
+                        )}
                     </div>
+
                 </div>
             </div>
 
@@ -496,7 +500,7 @@ export default function PeopleProfile({ userId }) {
                                         <div className="w-full">
                                             {/* Post Media */}
                                             {post.media?.url && (
-                                                <div className="mb-4 pt-4 rounded-xl overflow-hidden bg-green-900/40 shadow-md ">
+                                                <div className="mb-4 pt-4 rounded-xl overflow-hidden bg-black/40 shadow-md ">
                                                     <NavLink to={`/people/${post.user._id}`} className="flex items-center gap-2 sm:mb-5 sm:ml-5">
                                                         <img src={post.user.profilePic} alt="" className="w-12 h-12 rounded-full" />
                                                         <span className="font-serif font-semibold">{post.user.firstname + " " + post.user.lastname}</span>
