@@ -360,7 +360,7 @@ export default function Messages() {
                     }
                   }}
                   placeholder="Type a message..."
-                  className="flex-1 p-2 border rounded-full bg-black/40 mb-8 outline-none"
+                  className="flex-1 p-2 border rounded-full bg-black/40 pb-8 outline-none"
                 />
                 <button
                   onClick={() => {
@@ -368,7 +368,7 @@ export default function Messages() {
                     socket.emit("sendMessage", { chatId: chatOpened, content: messageContent });
                     setMessageContent("");
                   }}
-                  className="text-white bg-green-600 px-4 mb-8 py-2 rounded-full"
+                  className="text-white bg-green-600 px-4 pb-8 py-2 rounded-full"
                 >
                   <Send className="w-4 h-4" />
                 </button>
