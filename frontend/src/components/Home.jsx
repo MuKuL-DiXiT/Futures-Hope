@@ -472,9 +472,6 @@ export default function Home() {
                                 ))}
                               </div>
                             )}
-                            <button className="bg-none text-sm font-bold border-none text-green-700" onClick={() => setRepliesOpen(!repliesOpen)}>
-                              {(repliesOpen ? <p>hide replies</p> : <p>show replies</p>)}
-                            </button>
                           </div>
                         ))}
                       </div>
@@ -613,7 +610,7 @@ export default function Home() {
                         </div>
                       )}
                       <br />
-                      {c.replies?.length > 0 && repliesOpen && (
+                      {repliesOpen && (
                         <div className="ml-4 mt-1 max-h-32 text-xs bg-transparent p-3 rounded-md overflow-y-auto space-y-1">
                           {c.replies.map((r) => (
                             <div key={r._id} className="flex gap-1">
@@ -625,9 +622,6 @@ export default function Home() {
                           ))}
                         </div>
                       )}
-                      <button className="bg-none text-sm font-bold border-none text-green-700" onClick={() => setRepliesOpen(!repliesOpen)}>
-                        {(repliesOpen ? <p>hide replies</p> : <p>show replies</p>)}
-                      </button>
 
                     </div>
                   ))}
