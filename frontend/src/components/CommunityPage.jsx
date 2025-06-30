@@ -112,7 +112,7 @@ export default function CommunityProfile({ comId }) {
 
   const joinCommunity = async () => {
     try {
-      await axios.post(`/auth/community/${comId}/join`, { withCredentials: true });
+      await secureFetch(`/auth/community/${comId}/join`, { method:"POST" });
       window.location.reload();
     } catch (err) {
       console.error('Failed to join community', err);

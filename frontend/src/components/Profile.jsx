@@ -22,31 +22,31 @@ export default function Profile() {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   async function secureFetch(path, options = {}) {
-  const baseUrl = import.meta.env.VITE_BACKEND_URL;
-  const url = `${baseUrl}${path}`;
+    const baseUrl = import.meta.env.VITE_BACKEND_URL;
+    const url = `${baseUrl}${path}`;
 
-  let res = await fetch(url, { ...options, credentials: "include" });
+    let res = await fetch(url, { ...options, credentials: "include" });
 
-  if (res.status === 401) {
-    const refresh = await fetch(`${baseUrl}/auth/refresh`, {
-      method: "POST",
-      credentials: "include",
-    });
-
-    if (refresh.ok) {
-      return fetch(url, { ...options, credentials: "include" }); // retry original request
-    } else {
-      await fetch(`${baseUrl}/auth/logout`, {
-        method: "GET",
+    if (res.status === 401) {
+      const refresh = await fetch(`${baseUrl}/auth/refresh`, {
+        method: "POST",
         credentials: "include",
       });
 
-      throw new Error("Session expired. Logged out.");
-    }
-  }
+      if (refresh.ok) {
+        return fetch(url, { ...options, credentials: "include" }); // retry original request
+      } else {
+        await fetch(`${baseUrl}/auth/logout`, {
+          method: "GET",
+          credentials: "include",
+        });
 
-  return res;
-}
+        throw new Error("Session expired. Logged out.");
+      }
+    }
+
+    return res;
+  }
   // Fetch user info and posts on mount
   useEffect(() => {
     const fetchUser = async () => {
@@ -378,18 +378,28 @@ export default function Profile() {
       {/* User Info Header */}
       <div className="flex flex-col sm:flex-row items-center justify-between mb-12 gap-6">
 
-        <div className="relative group w-fit">
-          {/* Glowing background behind the image */}
-          <div className="absolute -inset-4 bg-gradient-to-r from-amber-500 to-green-500 rounded-full blur opacity-50 group-hover:opacity-100 transition duration-1000 group-hover:duration-400 animate-tilt z-0"></div>
+        <div className="flex flex-col">
+          <div className="relative group w-fit">
+            {/* Glowing background behind the image */}
+            <div className="absolute -inset-4 bg-gradient-to-r from-amber-500 to-green-500 rounded-full blur opacity-50 group-hover:opacity-100 transition duration-1000 group-hover:duration-400 animate-tilt z-0"></div>
 
-          {/* Profile image with higher z-index */}
-          <img
-            onClick={() => setProfilePicExpanded(!profilePicExpanded)}
-            src={userData.user?.profilePic}
-            alt={userData.user?.username}
-            className={`relative z-10 rounded-full object-cover border border-green-600 cursor-pointer transition-all duration-300 ${profilePicExpanded ? "w-60 h-60" : "w-20 h-20"
-              }`}
-          />
+            {/* Profile image with higher z-index */}
+            <img
+              onClick={() => setProfilePicExpanded(!profilePicExpanded)}
+              src={userData.user?.profilePic}
+              alt={userData.user?.username}
+              className={`relative z-10 rounded-full object-cover border border-green-600 cursor-pointer transition-all duration-300 ${profilePicExpanded ? "w-60 h-60" : "w-20 h-20"
+                }`}
+            />
+          </div>
+          <NavLink
+            to="/edit"
+            state={{ user: userData }}
+            className="text-amber-500 bg-gradient-to-tr from-lime-50 to-black"
+          >
+            <span>Edit</span>
+          </NavLink>
+
         </div>
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:gap-12 flex-1">
@@ -413,6 +423,7 @@ export default function Profile() {
                   <span className=" text-sm">Communities</span>
                 </div>
               </NavLink>
+
             </div>
           </div>
         </div>
