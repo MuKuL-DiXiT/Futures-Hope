@@ -378,7 +378,7 @@ export default function Profile() {
       {/* User Info Header */}
       <div className="flex flex-col sm:flex-row items-center justify-between mb-12 gap-6">
 
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-2">
           <div className="relative group w-fit">
             {/* Glowing background behind the image */}
             <div className="absolute -inset-4 bg-gradient-to-r from-amber-500 to-green-500 rounded-full blur opacity-50 group-hover:opacity-100 transition duration-1000 group-hover:duration-400 animate-tilt z-0"></div>
@@ -395,7 +395,7 @@ export default function Profile() {
           <NavLink
             to="/edit"
             state={{ user: userData }}
-            className="text-amber-500 bg-gradient-to-tr from-lime-50 to-black"
+            className="text-white bg-teal-900 text-center rounded-lg"
           >
             <span>Edit</span>
           </NavLink>
