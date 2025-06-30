@@ -10,7 +10,7 @@ const socket = io(import.meta.env.VITE_BACKEND_URL, {
 
 export default function Messages() {
   const location = useLocation();
-  const initialChatId = location.state?.chatId;;
+  const initialChat = location.state?.chat;
   const [panelStatus, setPanelStatus] = useState(false);
   const [chatData, setChatData] = useState({ chats: [], userId: null });
   const [loading, setLoading] = useState(false);
@@ -60,14 +60,17 @@ export default function Messages() {
     };
     fetchChatData();
   }, []);
-  if (initialChatId) {
-    socket.emit("joinRoom", initialChatId);
-    setPanelStatus(true);
-    setChatOpened(initialChatId);
-    const chat = chatData.chats.find((c) => c._id === initialChatId);
-    setChatWith(chat?.participants?.find((p) => p._id !== currentUserId));
-    getMessages(initialChatId);
-  }
+  useEffect(() => {
+    if (initialChat && currentUserId) {
+      socket.emit("joinRoom", initialChat._id);
+      setPanelStatus(true);
+      setChatOpened(initialChat._id);
+      setChatWith(initialChat.participants.find((p) => p._id !== currentUserId));
+      getMessages(initialChat._id);
+    }
+  }, [initialChat, currentUserId]);
+
+
 
   const createChat = async (targetId) => {
     setLoading(true);
