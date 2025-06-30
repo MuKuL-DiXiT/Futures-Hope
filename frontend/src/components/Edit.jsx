@@ -84,7 +84,7 @@ export default function Edit() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 md:px-32 bg-gradient-to-br from-emerald-50 via-green-100 to-white">
+    <div className="min-h-screen w-full  flex items-center justify-center px-4 md:px-32 bg-gradient-to-br from-emerald-50 via-green-100 to-white">
       <div className="w-full max-w-md p-8 rounded-3xl shadow-2xl bg-white/40 border border-green-300 backdrop-blur-md text-green-900 animate-fade-in">
         <h2 className="text-3xl font-bold mb-6 text-center tracking-tight">Edit Your Profile</h2>
 
