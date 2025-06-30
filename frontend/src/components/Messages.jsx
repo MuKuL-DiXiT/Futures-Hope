@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
 import { Send, ArrowLeft, Trash } from "lucide-react";
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 
 const socket = io(import.meta.env.VITE_BACKEND_URL, {
   transports: ["websocket"],
@@ -9,6 +9,8 @@ const socket = io(import.meta.env.VITE_BACKEND_URL, {
 });
 
 export default function Messages() {
+  const location = useLocation();
+  const initialChatId = location.state?.chatId;;
   const [panelStatus, setPanelStatus] = useState(false);
   const [chatData, setChatData] = useState({ chats: [], userId: null });
   const [loading, setLoading] = useState(false);
@@ -24,6 +26,7 @@ export default function Messages() {
   const [showOptions, setShowOptions] = useState(null);
   const timeoutRef = useRef(null);
   const [community, setCommunity] = useState("");
+
 
   async function secureFetch(path, options = {}) {
     const baseUrl = import.meta.env.VITE_BACKEND_URL;
@@ -57,7 +60,36 @@ export default function Messages() {
     };
     fetchChatData();
   }, []);
-
+  if (initialChatId) {
+    socket.emit("joinRoom", initialChatId);
+    setPanelStatus(true);
+    setChatOpened(initialChatId);
+    const chat = data.chats.find((c) => c._id === initialChatId);
+    setChatWith(chat?.participants?.find((p) => p._id !== currentUserId));
+    getMessages(initialChatId);
+  }
+  const createChat = async (targetId) => {
+    setLoading(true);
+    try {
+      const response = await secureFetch(`/auth/chat/access`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: targetId }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        socket.emit("joinRoom", data._id);
+        setPanelStatus(true);
+        setChatOpened(data._id);
+        setChatWith(data.participants.find((p) => p._id !== currentUserId));
+        getMessages(data._id);
+      }
+    } catch (error) {
+      console.error("Couldn't create/fetch chat:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
     const handleReceiveMessage = (newMessage) => {
       if (newMessage.chat._id?.toString() === chatOpened?.toString()) {
@@ -107,28 +139,7 @@ export default function Messages() {
     return () => clearTimeout(delayDebounce);
   }, [searchTerm]);
 
-  const createChat = async (targetId) => {
-    setLoading(true);
-    try {
-      const response = await secureFetch(`/auth/chat/access`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: targetId }),
-      });
-      if (response.ok) {
-        const data = await response.json();
-        socket.emit("joinRoom", data._id);
-        setPanelStatus(true);
-        setChatOpened(data._id);
-        setChatWith(data.participants.find((p) => p._id !== currentUserId));
-        getMessages(data._id);
-      }
-    } catch (error) {
-      console.error("Couldn't create/fetch chat:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   const deleteMessage = (messageId) => {
     socket.emit("deleteMessage", messageId);
@@ -209,7 +220,7 @@ export default function Messages() {
         </div>
 
         {searchTerm && results?.length > 0 && (
-          <div className="max-h-60 overflow-y-auto border border-gray-300 rounded-md shadow-black mb-5 shadow-md w-4/5 self-center bg-amber-50">
+          <div className="max-h-60 overflow-y-auto border  rounded-md shadow-black mb-5 shadow-md w-4/5 self-center bg-black/40">
             {results.map((res) => (
               <div
                 key={res._id}
@@ -217,7 +228,7 @@ export default function Messages() {
               >
                 <button className="flex gap-3 items-center" onClick={() => createChat(res._id)}>
                   <img src={res.profilePic} alt="" className="w-8 h-8 rounded-full object-cover" />
-                  <strong className="text-amber-800">{res.firstname} {res.lastname || ""}</strong>
+                  <strong className="text-green-700">{res.firstname} {res.lastname || ""}</strong>
                 </button>
               </div>
             ))}
@@ -241,7 +252,7 @@ export default function Messages() {
                     getMessages(chat._id);
                     setChatWith(chat.isGroupChat ? chat : otherUser);
                   }}
-                  className="flex items-center justify-start gap-4 text-white w-full p-2 hover:bg-amber-100 hover:text-black rounded-lg transition"
+                  className="flex items-center justify-start gap-4 text-white w-full p-2 hover:bg-amber-100/30 hover:text-black rounded-lg transition"
                 >
                   <img
                     src={chat.isGroupChat ? chat.groupImage : otherUser?.profilePic}
@@ -249,11 +260,11 @@ export default function Messages() {
                     className="w-8 h-8 rounded-full object-cover"
                   />
                   <div className="flex flex-col gap-1 items-start">
-                    <strong className="text-md text-amber-800">
+                    <strong className="text-md text-black">
                       {chat.isGroupChat ? chat.groupName : `${otherUser?.firstname || ""} ${otherUser?.lastname || ""}`.trim()}
                     </strong>
-                    <p className="text-xs text-wrap text-amber-700">
-                      {(hasUnreadMessage  && (lastMsg.sender!=chatData.userId))? (
+                    <p className="text-xs font-semibold text-wrap text-amber-700">
+                      {(hasUnreadMessage && (lastMsg.sender != chatData.userId)) ? (
                         <span className="flex items-center justify-center text-red-600 gap-1">
                           <span className="text-4xl leading-none">•</span>
                           <span className="text-xs">new message</span>
@@ -294,7 +305,7 @@ export default function Messages() {
                 {chatMessages.map((msg) => (
                   <div key={msg._id} className={`flex ${msg.sender._id === currentUserId ? 'justify-end' : 'justify-start'} mb-2`}>
                     <div
-                      className="max-w-xs p-2 bg-green-600 text-white rounded-lg relative"
+                      className="max-w-[75%] sm:max-w-xs md:max-w-sm p-2 bg-green-600 text-white rounded-lg relative"
                       onContextMenu={(e) => {
                         e.preventDefault();
                         if (msg.sender._id === currentUserId && !msg.deleted) {
@@ -306,7 +317,7 @@ export default function Messages() {
                       }}
                     >
                       {msg.deleted ? (
-                        <i className="text-xs">This message was deleted</i>
+                        <i className="text-xs text-gray-500">This message was deleted 🚫</i>
                       ) : (
                         parseTextWithLinks(msg.content).map((part, idx) =>
                           part.isLink ? (

@@ -29,7 +29,7 @@ function Layout() {
           </>
         )}
       </div>
-      <BraveWarningBanner />
+      {!showNavbar && <BraveWarningBanner />}
       <Routes >
         <Route path="/" element={<Landing />} />
         <Route path="/signup" element={<Signup />} />
