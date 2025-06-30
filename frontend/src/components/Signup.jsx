@@ -92,7 +92,7 @@ export default function Signup() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-teal-900 to-green-900 text-white px-4 py-8">
+    <div className="flex items-center w-full sm:px-32 justify-center min-h-screen bg-gradient-to-br from-teal-900 to-green-900 text-white px-4 py-8">
       <div className="bg-white text-black rounded-2xl shadow-2xl flex flex-col sm:flex-row max-w-4xl w-full overflow-hidden">
 
         {/* Left Side Image */}

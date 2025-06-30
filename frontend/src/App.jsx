@@ -14,6 +14,7 @@ import CommunityPageWrapper from './components/CommunityPageWrapper';
 import SinglePost from './components/SinglePost';
 import Connections from './components/Connections';
 import BraveWarningBanner from './components/BraveWarningBanner';
+import Edit from './components/Edit';
 
 // This component needs to be inside BrowserRouter
 function Layout() {
@@ -43,6 +44,7 @@ function Layout() {
         <Route path="/community/:id" element={<CommunityPageWrapper />} />
         <Route path="/post/:postId" element={<SinglePost />} />
         <Route path="/connections" element={<Connections />} />
+        <Route path="/edit" element={<Edit />} />
       </Routes>
     </div>
   );

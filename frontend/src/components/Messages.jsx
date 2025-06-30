@@ -267,16 +267,19 @@ export default function Messages() {
                     <strong className="text-md text-black">
                       {chat.isGroupChat ? chat.groupName : `${otherUser?.firstname || ""} ${otherUser?.lastname || ""}`.trim()}
                     </strong>
-                    <p className="text-xs font-semibold text-wrap text-amber-700">
-                      {(hasUnreadMessage && (lastMsg.sender != chatData.userId)) ? (
-                        <span className="flex items-center justify-center text-red-600 gap-1">
+                    <p className="text-xs font-semibold text-amber-700 break-words">
+                      {(hasUnreadMessage && lastMsg?.sender !== chatData.userId) ? (
+                        <span className="flex items-center text-red-600 gap-1">
                           <span className="text-4xl leading-none">•</span>
                           <span className="text-xs">new message</span>
                         </span>
                       ) : (
-                        typeof lastMsg === "object" ? lastMsg.content : lastMsg
+                        typeof lastMsg === 'object'
+                          ? (lastMsg.deleted ? "This message was deleted" : lastMsg.content)
+                          : lastMsg
                       )}
                     </p>
+
                   </div>
                 </button>
               </div>
@@ -360,7 +363,7 @@ export default function Messages() {
                     }
                   }}
                   placeholder="Type a message..."
-                  className="flex-1 p-2 border rounded-full bg-black/40 pb-8 outline-none"
+                  className="flex-1 p-2 border rounded-full bg-black/40 mb-12 outline-none"
                 />
                 <button
                   onClick={() => {
@@ -368,7 +371,7 @@ export default function Messages() {
                     socket.emit("sendMessage", { chatId: chatOpened, content: messageContent });
                     setMessageContent("");
                   }}
-                  className="text-white bg-green-600 px-4 pb-8 py-2 rounded-full"
+                  className="text-white bg-green-600 px-4 mb-12 py-2 rounded-full"
                 >
                   <Send className="w-4 h-4" />
                 </button>
