@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
-import { Bell, CheckCircle, User2Icon, UserPlus } from "lucide-react";
+import { Bell, CheckCircle, User2Icon, UserPlus, DollarSign } from "lucide-react"; // Added DollarSign icon
 import { NavLink } from "react-router-dom";
+
 export const socket = io(import.meta.env.VITE_BACKEND_URL, {
   withCredentials: true,
-  transports: ["websocket"], 
+  transports: ["websocket"],
 });
 
 const Notification = () => {
@@ -15,33 +16,73 @@ const Notification = () => {
   const [requests, setRequests] = useState([]);
   const [showJoinRequests, setShowJoinRequests] = useState(false);
   const [joinRequests, setJoinRequests] = useState([]);
+  const [unverifiedPayments, setUnverifiedPayments] = useState([]); // New state for unverified payments
+  const [showPayments, setShowPayments] = useState(false); // New state to toggle payments section
 
   async function secureFetch(path, options = {}) {
-  const baseUrl = import.meta.env.VITE_BACKEND_URL;
-  const url = `${baseUrl}${path}`;
+    const baseUrl = import.meta.env.VITE_BACKEND_URL;
+    const url = `${baseUrl}${path}`;
 
-  let res = await fetch(url, { ...options, credentials: "include" });
+    let res = await fetch(url, { ...options, credentials: "include" });
 
-  if (res.status === 401) {
-    const refresh = await fetch(`${baseUrl}/auth/refresh`, {
-      method: "POST",
-      credentials: "include",
-    });
-
-    if (refresh.ok) {
-      return fetch(url, { ...options, credentials: "include" }); // retry original request
-    } else {
-      await fetch(`${baseUrl}/auth/logout`, {
-        method: "GET",
+    if (res.status === 401) {
+      const refresh = await fetch(`${baseUrl}/auth/refresh`, {
+        method: "POST",
         credentials: "include",
       });
 
-      throw new Error("Session expired. Logged out.");
+      if (refresh.ok) {
+        return fetch(url, { ...options, credentials: "include" }); // retry original request
+      } else {
+        await fetch(`${baseUrl}/auth/logout`, {
+          method: "GET",
+          credentials: "include",
+        });
+
+        throw new Error("Session expired. Logged out.");
+      }
     }
+
+    return res;
   }
 
-  return res;
-}
+  // Function to fetch unverified payments
+  const fetchUnverifiedPayments = async () => {
+    try {
+      const res = await secureFetch("/auth/payment/unverified", {
+        method: "GET",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUnverifiedPayments(data);
+      } else {
+        console.error("Failed to fetch unverified payments:", res.status);
+      }
+    } catch (error) {
+      console.error("Error fetching unverified payments:", error);
+    }
+  };
+
+  // Function to verify a payment
+  const verifyPayment = async (paymentId) => {
+    // IMPORTANT: Replaced window.confirm with console.log as per instructions.
+    // In a real application, you'd use a custom modal for confirmation.
+    console.log(`Confirming verification for payment ID: ${paymentId}`);
+    try {
+      const res = await secureFetch(`/auth/payment/verify/${paymentId}`, {
+        method: "PATCH",
+      });
+      if (res.ok) {
+        console.log(`Payment ${paymentId} verified successfully!`);
+        fetchUnverifiedPayments(); // Re-fetch to update the list
+      } else {
+        const errorData = await res.json();
+        console.error(`Failed to verify payment ${paymentId}:`, errorData.message || res.status);
+      }
+    } catch (error) {
+      console.error(`Error verifying payment ${paymentId}:`, error);
+    }
+  };
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -72,6 +113,7 @@ const Notification = () => {
     fetchNotifications();
     fetchRequests();
     fetchJoinRequests();
+    fetchUnverifiedPayments(); // Fetch payments on mount
 
     socket.on("notify", (n) => setUnseen((prev) => [n, ...prev]));
     return () => socket.off("notify");
@@ -129,6 +171,40 @@ const Notification = () => {
         <h2 className="text-2xl font-bold tracking-wide">Notifications Center</h2>
       </div>
 
+      {/* New Section for Incoming Payments */}
+      <Section icon={DollarSign} label="Incoming Payments" toggle={() => setShowPayments(!showPayments)} show={showPayments}>
+        <div className="space-y-3 mt-4">
+          {unverifiedPayments.length === 0 ? (
+            <p className="text-sm italic text-green-300">No unverified payments.</p>
+          ) : (
+            unverifiedPayments.map((payment) => (
+              <div
+                key={payment._id}
+                className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-yellow-300 hover:shadow-lg cursor-pointer"
+                onClick={() => window.open(payment.proofScreenshotUrl, '_blank')} // Open screenshot on card click
+              >
+                <div className="flex-1">
+                  <p className="text-sm text-white">
+                    <span className="font-semibold">{payment.name}</span> donated <span className="font-semibold">₹{payment.amount}</span> to{" "}
+                    <span className="font-semibold">{payment.community?.name || 'Unknown Community'}</span>
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">{new Date(payment.createdAt).toLocaleString()}</p>
+                </div>
+                <button
+                  className="text-sm px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent card click from firing
+                    verifyPayment(payment._id);
+                  }}
+                >
+                  Verify
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      </Section>
+
       <Section icon={UserPlus} label="Join requests" toggle={() => setShowJoinRequests(!showJoinRequests)} show={showJoinRequests}>
         <div className="space-y-3 mt-4">
           {joinRequests.map((n) => (
@@ -182,3 +258,4 @@ const Notification = () => {
 };
 
 export default Notification;
+
