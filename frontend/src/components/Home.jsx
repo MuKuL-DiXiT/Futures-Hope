@@ -83,7 +83,7 @@ export default function Home() {
       const res = await secureFetch("/auth/community/communityDataBase", {
         method: "GET"
       })
-      if(res.ok){
+      if (res.ok) {
         const data = await res.json();
         setCommunities(data);
         setLoadingCommunities(false);
@@ -359,46 +359,51 @@ export default function Home() {
           </div>
         )}
       </div>
-       <div
-      ref={scrollRef}
-      className="w-full overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900"
-    >
-      {loadingCommunities ? (
-        <div className="flex justify-center items-center h-40">
-          <Loader2 className="animate-spin text-white w-8 h-8" />
-        </div>
-      ) : (
-        <div className="flex space-x-4 p-4 w-max">
-          {communities.map((community) => (
-            <div
-              key={community._id}
-              className="flex-shrink-0 bg-gray-800 rounded-2xl p-4 text-white shadow-md w-64 sm:w-40 flex flex-col items-center gap-y-2"
-            >
-              <img
-                src={community.profilePic}
-                alt={community.name}
-                className="w-16 h-16 sm:w-12 sm:h-12 rounded-full"
-              />
-              <h2 className="text-lg sm:text-sm font-semibold text-center">{community.name}</h2>
-              <h1 className="hidden md:inline-block text-sm sm:text-xs text-center">
-                {community.description}
-              </h1>
-              <div className="hidden sm:flex flex-col items-center text-center">
-                <p className="text-xs">By {community.creator.firstName}</p>
+      <div
+        ref={scrollRef}
+        className="w-full overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900"
+      >
+        {loadingCommunities ? (
+          <div className="flex justify-center items-center h-40">
+              <div className="relative">
+                <div className="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-8 h-8 bg-green-600 rounded-full animate-pulse"></div>
+                </div>
+              </div>
+          </div>
+        ) : (
+          <div className="flex space-x-4 p-4 w-max">
+            {communities.map((community) => (
+              <div
+                key={community._id}
+                className="flex-shrink-0 bg-gray-800 rounded-2xl p-4 text-white shadow-md w-64 sm:w-40 flex flex-col items-center gap-y-2"
+              >
                 <img
-                  src={community.creator.profilePic}
-                  alt={community.creator.firstName}
-                  className="w-8 h-8 rounded-full mt-1"
+                  src={community.profilePic}
+                  alt={community.name}
+                  className="w-16 h-16 sm:w-12 sm:h-12 rounded-full"
                 />
+                <h2 className="text-lg sm:text-sm font-semibold text-center">{community.name}</h2>
+                <h1 className="hidden md:inline-block text-sm sm:text-xs text-center">
+                  {community.description}
+                </h1>
+                <div className="hidden sm:flex flex-col items-center text-center">
+                  <p className="text-xs">By {community.creator.firstName}</p>
+                  <img
+                    src={community.creator.profilePic}
+                    alt={community.creator.firstName}
+                    className="w-8 h-8 rounded-full mt-1"
+                  />
+                </div>
+                <div className="hidden md:flex justify-center text-xs mt-1">
+                  {community.members.length} members
+                </div>
               </div>
-              <div className="hidden md:flex justify-center text-xs mt-1">
-                {community.members.length} members
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+            ))}
+          </div>
+        )}
+      </div>
 
 
       <div className="w-full flex flex-col lg:flex-row gap-6">
@@ -452,7 +457,7 @@ export default function Home() {
 
                   <div className="flex justify-around mb-2 text-gray-700">
                     <button onClick={() => togglePostLike(post._id)}>
-                      <Heart fill={likedPosts[post._id]?"green":""} className={likedPosts[post._id] ? "text-green-500" : ""} /> {post.likesCount}
+                      <Heart fill={likedPosts[post._id] ? "green" : ""} /> {post.likesCount}
                     </button>
                     <button
                       onClick={() => {

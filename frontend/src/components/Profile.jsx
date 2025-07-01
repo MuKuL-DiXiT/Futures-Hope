@@ -434,9 +434,13 @@ export default function Profile() {
         {/* Posts List */}
         <div className="flex-1 max-w-xl space-y-6">
           {loading ? (
-            <div className="text-center py-10">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Loading posts...</p>
+            <div className="flex justify-center items-center h-40">
+              <div className="relative">
+                <div className="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-8 h-8 bg-green-600 rounded-full animate-pulse"></div>
+                </div>
+              </div>
             </div>
           ) : posts.length === 0 ? (
             <div className="text-center text-gray-400 italic text-xs sm:text-sm">
@@ -505,7 +509,7 @@ export default function Profile() {
                           >
                             <div className="flex items-center gap-2 mt-2">
                               <Heart
-                                fill={likedPosts[post._id]?"green":""}
+                                fill={likedPosts[post._id] ? "green" : ""}
                                 className={`${likedPosts[post._id]
                                   ? "text-green-800"
                                   : "text-black"
