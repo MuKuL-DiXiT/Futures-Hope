@@ -327,7 +327,7 @@ export default function Profile() {
       const res = await secureFetch(`/auth/posts/${activeSharePost}/share`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userIds: shareRecipients }),
+        body: JSON.stringify({ recipients: selectedUsers.map((u) => u._id) }),
       });
       if (res.ok) {
         alert(`Post shared with ${shareRecipients.length} user(s)!`);
