@@ -17,7 +17,7 @@ export default function PeopleProfile({ userId }) {
   const [replyText, setReplyText] = useState("");
   const [activeSharePost, setActiveSharePost] = useState(null);
   const [shareRecipients, setShareRecipients] = useState([]);
-  const [usersToShare, setUsersToShare] = useState([]); // This will now hold both users and communities
+  const [usersToShare, setUsersToShare] = useState({ users: [], community: [] }); // Initialize as an object
   const [shareSearchTerm, setShareSearchTerm] = useState("");
   const [profilePicExpanded, setProfilePicExpanded] = useState(false);
   const [BondStatus, setBondStatus] = useState({});
@@ -413,9 +413,11 @@ export default function PeopleProfile({ userId }) {
   }
 
   return (
-    <div className="flex flex-col justify-center items-center w-full md:w-5/6 min-h-screen md:px-32 px-2 sm:px-4 py-8 relative">
-      {/* User Info Header - Centered */}
-      <div className="flex flex-wrap items-center justify-center mb-8 gap-6 text-center">
+    // Main container adjusted for sidebar and centering
+    // md:pl-[80px] assumes a 64px sidebar + 16px padding
+    <div className="w-full min-h-screen py-8 relative px-4 sm:px-6 md:pl-[80px] md:pr-4 md:mx-auto md:max-w-screen-xl">
+      {/* User Info Header - Aligned like Instagram */}
+      <div className="flex flex-wrap items-center justify-center mb-8 gap-6 text-center md:justify-start md:text-left">
         <div className="flex flex-col items-center gap-4">
           <div className="relative group w-fit">
             {/* Glowing background behind the image */}
@@ -459,12 +461,12 @@ export default function PeopleProfile({ userId }) {
             )}
           </div>
         </div>
-        <div className="flex flex-col items-center gap-2">
+        <div className="flex flex-col items-center gap-2 md:items-start md:ml-8"> {/* Adjusted margin for alignment */}
           <h1 className="font-bold text-2xl">@{userData?.firstname}</h1>
           <p className="text-green-700 font-semibold">{userData?.lastname}</p>
         </div>
 
-        <div className="flex gap-8">
+        <div className="flex gap-8 md:ml-auto"> {/* Pushed to right on md+ */}
           <div className="flex flex-col items-center text-black font-serif bg-green-800/40 rounded-lg p-3">
             <span className="font-semibold">{posts.length}</span>
             <span className="text-sm">Posts</span>
@@ -473,6 +475,7 @@ export default function PeopleProfile({ userId }) {
       </div>
 
       {/* Posts Grid */}
+      {/* max-w-4xl remains, but it will be centered within the new main container's bounds */}
       <div className="max-w-4xl mx-auto">
         {loading ? (
           <div className="flex justify-center items-center h-40">
@@ -730,6 +733,7 @@ export default function PeopleProfile({ userId }) {
                         className="w-full border border-gray-300 rounded p-3"
                       />
 
+                      {/* Corrected condition for checking if usersToShare is empty */}
                       {usersToShare.users.length === 0 && usersToShare.community.length === 0 ? (
                         <p className="text-gray-500 text-sm text-center py-4">No users or communities found</p>
                       ) : (
