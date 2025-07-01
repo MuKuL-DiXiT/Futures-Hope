@@ -102,7 +102,7 @@ router.patch('/verify/:paymentId', verifyAccessToken, async (req, res) => {
       const notification = new Notification({
         user: donor._id,
         from: req.user._id,
-        type: 'payment-verified',
+        type: 'payment',
         message: `Your donation of ₹${payment.amount} to ${payment.community.name} has been verified. Thank you!`
       });
 
