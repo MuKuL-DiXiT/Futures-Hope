@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { io } from "socket.io-client";
-import { Send, ArrowLeft, Trash } from "lucide-react";
+import { Send, ArrowLeft, Trash, Lightbulb } from "lucide-react"; // Import Lightbulb icon
 import { NavLink, useLocation } from 'react-router-dom';
 
 const socket = io(import.meta.env.VITE_BACKEND_URL, {
@@ -26,7 +26,7 @@ export default function Messages() {
   const [showOptions, setShowOptions] = useState(null);
   const timeoutRef = useRef(null);
   const [community, setCommunity] = useState("");
-
+  const [aiLoading, setAiLoading] = useState(false); // New state for AI loading
 
   async function secureFetch(path, options = {}) {
     const baseUrl = import.meta.env.VITE_BACKEND_URL;
@@ -218,6 +218,55 @@ export default function Messages() {
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
+  const handleSuggestReply = async () => {
+    setAiLoading(true);
+    try {
+      let chatHistory = [];
+      // Get the last 5 messages for context
+      const recentMessages = chatMessages.slice(-5);
+
+      recentMessages.forEach(msg => {
+        chatHistory.push({
+          role: msg.sender._id === currentUserId ? "user" : "model", // Assuming 'model' for other users
+          parts: [{ text: msg.content }]
+        });
+      });
+
+      // Add a final instruction for the AI
+      chatHistory.push({
+        role: "user",
+        parts: [{ text: "Based on the conversation above, suggest a concise, relevant, and conversational reply. Keep it short and natural." }]
+      });
+
+      const payload = { contents: chatHistory };
+      const apiKey = ""; // Canvas will automatically provide this
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+      if (result.candidates && result.candidates.length > 0 &&
+          result.candidates[0].content && result.candidates[0].content.parts &&
+          result.candidates[0].content.parts.length > 0) {
+        const suggestedText = result.candidates[0].content.parts[0].text;
+        setMessageContent(suggestedText);
+      } else {
+        console.error("Gemini API returned an unexpected structure or no content:", result);
+        setError("Failed to get a suggestion. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error fetching AI suggestion:", err);
+      setError("Error getting AI suggestion. Please check your network or try again.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+
   return (
     // Main container adjusted for sidebar and centering
     // px-0 sm:px-0 for no padding on small screens
@@ -323,7 +372,7 @@ export default function Messages() {
               )}
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+            <div className="flex-1 overflow-y-auto p-4 bg-gray-50 pb-24"> {/* Added pb-24 here */}
               {chatMessages.map((msg) => (
                 <div key={msg._id} className={`flex ${msg.sender._id === currentUserId ? 'justify-end' : 'justify-start'} mb-3`}>
                   <div
@@ -368,7 +417,19 @@ export default function Messages() {
             </div>
 
             {/* Typing Bar - Fixed to bottom for mobile, relative for desktop */}
-            <div className="p-4 border-t border-gray-200 flex items-center gap-3 bg-white rounded-b-lg fixed bottom-0 left-0 right-0 md:relative md:bottom-auto md:left-auto md:right-auto w-full md:w-auto z-40 mb-14 md845:mb-0">
+            <div className="p-4 border-t border-gray-200 flex items-center gap-3 bg-white rounded-b-lg fixed bottom-0 left-0 right-0 md:relative md:bottom-auto md:left-auto md:right-auto w-full md:w-auto z-40">
+              <button
+                onClick={handleSuggestReply}
+                disabled={aiLoading}
+                className="text-gray-700 bg-gray-200 px-4 py-3 rounded-full shadow-md hover:bg-gray-300 transition-colors duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Suggest Reply with AI"
+              >
+                {aiLoading ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-gray-700"></div>
+                ) : (
+                  <Lightbulb className="w-5 h-5" />
+                )}
+              </button>
               <input
                 value={messageContent}
                 onChange={(e) => setMessageContent(e.target.value)}
