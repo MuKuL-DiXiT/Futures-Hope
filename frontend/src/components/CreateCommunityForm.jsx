@@ -98,13 +98,18 @@ const CreateCommunityForm = () => {
         const currUserId = userData._id;
 
         const filteredBonds = data.bonds
-          .filter(bond => bond && bond.requester && bond.receiver)
+          .filter(bond => {
+            if (!bond || !bond.requester || !bond.receiver) return false;
+            const requesterId = bond.requester._id?.toString?.();
+            const receiverId = bond.receiver._id?.toString?.();
+            if (!requesterId || !receiverId || requesterId === receiverId) return false;
+            return true;
+          })
           .map(bond => {
             const isRequester = bond.requester._id.toString() === currUserId.toString();
-            const otherUser = isRequester ? bond.receiver : bond.requester;
-            return otherUser;
+            return isRequester ? bond.receiver : bond.requester;
           })
-          .filter(user => user && user._id.toString() !== currUserId.toString());
+          .filter(user => user && user._id?.toString?.() !== currUserId.toString());
 
 
         setBonds(filteredBonds);
@@ -525,8 +530,8 @@ const CreateCommunityForm = () => {
             onClick={handleNext}
             disabled={isSubmitting || !canProceed()}
             className={`px-6 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all ${currentStep === steps.length - 1
-                ? 'bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 shadow-lg'
-                : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-lg'
+              ? 'bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 shadow-lg'
+              : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-lg'
               }`}
           >
             {isSubmitting ? (
