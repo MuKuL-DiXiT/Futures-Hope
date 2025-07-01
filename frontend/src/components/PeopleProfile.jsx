@@ -550,6 +550,7 @@ export default function PeopleProfile({ userId }) {
                                                     >
                                                         <div className="flex items-center gap-2 mt-2">
                                                             <Heart
+                                                                fill={likedPosts[post._id]?"green":""}
                                                                 className={`${likedPosts[post._id]
                                                                     ? "text-green-800"
                                                                     : "text-black"

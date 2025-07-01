@@ -1,7 +1,7 @@
 // Home.jsx – Final Full Version
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FaSignOutAlt } from "react-icons/fa";
-import { Heart, MessageCircle, Share2, Trash, LogOut } from "lucide-react";
+import { Heart, MessageCircle, Share2, Trash, LogOut, Loader2 } from "lucide-react";
 import { useNavigate, NavLink } from "react-router-dom";
 import { io } from "socket.io-client";
 const socket = io(import.meta.env.VITE_BACKEND_URL, {
@@ -10,6 +10,7 @@ const socket = io(import.meta.env.VITE_BACKEND_URL, {
 });
 
 export default function Home() {
+  const scrollRef = useRef(null);
   const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,35 +28,36 @@ export default function Home() {
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyText, setReplyText] = useState("");
   const [userData, setUserData] = useState(null);
-  const [repliesOpen, setRepliesOpen] = useState(false);
+  const [communities, setCommunities] = useState([]);
+  const [loadingCommunities, setLoadingCommunities] = useState(true);
 
 
- async function secureFetch(path, options = {}) {
-  const baseUrl = import.meta.env.VITE_BACKEND_URL;
-  const url = `${baseUrl}${path}`;
+  async function secureFetch(path, options = {}) {
+    const baseUrl = import.meta.env.VITE_BACKEND_URL;
+    const url = `${baseUrl}${path}`;
 
-  let res = await fetch(url, { ...options, credentials: "include" });
+    let res = await fetch(url, { ...options, credentials: "include" });
 
-  if (res.status === 401) {
-    const refresh = await fetch(`${baseUrl}/auth/refresh`, {
-      method: "POST",
-      credentials: "include",
-    });
-
-    if (refresh.ok) {
-      return fetch(url, { ...options, credentials: "include" }); // retry original request
-    } else {
-      await fetch(`${baseUrl}/auth/logout`, {
-        method: "GET",
+    if (res.status === 401) {
+      const refresh = await fetch(`${baseUrl}/auth/refresh`, {
+        method: "POST",
         credentials: "include",
       });
 
-      throw new Error("Session expired. Logged out.");
-    }
-  }
+      if (refresh.ok) {
+        return fetch(url, { ...options, credentials: "include" }); // retry original request
+      } else {
+        await fetch(`${baseUrl}/auth/logout`, {
+          method: "GET",
+          credentials: "include",
+        });
 
-  return res;
-}
+        throw new Error("Session expired. Logged out.");
+      }
+    }
+
+    return res;
+  }
 
 
   useEffect(() => {
@@ -76,6 +78,20 @@ export default function Home() {
       });
   }, []);
 
+  useEffect(() => {
+    const fetchCommunities = async () => {
+      const res = await secureFetch("/auth/community/communityDataBase", {
+        method: "GET"
+      })
+      if(res.ok){
+        const data = await res.json();
+        setCommunities(data);
+        setLoadingCommunities(false);
+      }
+    }
+    fetchCommunities();
+
+  }, []);
 
   const logout = async () => {
     await secureFetch("/auth/logout", { method: "POST" });
@@ -248,6 +264,27 @@ export default function Home() {
     searchUsers()
   }, [searchTerm])
 
+  useEffect(() => {
+    if (!loadingCommunities) {
+      const scrollContainer = scrollRef.current;
+      let scrollAmount = 0;
+
+      const scrollInterval = setInterval(() => {
+        if (!scrollContainer) return;
+
+        scrollAmount += 1;
+        scrollContainer.scrollLeft += 1;
+
+        // If reached end, reset to start
+        if (scrollContainer.scrollLeft + scrollContainer.offsetWidth >= scrollContainer.scrollWidth) {
+          scrollAmount = 0;
+          scrollContainer.scrollLeft = 0;
+        }
+      }, 30); // smaller = faster
+
+      return () => clearInterval(scrollInterval);
+    }
+  }, [loadingCommunities]);
   return (
     <div className="w-full md:w-5/6 md:px-32 mx-auto px-4 py-6 mb-10 relative">
 
@@ -322,6 +359,47 @@ export default function Home() {
           </div>
         )}
       </div>
+       <div
+      ref={scrollRef}
+      className="w-full overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900"
+    >
+      {loadingCommunities ? (
+        <div className="flex justify-center items-center h-40">
+          <Loader2 className="animate-spin text-white w-8 h-8" />
+        </div>
+      ) : (
+        <div className="flex space-x-4 p-4 w-max">
+          {communities.map((community) => (
+            <div
+              key={community._id}
+              className="flex-shrink-0 bg-gray-800 rounded-2xl p-4 text-white shadow-md w-64 sm:w-40 flex flex-col items-center gap-y-2"
+            >
+              <img
+                src={community.profilePic}
+                alt={community.name}
+                className="w-16 h-16 sm:w-12 sm:h-12 rounded-full"
+              />
+              <h2 className="text-lg sm:text-sm font-semibold text-center">{community.name}</h2>
+              <h1 className="hidden md:inline-block text-sm sm:text-xs text-center">
+                {community.description}
+              </h1>
+              <div className="hidden sm:flex flex-col items-center text-center">
+                <p className="text-xs">By {community.creator.firstName}</p>
+                <img
+                  src={community.creator.profilePic}
+                  alt={community.creator.firstName}
+                  className="w-8 h-8 rounded-full mt-1"
+                />
+              </div>
+              <div className="hidden md:flex justify-center text-xs mt-1">
+                {community.members.length} members
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+
 
       <div className="w-full flex flex-col lg:flex-row gap-6">
         <div className="flex-1 space-y-6">
@@ -374,7 +452,7 @@ export default function Home() {
 
                   <div className="flex justify-around mb-2 text-gray-700">
                     <button onClick={() => togglePostLike(post._id)}>
-                      <Heart className={likedPosts[post._id] ? "text-green-600" : ""} /> {post.likesCount}
+                      <Heart fill={likedPosts[post._id]?"green":""} className={likedPosts[post._id] ? "text-green-500" : ""} /> {post.likesCount}
                     </button>
                     <button
                       onClick={() => {
