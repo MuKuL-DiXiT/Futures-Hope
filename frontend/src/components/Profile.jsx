@@ -516,7 +516,7 @@ export default function Profile() {
                           >
                             <div className="flex items-center gap-2 mt-2">
                               <Heart
-                                fill={likedPosts[post._id] ? "green" : ""}
+                                fill={likedPosts[post._id] ? "green" : "none"}
                                 className={`${likedPosts[post._id]
                                   ? "text-green-700"
                                   : "text-black"
