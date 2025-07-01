@@ -22,7 +22,6 @@ export default function Profile() {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [expandedPostId, setExpandedPostId] = useState(null);
 
-
   async function secureFetch(path, options = {}) {
     const baseUrl = import.meta.env.VITE_BACKEND_URL;
     const url = `${baseUrl}${path}`;
@@ -244,7 +243,6 @@ export default function Profile() {
     )
       return;
 
-
     try {
       const res = await secureFetch(
         `/auth/posts/comment/${commentId}`,
@@ -332,9 +330,6 @@ export default function Profile() {
     }
   };
 
-  // Add a loading state to prevent flash
-
-
   if (isInitialLoading) {
     return (
       <div className="flex items-center justify-center w-full h-screen">
@@ -349,8 +344,6 @@ export default function Profile() {
       </div>
     );
   }
-
-
 
   // Show login screen only after we've confirmed user is not logged in
   if (!userData) {
@@ -384,10 +377,9 @@ export default function Profile() {
 
   return (
     <div className="w-full min-h-screen md:pl-32 px-2 sm:px-4 py-8 relative">
-      {/* User Info Header */}
-      <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-6">
-
-        <div className="flex flex-col gap-2">
+      {/* User Info Header - Centered */}
+      <div className="flex flex-col items-center justify-center mb-8 gap-6 text-center">
+        <div className="flex flex-col items-center gap-4">
           <div className="relative group w-fit">
             {/* Glowing background behind the image */}
             <div className="absolute -inset-4 bg-gradient-to-r from-amber-500 to-green-500 rounded-full blur opacity-50 group-hover:opacity-100 transition duration-1000 group-hover:duration-400 animate-tilt z-0"></div>
@@ -401,351 +393,344 @@ export default function Profile() {
                 }`}
             />
           </div>
-          <NavLink
-            to="/edit"
-            state={{ user: userData }}
-            className="text-white bg-teal-900 text-center rounded-lg"
-          >
-            <span>Edit</span>
-          </NavLink>
-
-        </div>
-
-        <div className="flex flex-col sm:flex-row sm:items-center sm:gap-12 flex-1">
-          <div>
+          
+          <div className="flex flex-col items-center gap-2">
             <h1 className="font-bold text-2xl">@{userData.user?.firstname}</h1>
             <p className="text-green-700 font-semibold">{userData.user?.lastname}</p>
           </div>
-          <div className="flex gap-8 mt-6 sm:mt-0">
-            <div className="flex justify-center sm:justify-start gap-8">
-              <div className="flex flex-col  items-center text-black font-serif bg-green-800/40 rounded-lg p-3">
-                <span className="font-semibold">{posts.length}</span>
-                <span className=" text-sm">Posts</span>
-              </div>
-              <NavLink to='/connections' className="flex flex- items-center text-black font-serif gap-12 bg-amber-800/40 rounded-lg p-3 hover:shadow-lg hover:shadow-black transition-shadow duration-1000">
-                <div className="flex flex-col  items-center">
-                  <span className="font-semibold">{userData.bondCount}</span>
-                  <span className="t text-sm">Bonds</span>
-                </div>
-                <div className="flex flex-col  items-center">
-                  <span className="font-semibold">{userData.comCount}</span>
-                  <span className=" text-sm">Communities</span>
-                </div>
-              </NavLink>
 
+          <NavLink
+            to="/edit"
+            state={{ user: userData }}
+            className="text-white bg-teal-900 text-center rounded-lg px-4 py-2"
+          >
+            <span>Edit</span>
+          </NavLink>
+        </div>
+
+        <div className="flex gap-8">
+          <div className="flex flex-col items-center text-black font-serif bg-green-800/40 rounded-lg p-3">
+            <span className="font-semibold">{posts.length}</span>
+            <span className="text-sm">Posts</span>
+          </div>
+          <NavLink to='/connections' className="flex items-center text-black font-serif gap-12 bg-amber-800/40 rounded-lg p-3 hover:shadow-lg hover:shadow-black transition-shadow duration-1000">
+            <div className="flex flex-col items-center">
+              <span className="font-semibold">{userData.bondCount}</span>
+              <span className="text-sm">Bonds</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="font-semibold">{userData.comCount}</span>
+              <span className="text-sm">Communities</span>
+            </div>
+          </NavLink>
+        </div>
+      </div>
+
+      {/* Posts Grid */}
+      <div className="max-w-4xl mx-auto">
+        {loading ? (
+          <div className="flex justify-center items-center h-40">
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-8 h-8 bg-green-600 rounded-full animate-pulse"></div>
+              </div>
             </div>
           </div>
-        </div>
+        ) : posts.length === 0 ? (
+          <div className="text-center text-gray-400 italic text-xs sm:text-sm">
+            No posts yet. Start sharing your projects and ideas!
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {posts.map((post) => (
+              <div
+                key={post._id}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setExpandedPostId(post._id);
+                }}
+                className="cursor-pointer transition-all duration-300 rounded-md overflow-hidden hover:scale-[1.02] aspect-square"
+              >
+                {/* Media */}
+                {post.media?.url && (
+                  post.media.type === "photo" ? (
+                    <img
+                      src={post.media.url}
+                      className="w-full h-full object-cover"
+                      alt="Post"
+                    />
+                  ) : (
+                    <video
+                      src={post.media.url}
+                      className="w-full h-full object-cover"
+                    />
+                  )
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Posts Container */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        {/* Posts List */}
-        <div className="flex-1 max-w-xl space-y-6">
-          {loading ? (
-            <div className="flex justify-center items-center h-40">
-              <div className="relative">
-                <div className="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-8 h-8 bg-green-600 rounded-full animate-pulse"></div>
+      {/* Expanded Post Modal */}
+      {expandedPostId && (() => {
+        const post = posts.find(p => p._id === expandedPostId);
+        const isLiked = likedPosts[post._id];
+        const isCommentOpen = activeCommentPost === post._id;
+        const isShareOpen = activeSharePost === post._id;
+
+        return (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4 py-8">
+            <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-lg overflow-hidden shadow-lg relative">
+              <button
+                onClick={() => {
+                  setExpandedPostId(null);
+                  setActiveCommentPost(null);
+                  setActiveSharePost(null);
+                }}
+                className="absolute top-2 right-2 text-black hover:text-red-500 z-10"
+              >
+                <X size={24} />
+              </button>
+              
+              <div className="flex flex-col md:flex-row h-full">
+                <div className="md:w-1/2 bg-black flex items-center justify-center">
+                  {post.media.type === "photo" ? (
+                    <img
+                      src={post.media.url}
+                      className="w-full h-full object-contain max-h-[500px]"
+                      alt=""
+                    />
+                  ) : (
+                    <video
+                      src={post.media.url}
+                      controls
+                      className="w-full h-full object-contain max-h-[500px]"
+                    />
+                  )}
+                </div>
+                
+                <div className="md:w-1/2 p-4 space-y-4 overflow-y-auto">
+                  {/* User Info */}
+                  <div className="flex items-center gap-3">
+                    <img src={post.user.profilePic} className="w-10 h-10 rounded-full" />
+                    <span className="font-semibold">
+                      {post.user.firstname} {post.user.lastname}
+                    </span>
+                  </div>
+
+                  {/* Caption */}
+                  {post.caption && <p>{post.caption}</p>}
+
+                  {/* Action Buttons */}
+                  <div className="flex space-x-6 text-sm text-gray-700">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        togglePostLike(post._id);
+                      }}
+                      className="flex items-center gap-1"
+                    >
+                      <Heart
+                        fill={isLiked ? "green" : "none"}
+                        className={isLiked ? "text-green-600" : "text-black"}
+                        size={20}
+                      />
+                      <span>{post.likesCount || 0}</span>
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveCommentPost(isCommentOpen ? null : post._id);
+                      }}
+                      className="flex items-center gap-1"
+                    >
+                      <MessageCircle className="text-black" size={20} />
+                      <span>{post.commentsCount || 0}</span>
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveSharePost(isShareOpen ? null : post._id);
+                      }}
+                      className="flex items-center gap-1"
+                    >
+                      <Share2 className="text-black" size={20} />
+                    </button>
+                  </div>
+
+                  {/* Comments Section */}
+                  {isCommentOpen && (
+                    <div className="bg-gray-50 rounded-lg p-4 space-y-4">
+                      <h3 className="font-bold text-lg">Comments</h3>
+
+                      {commentLoading ? (
+                        <div className="text-center py-4">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+                          <p className="mt-2 text-gray-600">Loading comments...</p>
+                        </div>
+                      ) : comments.length === 0 ? (
+                        <p className="italic text-gray-500 text-center py-4">
+                          No comments yet. Be the first!
+                        </p>
+                      ) : (
+                        <div className="space-y-3 max-h-60 overflow-y-auto">
+                          {comments.map((comment) => (
+                            <div key={comment._id} className="bg-white rounded-md p-3">
+                              <div className="flex justify-between items-start">
+                                <p className="flex items-center gap-2 text-sm">
+                                  <NavLink to={`/people/${comment.author._id}`} className="flex gap-2 items-center">
+                                    <img src={comment.author?.profilePic} alt="" className="w-6 h-6 rounded-full" />
+                                    <strong>@{comment.author?.firstname}</strong>:
+                                  </NavLink>
+                                  {comment.content}
+                                </p>
+                                {comment.author?._id === userData.user._id && (
+                                  <button
+                                    onClick={() => handleDeleteComment(comment._id)}
+                                    className="text-red-500 hover:text-red-700"
+                                    title="Delete comment"
+                                  >
+                                    <Trash size={16} />
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* Replies */}
+                              {comment.replies.length > 0 && (
+                                <div className="ml-4 mt-2 space-y-1">
+                                  {comment.replies.map((reply) => (
+                                    <div key={reply._id} className="bg-gray-100 rounded-md p-2">
+                                      <p className="text-sm flex gap-2 items-center">
+                                        <NavLink to={`/people/${reply.author._id}`} className="flex gap-2 items-center">
+                                          <strong>@{reply.author?.firstname || "User"}</strong>:
+                                        </NavLink>
+                                        {reply.content}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+
+                              {/* Reply Section */}
+                              {replyingTo !== comment._id ? (
+                                <button
+                                  onClick={() => startReply(comment._id)}
+                                  className="text-green-700 mt-2 text-sm font-semibold"
+                                >
+                                  Reply
+                                </button>
+                              ) : (
+                                <div className="mt-2">
+                                  <textarea
+                                    value={replyText}
+                                    onChange={(e) => setReplyText(e.target.value)}
+                                    rows={2}
+                                    className="w-full border border-gray-300 rounded p-2 text-sm"
+                                    placeholder="Write your reply..."
+                                  />
+                                  <div className="flex justify-end gap-2 mt-2">
+                                    <button
+                                      onClick={cancelReply}
+                                      className="text-gray-600 hover:text-gray-800 text-sm px-3 py-1"
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button
+                                      onClick={handleReplySubmit}
+                                      className="text-green-700 font-semibold text-sm px-3 py-1"
+                                    >
+                                      Submit
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Add Comment */}
+                      <div className="border-t pt-4">
+                        <textarea
+                          value={newCommentText}
+                          onChange={(e) => setNewCommentText(e.target.value)}
+                          rows={3}
+                          placeholder="Add a comment..."
+                          className="w-full border border-gray-300 rounded p-3 resize-none"
+                        />
+                        <button
+                          onClick={handleAddComment}
+                          className="mt-3 px-4 py-2 bg-yellow-800/70 text-black rounded"
+                        >
+                          Post Comment
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Share Section */}
+                  {isShareOpen && (
+                    <div className="bg-gray-50 rounded-lg p-4 space-y-4">
+                      <h3 className="font-bold text-lg">Share Post</h3>
+
+                      <input
+                        type="text"
+                        placeholder="Search users to share..."
+                        value={shareSearchTerm}
+                        onChange={handleShareSearchChange}
+                        className="w-full border border-gray-300 rounded p-3"
+                      />
+
+                      {usersToShare.length === 0 ? (
+                        <p className="text-gray-500 text-sm text-center py-4">No users found</p>
+                      ) : (
+                        <div className="max-h-60 overflow-y-auto space-y-2">
+                          {usersToShare.map((user) => (
+                            <div
+                              key={user._id}
+                              className="flex items-center justify-between bg-white rounded p-3"
+                            >
+                              <div className="flex items-center gap-3">
+                                <img
+                                  src={user.profilePic}
+                                  alt={user.firstname}
+                                  className="w-8 h-8 rounded-full object-cover"
+                                />
+                                <span>
+                                  @{user.firstname} {user.lastname}
+                                </span>
+                              </div>
+                              <input
+                                type="checkbox"
+                                checked={shareRecipients.includes(user._id)}
+                                onChange={() => toggleShareRecipient(user._id)}
+                                className="w-4 h-4"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <button
+                        onClick={handleShareSubmit}
+                        disabled={shareRecipients.length === 0}
+                        className={`w-full px-4 py-2 rounded text-black transition-colors ${shareRecipients.length === 0
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-yellow-800/70"
+                          }`}
+                      >
+                        Share ({shareRecipients.length} selected)
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
-          ) : posts.length === 0 ? (
-            <div className="text-center text-gray-400 italic text-xs sm:text-sm">
-              No posts yet. Start sharing your projects and ideas!
-            </div>
-          ) : (
-            posts.map((post) => {
-              const isCaptionOpen = expandedCaptions[post._id];
-              const isCommentOpen = activeCommentPost === post._id;
-              const isShareOpen = activeSharePost === post._id;
-              const isExpanded = expandedPostId === post._id;
-              return (
-                <div
-                  key={post._id}
-                  onClick={() => setExpandedPostId(isExpanded ? null : post._id)}
-                  className={`cursor-pointer transition-all duration-300 rounded-md overflow-hidden hover:scale-[1.02]
-                    `}
-                >
-                  {/* Media */}
-                  {post.media?.url && (
-                    post.media.type === "photo" ? (
-                      <img
-                        src={post.media.url}
-                        className="w-full h-full object-cover aspect-square"
-                        alt="Post"
-                      />
-                    ) : (
-                      <video
-                        src={post.media.url}
-                        controls
-                        className="w-full h-full object-cover aspect-square"
-                      />
-                    )
-                  )}
-
-                  {expandedPostId && (() => {
-                    const post = posts.find(p => p._id === expandedPostId);
-                    const isLiked = likedPosts[post._id];
-
-                    return (
-                      <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4 py-8">
-                        <div className="bg-white w-full max-w-4xl rounded-lg overflow-hidden shadow-lg relative">
-                          <button
-                            onClick={() => setExpandedPostId(null)}
-                            className="absolute top-2 right-2 text-black hover:text-red-500"
-                          >
-                            <X size={24} />
-                          </button>
-                          <div className="flex flex-col md:flex-row">
-                            <div className="md:w-1/2 bg-black">
-                              {post.media.type === "photo" ? (
-                                <img
-                                  src={post.media.url}
-                                  className="w-full object-contain max-h-[500px]"
-                                  alt=""
-                                />
-                              ) : (
-                                <video
-                                  src={post.media.url}
-                                  controls
-                                  className="w-full object-contain max-h-[500px]"
-                                />
-                              )}
-                            </div>
-                            <div className="md:w-1/2 p-4 space-y-4">
-                              {/* User Info */}
-                              <div className="flex items-center gap-3">
-                                <img src={post.user.profilePic} className="w-10 h-10 rounded-full" />
-                                <span className="font-semibold">
-                                  {post.user.firstname} {post.user.lastname}
-                                </span>
-                              </div>
-
-                              {/* Caption */}
-                              {post.caption && <p>{post.caption}</p>}
-
-                              {/* Likes / Comments / Share */}
-                              <div className="flex space-x-6 text-sm text-gray-700">
-                                <button onClick={() => togglePostLike(post._id)}>
-                                  <Heart
-                                    fill={isLiked ? "green" : "none"}
-                                    className={isLiked ? "text-green-600" : "text-black"}
-                                    size={20}
-                                  />
-                                  <span className="ml-1">{post.likesCount || 0}</span>
-                                </button>
-                                <button onClick={() => setActiveCommentPost(post._id)}>
-                                  <MessageCircle className="text-black" size={20} />
-                                  <span className="ml-1">{post.commentsCount || 0}</span>
-                                </button>
-                                <button onClick={() => setActiveSharePost(post._id)}>
-                                  <Share2 className="text-black" size={20} />
-                                </button>
-                              </div>
-
-                              {/* Comment Panel - Shows directly under the post on small screens */}
-                              {isCommentOpen && (
-                                <div className="lg:hidden bg-transparent  rounded-lg p-4 shadow-lg">
-                                  <div className="flex justify-between items-center mb-4">
-                                    <h3 className="font-bold text-lg">Comments</h3>
-                                    <button
-                                      onClick={() => setActiveCommentPost(null)}
-                                      className="text-gray-500 hover:text-gray-700 text-xl font-bold"
-                                    >
-                                      <X />
-                                    </button>
-                                  </div>
-
-                                  {commentLoading ? (
-                                    <div className="text-center py-4">
-                                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
-                                      <p className="mt-2 text-gray-600">Loading comments...</p>
-                                    </div>
-                                  ) : comments.length === 0 ? (
-                                    <p className="italic text-gray-500 text-center py-4">
-                                      No comments yet. Be the first!
-                                    </p>
-                                  ) : (
-                                    <div className="flex flex-col gap-3 max-h-96 overflow-y-auto mb-4">
-                                      {comments.map((comment) => (
-                                        <div
-                                          key={comment._id}
-                                          className=" rounded-md p-3 bg-transparent"
-                                        >
-                                          <div className="flex justify-between items-start">
-                                            <p className="flex items-center gap-2 text-sm">
-                                              <NavLink to={`/people/${comment.author._id}`} className="flex gap-3 items-center">
-                                                <img src={comment.author?.profilePic} alt="" className="w-10 h-10 rounded-full" />
-                                                <strong>@{comment.author?.firstname}</strong>:
-                                              </NavLink>
-                                              {comment.content}
-                                            </p>
-                                            {comment.author?._id === userData.user._id && (
-                                              <button
-                                                onClick={() => handleDeleteComment(comment._id)}
-                                                className="text-red-500 hover:text-red-700 font-bold"
-                                                title="Delete comment"
-                                              >
-                                                <Trash />
-                                              </button>
-                                            )}
-                                          </div>
-
-                                          {/* Replies */}
-                                          {comment.replies.length > 0 && (
-                                            <div className="ml-4 mt-2 space-y-1">
-                                              {comment.replies.map((reply) => (
-                                                <div
-                                                  key={reply._id}
-                                                  className="bg-transparent rounded-md p-2"
-                                                >
-                                                  <p className="text-sm flex gap-2">
-                                                    <NavLink to={`/people/${reply.author._id}`} className="flex gap-3 items-center">
-                                                      <strong>@{reply.author?.firstname || "User"}</strong>:{" "}
-                                                    </NavLink>
-                                                    {reply.content}
-                                                  </p>
-                                                </div>
-                                              ))}
-                                            </div>
-                                          )}
-
-                                          {/* Reply button */}
-                                          {replyingTo !== comment._id ? (
-                                            <button
-                                              onClick={() => startReply(comment._id)}
-                                              className="text-green-700 mt-2 text-sm font-semibold"
-                                            >
-                                              Reply
-                                            </button>
-                                          ) : (
-                                            <div className="mt-2">
-                                              <textarea
-                                                value={replyText}
-                                                onChange={(e) => setReplyText(e.target.value)}
-                                                rows={2}
-                                                className="w-full border-none outline-none bg-black/50 rounded p-2 text-sm"
-                                                placeholder="Write your reply..."
-                                              />
-                                              <div className="flex justify-end gap-2 mt-2">
-                                                <button
-                                                  onClick={cancelReply}
-                                                  className="text-gray-600 hover:text-gray-800 text-sm px-3 py-1"
-                                                >
-                                                  Cancel
-                                                </button>
-                                                <button
-                                                  onClick={handleReplySubmit}
-                                                  className="text-green-700 font-semibold text-sm px-3 py-1"
-                                                >
-                                                  Submit
-                                                </button>
-                                              </div>
-                                            </div>
-                                          )}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-
-                                  {/* Add Comment */}
-                                  <div className="border-t pt-4">
-                                    <textarea
-                                      value={newCommentText}
-                                      onChange={(e) => setNewCommentText(e.target.value)}
-                                      rows={3}
-                                      placeholder="Add a comment..."
-                                      className="w-full border-none outline-none bg-black/50 rounded p-3 resize-none"
-                                    />
-                                    <button
-                                      onClick={handleAddComment}
-                                      className="mt-3 px-4 py-2 bg-yellow-800/70 text-black rounded"
-                                    >
-                                      Post Comment
-                                    </button>
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Share Panel - Shows directly under the post on small screens */}
-                              {isShareOpen && (
-                                <div className="lg:hidden bg-transparent rounded-lg p-4 shadow-lg">
-                                  <div className="flex justify-between items-center mb-4">
-                                    <h3 className="font-bold text-lg">Share Post</h3>
-                                    <button
-                                      onClick={() => setActiveSharePost(null)}
-                                      className="text-gray-500 hover:text-gray-700 text-xl font-bold"
-                                    >
-                                      <X />
-                                    </button>
-                                  </div>
-
-                                  <input
-                                    type="text"
-                                    placeholder="Search users to share..."
-                                    value={shareSearchTerm}
-                                    onChange={handleShareSearchChange}
-                                    className="w-full border border-gray-300 rounded p-3 mb-3"
-                                  />
-
-                                  {usersToShare.length === 0 ? (
-                                    <p className="text-gray-500 text-sm text-center py-4">No users found</p>
-                                  ) : (
-                                    <div className="max-h-60 overflow-y-auto space-y-2 mb-4">
-                                      {usersToShare.map((user) => (
-                                        <div
-                                          key={user._id}
-                                          className="flex items-center justify-between bg-gray-50 rounded p-3"
-                                        >
-                                          <div className="flex items-center gap-3">
-                                            <img
-                                              src={user.profilePic}
-                                              alt={user.firstname}
-                                              className="w-8 h-8 rounded-full object-cover"
-                                            />
-                                            <span>
-                                              @{user.firstname} {user.lastname}
-                                            </span>
-                                          </div>
-                                          <input
-                                            type="checkbox"
-                                            checked={shareRecipients.includes(user._id)}
-                                            onChange={() => toggleShareRecipient(user._id)}
-                                            className="w-4 h-4"
-                                          />
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-
-                                  <button
-                                    onClick={handleShareSubmit}
-                                    disabled={shareRecipients.length === 0}
-                                    className={`w-full px-4 py-2 rounded text-black transition-colors ${shareRecipients.length === 0
-                                      ? "bg-gray-400 cursor-not-allowed"
-                                      : "bg-yellow-800/70"
-                                      }`}
-                                  >
-                                    Share ({shareRecipients.length} selected)
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-              );
-
-            })
-          )}
-        </div>
-      </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
-
