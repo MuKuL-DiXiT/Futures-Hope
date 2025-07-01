@@ -386,7 +386,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="w-full md:w-5/6 min-h-screen justify-center items-center md:px-32 px-2 sm:px-4 py-8 relative">
+    <div className="flex flex-col justify-center items-center w-full md:w-5/6 min-h-screen  md:px-32 px-2 sm:px-4 py-8 relative">
       {/* User Info Header - Centered */}
       <div className="flex flex-wrap items-center justify-center mb-8 gap-6 text-center">
         <div className="flex flex-col items-center gap-4">
