@@ -220,11 +220,12 @@ export default function Messages() {
 
   return (
     // Main container adjusted for sidebar and centering
-    // md:pl-[80px] assumes a 64px sidebar + 16px padding
-    <div className="flex flex-col md:flex-row h-screen w-full px-4 sm:px-24 md:pl-[80px] md:pr-4 md:mx-auto md:max-w-screen-xl pt-0">
+    // px-0 sm:px-0 for no padding on small screens
+    // md:pl-[80px] assumes a 64px sidebar + 16px padding on medium and larger screens
+    <div className="flex flex-col md:flex-row h-screen w-full px-0 sm:px-0 md:pl-[80px] md:pr-4 md:mx-auto md:max-w-screen-xl pt-0">
       {/* Left Panel: Chat List */}
       <div className={`md:bg-black/50 bg-transparent overflow-y-auto w-full md:w-1/3 ${panelStatus ? "hidden md:inline-block" : ""} flex flex-col gap-2 pt-3 pb-20 md:pb-0 md:pt-8 rounded-lg shadow-lg`}>
-        <div className="flex justify-center items-center mb-4 px-4">
+        <div className="flex justify-center items-center mb-4 px-4"> {/* Added px-4 here for search input */}
           <input
             type="text"
             placeholder="Search users..."
@@ -310,7 +311,8 @@ export default function Messages() {
       </div>
 
       {/* Chat Window */}
-      <div className={`flex-1 bg-white relative flex flex-col rounded-lg shadow-lg ${panelStatus ? '' : 'hidden md:flex'}`}>
+      {/* Added pb-14 to account for bottom navbar on small screens */}
+      <div className={`flex-1 bg-white relative flex flex-col rounded-lg shadow-lg ${panelStatus ? '' : 'hidden md:flex'} pb-14 md:pb-0`}>
         {panelStatus && (
           <>
             <div className="flex items-center p-4 border-b border-gray-200 bg-white shadow-sm rounded-t-lg">
@@ -332,7 +334,7 @@ export default function Messages() {
               {chatMessages.map((msg) => (
                 <div key={msg._id} className={`flex ${msg.sender._id === currentUserId ? 'justify-end' : 'justify-start'} mb-3`}>
                   <div
-                    className={`max-w-[75%] sm:max-w-xs md:max-w-sm p-3 rounded-xl relative shadow-md ${msg.sender._id === currentUserId ? 'bg-green-600 text-white rounded-br-none' : 'bg-gray-200 text-gray-800 rounded-bl-none'}`}
+                    className={`message-bubble max-w-[80%] sm:max-w-xs md:max-w-sm p-3 rounded-xl relative shadow-md ${msg.sender._id === currentUserId ? 'bg-green-600 text-white rounded-br-none' : 'bg-gray-200 text-gray-800 rounded-bl-none'} break-words`}
                     onContextMenu={(e) => {
                       e.preventDefault();
                       if (msg.sender._id === currentUserId && !msg.deleted) {
@@ -372,7 +374,8 @@ export default function Messages() {
               <div ref={messagesEndRef} />
             </div>
 
-            <div className="p-4 border-t border-gray-200 flex items-center gap-3 bg-white rounded-b-lg">
+            {/* Typing Bar - Fixed to bottom for mobile, relative for desktop */}
+            <div className="p-4 border-t border-gray-200 flex items-center gap-3 bg-white rounded-b-lg fixed bottom-0 left-0 right-0 md:relative md:bottom-auto md:left-auto md:right-auto w-full md:w-auto z-40">
               <input
                 value={messageContent}
                 onChange={(e) => setMessageContent(e.target.value)}

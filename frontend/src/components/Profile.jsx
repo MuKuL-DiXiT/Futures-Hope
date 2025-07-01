@@ -339,9 +339,9 @@ export default function Profile() {
       <div className="flex items-center justify-center w-full h-screen">
         <div className="flex justify-center items-center h-40">
           <div className="relative">
-            <div className="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+            <div className="w-16 h-16 border-4 border-gray-200 border-t-gray-600 rounded-full animate-spin"></div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-8 h-8 bg-green-600 rounded-full animate-pulse"></div>
+              <div className="w-8 h-8 bg-gray-600 rounded-full animate-pulse"></div>
             </div>
           </div>
         </div>
@@ -352,27 +352,27 @@ export default function Profile() {
   // Show login screen only after we've confirmed user is not logged in
   if (!userData) {
     return (
-      <div className="flex items-center justify-center w-full h-screen">
-        <div className="min-h-screen flex items-center justify-center">
+      <div className="flex items-center justify-center w-full h-screen bg-gray-50">
+        <div className="min-h-screen flex flex-col items-center justify-center p-4">
           <img
-            src="./public/tree.webp"
-            alt=""
-            className="h-3/4 hidden sm:inline"
+            src="../public/tree.webp" // Assuming this path is correct relative to public folder
+            alt="App Logo"
+            className="h-24 mb-8"
           />
-          <div className="bg-green-100 flex flex-col justify-center items-center gap-10 rounded-md md:w-1/4 md:px-12 w-5/6 sm:mr-10 h-1/2">
-            <a
-              href="/"
-              className="text-center w-1/3 sm:w-3/4 md:w-full p-1 px-3 border-2 border-green-700 hover:bg-green-700 hover:shadow-lg shadow-black rounded-md"
+          <div className="bg-white p-8 rounded-lg shadow-md text-center max-w-sm w-full">
+            <p className="text-gray-700 mb-6">Please log in or create an account to view your profile.</p>
+            <NavLink
+              to="/"
+              className="block w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors mb-3"
             >
-              log in
-            </a>
-            <h1>OR</h1>
-            <a
-              href="/signup"
-              className="text-center w-1/3 sm:w-3/4 md:w-full p-1 px-3 border-2 border-green-700 hover:bg-green-700 hover:shadow-lg shadow-black rounded-md"
+              Log In
+            </NavLink>
+            <NavLink
+              to="/signup"
+              className="block w-full bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors"
             >
               Create Account
-            </a>
+            </NavLink>
           </div>
         </div>
       </div>
@@ -380,73 +380,81 @@ export default function Profile() {
   }
 
   return (
-    // Main container adjusted to original positioning request
-    <div className="min-h-screen w-full px-4 sm:px-6 md:px-32 flex flex-col  items-center bg-transparent relative">
+    // Main container adjusted for desktop sidebar offset and overall centering
+    // Removed px-4 sm:px-6 md:px-32 to allow for full width control
+    // Added md:pl-20 to account for the fixed desktop navbar width (w-20 from Navbar.jsx)
+    <div className="min-h-screen w-full bg-white flex flex-col items-center relative md:pl-20 pb-14 md:pb-0">
       {/* User Info Header - Aligned like Instagram */}
-      <div className="flex flex-wrap items-center justify-center mb-8 gap-6 text-center md:justify-start md:text-left">
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative group w-fit">
-            {/* Glowing background behind the image */}
-            <div className="absolute -inset-4 bg-gradient-to-r from-amber-500 to-green-500 rounded-full blur opacity-50 group-hover:opacity-100 transition duration-1000 group-hover:duration-400 animate-tilt z-0"></div>
-
-            {/* Profile image with higher z-index */}
-            <img
-              onClick={() => setProfilePicExpanded(!profilePicExpanded)}
-              src={userData.user?.profilePic}
-              alt={userData.user?.username}
-              className={`relative z-10 rounded-full object-cover border border-green-600 cursor-pointer transition-all duration-300 ${profilePicExpanded ? "w-60 h-60" : "w-20 h-20"
-                }`}
-            />
-          </div>
-          <NavLink
-            to="/edit"
-            state={{ user: userData }}
-            className="text-white bg-teal-900 text-center rounded-lg px-4 py-2"
-          >
-            <span>Edit</span>
-          </NavLink>
+      <div className="w-full max-w-4xl px-4 sm:px-6 md:px-8 py-8 flex flex-col md:flex-row items-center md:items-start justify-center md:justify-start gap-6 border-b border-gray-200">
+        <div className="flex-shrink-0 relative group w-32 h-32 md:w-40 md:h-40">
+          {/* Removed glowing effect for cleaner Instagram-like aesthetic */}
+          <img
+            onClick={() => setProfilePicExpanded(!profilePicExpanded)}
+            src={userData.user?.profilePic || '/default-avatar.png'} // Fallback for profile pic
+            alt={userData.user?.username}
+            className={`relative z-10 rounded-full object-cover border-2 border-gray-300 cursor-pointer transition-all duration-300 ${profilePicExpanded ? "w-full h-full" : "w-full h-full"
+              }`}
+          />
         </div>
-        <div className="flex flex-col items-center gap-2 md:items-start md:ml-8"> {/* Adjusted margin for alignment */}
-          <h1 className="font-bold text-2xl">@{userData.user?.firstname}</h1>
-          <p className="text-green-700 font-semibold">{userData.user?.lastname}</p>
-        </div>
-
-        <div className="flex gap-8 md:ml-auto"> {/* Pushed to right on md+ */}
-          <div className="flex flex-col items-center text-black font-serif bg-green-800/40 rounded-lg p-3">
-            <span className="font-semibold">{posts.length}</span>
-            <span className="text-sm">Posts</span>
+        
+        <div className="flex flex-col items-center md:items-start md:ml-10 flex-grow">
+          <div className="flex items-center gap-4 mb-2">
+            <h1 className="font-semibold text-2xl text-gray-800">
+              {userData.user?.username || `${userData.user?.firstname} ${userData.user?.lastname}`.trim()}
+            </h1>
+            <NavLink
+              to="/edit"
+              state={{ user: userData }}
+              className="bg-gray-200 text-gray-700 text-sm font-medium py-1.5 px-4 rounded-md hover:bg-gray-300 transition-colors"
+            >
+              Edit Profile
+            </NavLink>
           </div>
-          <NavLink to='/connections' className="flex items-center text-black font-serif gap-12 bg-amber-800/40 rounded-lg p-3 hover:shadow-lg hover:shadow-black transition-shadow duration-1000">
-            <div className="flex flex-col items-center">
-              <span className="font-semibold">{userData.bondCount}</span>
-              <span className="text-sm">Bonds</span>
+
+          <div className="flex gap-8 mb-4">
+            <div className="flex items-center text-gray-800">
+              <span className="font-semibold text-lg">{posts.length}</span>
+              <span className="text-sm ml-1">posts</span>
             </div>
-            <div className="flex flex-col items-center">
-              <span className="font-semibold">{userData.comCount}</span>
-              <span className="text-sm">Communities</span>
-            </div>
-          </NavLink>
+            <NavLink to='/connections' className="flex items-center text-gray-800">
+              <span className="font-semibold text-lg">{userData.bondCount}</span>
+              <span className="text-sm ml-1">bonds</span>
+            </NavLink>
+            <NavLink to='/communities' className="flex items-center text-gray-800">
+              <span className="font-semibold text-lg">{userData.comCount}</span>
+              <span className="text-sm ml-1">communities</span>
+            </NavLink>
+          </div>
+          
+          {/* User Full Name and Bio (if available) */}
+          <p className="font-semibold text-gray-800 text-left w-full">
+            {userData.user?.firstname} {userData.user?.lastname}
+          </p>
+          {userData.user?.bio && (
+            <p className="text-gray-600 text-sm mt-1 text-left w-full">
+              {userData.user.bio}
+            </p>
+          )}
         </div>
       </div>
 
       {/* Posts Grid */}
-      {/* max-w-4xl remains, but it will be centered within the new main container's bounds */}
-      <div className="max-w-4xl mx-auto">
+      <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-6">
         {loading ? (
           <div className="flex justify-center items-center h-40">
             <div className="relative">
-              <div className="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+              <div className="w-16 h-16 border-4 border-gray-200 border-t-gray-600 rounded-full animate-spin"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-8 h-8 bg-green-600 rounded-full animate-pulse"></div>
+                <div className="w-8 h-8 bg-gray-600 rounded-full animate-pulse"></div>
               </div>
             </div>
           </div>
         ) : posts.length === 0 ? (
-          <div className="text-center text-gray-400 italic text-xs sm:text-sm">
+          <div className="text-center text-gray-400 italic text-sm py-10">
             No posts yet. Start sharing your projects and ideas!
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-1 sm:gap-2">
             {posts.map((post) => (
               <div
                 key={post._id}
@@ -454,7 +462,7 @@ export default function Profile() {
                   e.stopPropagation();
                   setExpandedPostId(post._id);
                 }}
-                className="cursor-pointer transition-all duration-300 rounded-md overflow-hidden hover:scale-[1.02] aspect-square"
+                className="cursor-pointer transition-all duration-300 overflow-hidden aspect-square relative group"
               >
                 {/* Media */}
                 {post.media?.url && (
@@ -471,6 +479,17 @@ export default function Profile() {
                     />
                   )
                 )}
+                {/* Overlay for likes/comments on hover */}
+                <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="flex items-center text-white font-bold">
+                    <Heart fill="white" size={20} className="mr-1" />
+                    <span>{post.likesCount || 0}</span>
+                  </div>
+                  <div className="flex items-center text-white font-bold">
+                    <MessageCircle fill="white" size={20} className="mr-1" />
+                    <span>{post.commentsCount || 0}</span>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -480,6 +499,8 @@ export default function Profile() {
       {/* Expanded Post Modal */}
       {expandedPostId && (() => {
         const post = posts.find(p => p._id === expandedPostId);
+        if (!post) return null; // Should not happen if expandedPostId is valid
+
         const isLiked = likedPosts[post._id];
         const isCommentOpen = activeCommentPost === post._id;
         const isShareOpen = activeSharePost === post._id;
@@ -493,7 +514,7 @@ export default function Profile() {
                   setActiveCommentPost(null);
                   setActiveSharePost(null);
                 }}
-                className="absolute top-2 right-2 text-black hover:text-red-500 z-10"
+                className="absolute top-2 right-2 text-gray-700 hover:text-gray-900 z-10 p-1 rounded-full bg-white/50 hover:bg-white"
               >
                 <X size={24} />
               </button>
@@ -504,7 +525,7 @@ export default function Profile() {
                     <img
                       src={post.media.url}
                       className="w-full h-full object-contain max-h-[500px]"
-                      alt=""
+                      alt="Post media"
                     />
                   ) : (
                     <video
@@ -515,30 +536,47 @@ export default function Profile() {
                   )}
                 </div>
 
-                <div className="md:w-1/2 p-4 space-y-4 overflow-y-auto max-h-[90vh]">
-                  {/* User Info */}
-                  <div className="flex items-center gap-3">
-                    <img src={post.user.profilePic} className="w-10 h-10 rounded-full" />
-                    <span className="font-semibold">
-                      {post.user.firstname} {post.user.lastname}
+                <div className="md:w-1/2 p-4 space-y-4 overflow-y-auto max-h-[90vh] flex flex-col">
+                  {/* User Info in Modal */}
+                  <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
+                    <img src={post.user.profilePic || '/default-avatar.png'} className="w-10 h-10 rounded-full object-cover" alt="User profile" />
+                    <span className="font-semibold text-gray-800">
+                      {post.user.username || `${post.user.firstname} ${post.user.lastname}`.trim()}
                     </span>
                   </div>
 
                   {/* Caption */}
-                  {post.caption && <p>{post.caption}</p>}
+                  {post.caption && (
+                    <div className="mb-2 text-gray-700 text-sm">
+                      <span className="font-semibold mr-1">{post.user.username || `${post.user.firstname} ${post.user.lastname}`.trim()}</span>
+                      {expandedCaptions[post._id] || post.caption.length < 150 ? (
+                        <span>{post.caption}</span>
+                      ) : (
+                        <span>
+                          {post.caption.substring(0, 150)}...
+                          <button
+                            onClick={() => toggleCaption(post._id)}
+                            className="text-blue-500 hover:text-blue-700 ml-1"
+                          >
+                            more
+                          </button>
+                        </span>
+                      )}
+                    </div>
+                  )}
 
                   {/* Action Buttons */}
-                  <div className="flex space-x-6 text-sm text-gray-700">
+                  <div className="flex space-x-6 text-sm text-gray-700 py-3 border-y border-gray-200">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         togglePostLike(post._id);
                       }}
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-1 text-gray-700 hover:text-red-500 transition-colors"
                     >
                       <Heart
-                        fill={isLiked ? "green" : "none"}
-                        className={isLiked ? "text-green-600" : "text-black"}
+                        fill={isLiked ? "red" : "none"}
+                        className={isLiked ? "text-red-500" : "text-gray-700"}
                         size={20}
                       />
                       <span>{post.likesCount || 0}</span>
@@ -547,31 +585,33 @@ export default function Profile() {
                       onClick={(e) => {
                         e.stopPropagation();
                         setActiveCommentPost(isCommentOpen ? null : post._id);
+                        setActiveSharePost(null); // Close share if opening comments
                       }}
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-1 text-gray-700 hover:text-blue-500 transition-colors"
                     >
-                      <MessageCircle className="text-black" size={20} />
+                      <MessageCircle size={20} />
                       <span>{post.commentsCount || 0}</span>
                     </button>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setActiveSharePost(isShareOpen ? null : post._id);
+                        setActiveCommentPost(null); // Close comments if opening share
                       }}
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-1 text-gray-700 hover:text-green-500 transition-colors"
                     >
-                      <Share2 className="text-black" size={20} />
+                      <Share2 size={20} />
                     </button>
                   </div>
 
                   {/* Comments Section */}
                   {isCommentOpen && (
-                    <div className="bg-gray-50 rounded-lg p-4 space-y-4">
-                      <h3 className="font-bold text-lg">Comments</h3>
+                    <div className="flex-1 bg-gray-50 rounded-lg p-4 space-y-4 overflow-y-auto mt-4">
+                      <h3 className="font-bold text-lg text-gray-800">Comments</h3>
 
                       {commentLoading ? (
                         <div className="text-center py-4">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto"></div>
                           <p className="mt-2 text-gray-600">Loading comments...</p>
                         </div>
                       ) : comments.length === 0 ? (
@@ -579,21 +619,21 @@ export default function Profile() {
                           No comments yet. Be the first!
                         </p>
                       ) : (
-                        <div className="space-y-3 max-h-60 overflow-y-auto">
+                        <div className="space-y-3">
                           {comments.map((comment) => (
-                            <div key={comment._id} className="bg-white rounded-md p-3">
+                            <div key={comment._id} className="bg-white rounded-md p-3 shadow-sm">
                               <div className="flex justify-between items-start">
-                                <p className="flex items-center gap-2 text-sm">
-                                  <NavLink to={`/people/${comment.author._id}`} className="flex gap-2 items-center">
-                                    <img src={comment.author?.profilePic} alt="" className="w-6 h-6 rounded-full" />
-                                    <strong>@{comment.author?.firstname}</strong>:
+                                <p className="flex items-center gap-2 text-sm text-gray-700">
+                                  <NavLink to={`/people/${comment.author._id}`} className="flex gap-2 items-center font-semibold text-gray-800 hover:underline">
+                                    <img src={comment.author?.profilePic || '/default-avatar.png'} alt="" className="w-6 h-6 rounded-full object-cover" />
+                                    <span>{comment.author?.username || `${comment.author?.firstname} ${comment.author?.lastname}`.trim()}</span>:
                                   </NavLink>
-                                  {comment.content}
+                                  <span className="flex-1">{comment.content}</span>
                                 </p>
                                 {comment.author?._id === userData.user._id && (
                                   <button
                                     onClick={() => handleDeleteComment(comment._id)}
-                                    className="text-red-500 hover:text-red-700"
+                                    className="text-red-500 hover:text-red-700 ml-2"
                                     title="Delete comment"
                                   >
                                     <Trash size={16} />
@@ -603,14 +643,15 @@ export default function Profile() {
 
                               {/* Replies */}
                               {comment.replies.length > 0 && (
-                                <div className="ml-4 mt-2 space-y-1">
+                                <div className="ml-8 mt-2 space-y-1 border-l pl-3 border-gray-200">
                                   {comment.replies.map((reply) => (
-                                    <div key={reply._id} className="bg-gray-100 rounded-md p-2">
-                                      <p className="text-sm flex gap-2 items-center">
-                                        <NavLink to={`/people/${reply.author._id}`} className="flex gap-2 items-center">
-                                          <strong>@{reply.author?.firstname || "User"}</strong>:
+                                    <div key={reply._id} className="bg-gray-100 rounded-md p-2 text-sm text-gray-700">
+                                      <p className="flex gap-2 items-center">
+                                        <NavLink to={`/people/${reply.author._id}`} className="flex gap-2 items-center font-semibold text-gray-800 hover:underline">
+                                          <img src={reply.author?.profilePic || '/default-avatar.png'} alt="" className="w-5 h-5 rounded-full object-cover" />
+                                          <span>{reply.author?.username || `${reply.author?.firstname} ${reply.author?.lastname}`.trim()}</span>:
                                         </NavLink>
-                                        {reply.content}
+                                        <span className="flex-1">{reply.content}</span>
                                       </p>
                                     </div>
                                   ))}
@@ -621,7 +662,7 @@ export default function Profile() {
                               {replyingTo !== comment._id ? (
                                 <button
                                   onClick={() => startReply(comment._id)}
-                                  className="text-green-700 mt-2 text-sm font-semibold"
+                                  className="text-blue-500 hover:text-blue-700 mt-2 text-sm font-semibold"
                                 >
                                   Reply
                                 </button>
@@ -631,19 +672,19 @@ export default function Profile() {
                                     value={replyText}
                                     onChange={(e) => setReplyText(e.target.value)}
                                     rows={2}
-                                    className="w-full border border-gray-300 rounded p-2 text-sm"
+                                    className="w-full border border-gray-300 rounded p-2 text-sm resize-none focus:ring-blue-500 focus:border-blue-500"
                                     placeholder="Write your reply..."
                                   />
                                   <div className="flex justify-end gap-2 mt-2">
                                     <button
                                       onClick={cancelReply}
-                                      className="text-gray-600 hover:text-gray-800 text-sm px-3 py-1"
+                                      className="text-gray-600 hover:text-gray-800 text-sm px-3 py-1 rounded-md"
                                     >
                                       Cancel
                                     </button>
                                     <button
                                       onClick={handleReplySubmit}
-                                      className="text-green-700 font-semibold text-sm px-3 py-1"
+                                      className="bg-blue-500 text-white font-semibold text-sm px-3 py-1 rounded-md hover:bg-blue-600 transition-colors"
                                     >
                                       Submit
                                     </button>
@@ -656,17 +697,17 @@ export default function Profile() {
                       )}
 
                       {/* Add Comment */}
-                      <div className="border-t pt-4">
+                      <div className="border-t pt-4 mt-auto">
                         <textarea
                           value={newCommentText}
                           onChange={(e) => setNewCommentText(e.target.value)}
                           rows={3}
                           placeholder="Add a comment..."
-                          className="w-full border border-gray-300 rounded p-3 resize-none"
+                          className="w-full border border-gray-300 rounded p-3 resize-none focus:ring-blue-500 focus:border-blue-500"
                         />
                         <button
                           onClick={handleAddComment}
-                          className="mt-3 px-4 py-2 bg-yellow-800/70 text-black rounded"
+                          className="mt-3 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
                         >
                           Post Comment
                         </button>
@@ -676,15 +717,15 @@ export default function Profile() {
 
                   {/* Share Section */}
                   {isShareOpen && (
-                    <div className="bg-gray-50 rounded-lg p-4 space-y-4">
-                      <h3 className="font-bold text-lg">Share Post</h3>
+                    <div className="flex-1 bg-gray-50 rounded-lg p-4 space-y-4 overflow-y-auto mt-4">
+                      <h3 className="font-bold text-lg text-gray-800">Share Post</h3>
 
                       <input
                         type="text"
-                        placeholder="Search users to share..."
+                        placeholder="Search users or communities to share..."
                         value={shareSearchTerm}
                         onChange={handleShareSearchChange}
-                        className="w-full border border-gray-300 rounded p-3"
+                        className="w-full border border-gray-300 rounded p-3 focus:ring-blue-500 focus:border-blue-500"
                       />
 
                       {usersToShare.users.length === 0 && usersToShare.community.length === 0 ? (
@@ -694,38 +735,38 @@ export default function Profile() {
                           {usersToShare.users.map((user) => (
                             <div
                               key={user._id}
-                              className="flex items-center justify-between bg-white rounded p-3"
+                              className="flex items-center justify-between bg-white rounded p-3 shadow-sm"
                             >
                               <div className="flex items-center gap-3">
                                 <img
-                                  src={user.profilePic}
+                                  src={user.profilePic || '/default-avatar.png'}
                                   alt={user.firstname}
                                   className="w-8 h-8 rounded-full object-cover"
                                 />
-                                <span>
-                                  @{user.firstname} {user.lastname}
+                                <span className="text-gray-800">
+                                  {user.username || `${user.firstname} ${user.lastname}`.trim()}
                                 </span>
                               </div>
                               <input
                                 type="checkbox"
                                 checked={shareRecipients.find(u => u._id === user._id)}
                                 onChange={() => toggleShareRecipient(user)}
-                                className="w-4 h-4"
+                                className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
                               />
                             </div>
                           ))}
                           {usersToShare.community.map((community) => (
                             <div
                               key={community._id}
-                              className="flex items-center justify-between bg-white rounded p-3"
+                              className="flex items-center justify-between bg-white rounded p-3 shadow-sm"
                             >
                               <div className="flex items-center gap-3">
                                 <img
-                                  src={community.profilePic}
+                                  src={community.profilePic || '/default-community.png'}
                                   alt={community.name}
                                   className="w-8 h-8 rounded-full object-cover"
                                 />
-                                <span>
+                                <span className="text-gray-800">
                                   @{community.name}
                                 </span>
                               </div>
@@ -733,7 +774,7 @@ export default function Profile() {
                                 type="checkbox"
                                 checked={shareRecipients.find(c => c._id === community._id)}
                                 onChange={() => toggleShareRecipient(community)}
-                                className="w-4 h-4"
+                                className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                               />
                             </div>
                           ))}
@@ -743,9 +784,9 @@ export default function Profile() {
                       <button
                         onClick={handleShareSubmit}
                         disabled={shareRecipients.length === 0}
-                        className={`w-full px-4 py-2 rounded text-black transition-colors ${shareRecipients.length === 0
+                        className={`w-full px-4 py-2 rounded-md text-white transition-colors ${shareRecipients.length === 0
                           ? "bg-gray-400 cursor-not-allowed"
-                          : "bg-yellow-800/70"
+                          : "bg-blue-500 hover:bg-blue-600"
                           }`}
                       >
                         Share ({shareRecipients.length} selected)
