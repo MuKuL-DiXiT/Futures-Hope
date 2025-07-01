@@ -27,53 +27,53 @@ const CreateCommunityForm = () => {
   ];
 
   async function secureFetch(path, options = {}) {
-  const baseUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
-  const url = `${baseUrl}${path}`;
+    const baseUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+    const url = `${baseUrl}${path}`;
 
-  // Prevent forcing Content-Type if it's FormData
-  const isFormData = options.body instanceof FormData;
+    // Prevent forcing Content-Type if it's FormData
+    const isFormData = options.body instanceof FormData;
 
-  const headers = isFormData
-    ? {} // Let browser set the headers
-    : { "Content-Type": "application/json", ...(options.headers || {}) };
+    const headers = isFormData
+      ? {} // Let browser set the headers
+      : { "Content-Type": "application/json", ...(options.headers || {}) };
 
-  let res = await fetch(url, {
-    ...options,
-    credentials: "include",
-    headers,
-  });
+    let res = await fetch(url, {
+      ...options,
+      credentials: "include",
+      headers,
+    });
 
-  if (res.status === 401) {
-    console.log('Session expired, attempting refresh...');
-    try {
-      const refresh = await fetch(`${baseUrl}/auth/refresh`, {
-        method: "POST",
-        credentials: "include",
-      });
-
-      if (refresh.ok) {
-        console.log('Session refreshed successfully');
-        return fetch(url, {
-          ...options,
-          credentials: "include",
-          headers,
-        });
-      } else {
-        console.log('Refresh failed, logging out...');
-        await fetch(`${baseUrl}/auth/logout`, {
-          method: "GET",
+    if (res.status === 401) {
+      console.log('Session expired, attempting refresh...');
+      try {
+        const refresh = await fetch(`${baseUrl}/auth/refresh`, {
+          method: "POST",
           credentials: "include",
         });
-        throw new Error("Session expired. Please log in again.");
+
+        if (refresh.ok) {
+          console.log('Session refreshed successfully');
+          return fetch(url, {
+            ...options,
+            credentials: "include",
+            headers,
+          });
+        } else {
+          console.log('Refresh failed, logging out...');
+          await fetch(`${baseUrl}/auth/logout`, {
+            method: "GET",
+            credentials: "include",
+          });
+          throw new Error("Session expired. Please log in again.");
+        }
+      } catch (refreshError) {
+        console.error('Error during refresh:', refreshError);
+        throw new Error("Authentication failed. Please log in again.");
       }
-    } catch (refreshError) {
-      console.error('Error during refresh:', refreshError);
-      throw new Error("Authentication failed. Please log in again.");
     }
-  }
 
-  return res;
-}
+    return res;
+  }
 
 
   useEffect(() => {
@@ -98,13 +98,14 @@ const CreateCommunityForm = () => {
         const currUserId = userData._id;
 
         const filteredBonds = data.bonds
-          .filter(bond => bond && bond.requester && bond.receiver) // Filter out invalid bonds
+          .filter(bond => bond && bond.requester && bond.receiver)
           .map(bond => {
-            const isRequester = bond.requester._id === currUserId;
+            const isRequester = bond.requester._id.toString() === currUserId.toString();
             const otherUser = isRequester ? bond.receiver : bond.requester;
             return otherUser;
           })
-          .filter(user => user && user._id); // Filter out invalid users
+          .filter(user => user && user._id.toString() !== currUserId.toString());
+
 
         setBonds(filteredBonds);
         setIsLoading(false);
@@ -135,7 +136,7 @@ const CreateCommunityForm = () => {
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
     setError(null); // Clear error when user makes changes
-    
+
     if (files && files[0]) {
       // Validate file size (e.g., max 5MB)
       if (files[0].size > 5 * 1024 * 1024) {
@@ -148,7 +149,7 @@ const CreateCommunityForm = () => {
         return;
       }
     }
-    
+
     setFormData(prev => ({
       ...prev,
       [name]: files ? files[0] : value
@@ -206,22 +207,22 @@ const CreateCommunityForm = () => {
         selectedMembers: selectedMembers.length,
         selectedModerators: selectedModerators.length
       });
-      
+
       const payload = new FormData();
       payload.append('name', formData.name.trim());
       payload.append('description', formData.description.trim());
-      
+
       if (formData.profilePic) {
         payload.append('profilePic', formData.profilePic);
       }
-      
+
       // Handle members array properly
       if (selectedMembers.length > 0) {
         selectedMembers.forEach(id => {
           payload.append('members', id);
         });
       }
-      
+
       // Handle moderators array properly  
       if (selectedModerators.length > 0) {
         selectedModerators.forEach(id => {
@@ -237,7 +238,7 @@ const CreateCommunityForm = () => {
       });
 
       console.log('Response status:', response.status);
-      
+
       if (!response.ok) {
         let errorMessage;
         try {
@@ -253,14 +254,14 @@ const CreateCommunityForm = () => {
 
       const result = await response.json();
       console.log('Community created successfully:', result);
-      
+
       // Show success message and navigate
       alert('🎉 Community created successfully!');
       navigate('/communities');
-      
+
     } catch (err) {
       console.error('Error creating community:', err);
-      
+
       // Handle different types of errors
       if (err.message.includes('Authentication failed') || err.message.includes('Session expired')) {
         setError('Your session has expired. Please log in again.');
@@ -306,8 +307,8 @@ const CreateCommunityForm = () => {
         {/* Progress bar */}
         <div className="mb-8">
           <div className="h-2 w-full bg-amber-100 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-green-500 to-green-600 transition-all duration-500 ease-out" 
+            <div
+              className="h-full bg-gradient-to-r from-green-500 to-green-600 transition-all duration-500 ease-out"
               style={{ width: `${progressPercentage}%` }}
             ></div>
           </div>
@@ -352,7 +353,7 @@ const CreateCommunityForm = () => {
                     {formData.name.length}/50 characters
                   </p>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-amber-700 mb-2">
                     Community Profile Picture (Optional)
@@ -366,10 +367,10 @@ const CreateCommunityForm = () => {
                   />
                   {formData.profilePic && (
                     <div className="mt-3 flex items-center space-x-3">
-                      <img 
-                        src={URL.createObjectURL(formData.profilePic)} 
-                        alt="Preview" 
-                        className="w-12 h-12 rounded-full border-2 border-amber-200 object-cover" 
+                      <img
+                        src={URL.createObjectURL(formData.profilePic)}
+                        alt="Preview"
+                        className="w-12 h-12 rounded-full border-2 border-amber-200 object-cover"
                       />
                       <div className="text-xs text-amber-600">
                         <p className="font-medium">{formData.profilePic.name}</p>
@@ -436,10 +437,10 @@ const CreateCommunityForm = () => {
                           className="h-4 w-4 text-green-600 rounded focus:ring-green-500"
                         />
                         <label htmlFor={`member-${bond._id}`} className="ml-3 flex items-center cursor-pointer flex-1">
-                          <img 
-                            src={bond.profilePic || '/api/placeholder/40/40'} 
-                            alt="" 
-                            className="w-10 h-10 rounded-full mr-3 object-cover border-2 border-white shadow-sm" 
+                          <img
+                            src={bond.profilePic || '/api/placeholder/40/40'}
+                            alt=""
+                            className="w-10 h-10 rounded-full mr-3 object-cover border-2 border-white shadow-sm"
                           />
                           <span className="text-sm font-medium text-amber-800">
                             {bond.firstname} {bond.lastname}
@@ -487,9 +488,9 @@ const CreateCommunityForm = () => {
                           className="h-4 w-4 text-green-600 rounded focus:ring-green-500"
                         />
                         <label htmlFor={`mod-${bond._id}`} className="ml-3 flex items-center cursor-pointer flex-1">
-                          <img 
-                            src={bond.profilePic || '/api/placeholder/32/32'} 
-                            className="w-8 h-8 rounded-full mr-3 object-cover border-2 border-white shadow-sm" 
+                          <img
+                            src={bond.profilePic || '/api/placeholder/32/32'}
+                            className="w-8 h-8 rounded-full mr-3 object-cover border-2 border-white shadow-sm"
                             alt=""
                           />
                           <span className="text-sm font-medium text-amber-800">
@@ -509,9 +510,9 @@ const CreateCommunityForm = () => {
         </div>
 
         <div className="flex justify-between items-center">
-          <button 
-            onClick={handlePrev} 
-            disabled={currentStep === 0 || isSubmitting} 
+          <button
+            onClick={handlePrev}
+            disabled={currentStep === 0 || isSubmitting}
             className="flex items-center px-4 py-2 text-amber-700 hover:text-amber-900 text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -519,15 +520,14 @@ const CreateCommunityForm = () => {
             </svg>
             Back
           </button>
-          
-          <button 
-            onClick={handleNext} 
+
+          <button
+            onClick={handleNext}
             disabled={isSubmitting || !canProceed()}
-            className={`px-6 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all ${
-              currentStep === steps.length - 1 
-                ? 'bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 shadow-lg' 
+            className={`px-6 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all ${currentStep === steps.length - 1
+                ? 'bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 shadow-lg'
                 : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-lg'
-            }`}
+              }`}
           >
             {isSubmitting ? (
               <span className="flex items-center">
