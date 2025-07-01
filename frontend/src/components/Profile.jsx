@@ -575,8 +575,8 @@ export default function Profile() {
                       className="flex items-center gap-1 text-gray-700 hover:text-red-500 transition-colors"
                     >
                       <Heart
-                        fill={isLiked ? "red" : "none"}
-                        className={isLiked ? "text-red-500" : "text-gray-700"}
+                        fill={isLiked ? "green" : "none"}
+                        className={isLiked ? "text-green-700" : "text-gray-700"}
                         size={20}
                       />
                       <span>{post.likesCount || 0}</span>
