@@ -107,7 +107,8 @@ export default function Navbar() {
         </div>
 
         {/* Desktop sidebar nav */}
-        <div className="mt-6 hidden md845:flex bg-transparent md845:justify-evenly md845:flex-col md845:fixed md845:h-screen md845:gap-6 md845:py-10 sm:px-4 md845:border-r w-20">
+        {/* Added z-50 to ensure it's above other content */}
+        <div className="mt-6 hidden md845:flex bg-transparent md845:justify-evenly md845:flex-col md845:fixed md845:h-screen md845:gap-6 md845:py-10 sm:px-4 md845:border-r w-20 z-50">
           {links.map((link, index) => (
             <NavLink to={link.to} className={navclass} key={index}>
               <span className="text-2xl">
