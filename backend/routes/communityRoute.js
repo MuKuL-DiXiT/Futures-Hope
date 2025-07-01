@@ -291,14 +291,15 @@ router.get('/allUsers/:comId', verifyAccessToken, async (res, req) => {
   }
 });
 
-router.get('/communityDataBase', verifyAccessToken, async(req, res)=>{
-  try{
+router.get('/communityDataBase', async (req, res) => {
+  try {
     const community = await Community.find().populate('creator', 'firstname profilePic');
     res.status(200).json(community);
-  }catch(err){
-    console.log(err);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
   }
-})
+});
 
 
 
