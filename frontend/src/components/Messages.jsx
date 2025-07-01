@@ -225,7 +225,7 @@ export default function Messages() {
     <div className="flex flex-col md:flex-row h-screen w-full px-0 sm:px-0 md:pl-[80px] md:pr-4 md:mx-auto md:max-w-screen-xl pt-0">
       {/* Left Panel: Chat List */}
       <div className={`md:bg-black/50 bg-transparent overflow-y-auto w-full md:w-1/3 ${panelStatus ? "hidden md:inline-block" : ""} flex flex-col gap-2 pt-3 pb-20 md:pb-0 md:pt-8 rounded-lg shadow-lg`}>
-        <div className="flex justify-center items-center mb-4 px-4"> {/* Added px-4 here for search input */}
+        <div className="flex items-center mb-4 px-4"> {/* Removed justify-center */}
           <input
             type="text"
             placeholder="Search users..."
@@ -293,14 +293,8 @@ export default function Messages() {
                       {chat.isGroupChat ? chat.groupName : `${otherUser?.firstname || ""} ${otherUser?.lastname || ""}`.trim()}
                     </strong>
                     <p className={`text-sm font-semibold truncate w-full ${hasUnreadMessage && lastMsg?.sender._id !== chatData.userId ? 'text-red-600' : 'text-gray-600'}`}>
-                      {(hasUnreadMessage && lastMsg?.sender._id !== chatData.userId) ? (
-                        <span className="flex items-center gap-1">
-                          <span className="text-4xl leading-none -mt-1">•</span>
-                          <span>New message</span>
-                        </span>
-                      ) : (
-                        lastMsg.deleted ? "This message was deleted" : lastMsg.content
-                      )}
+                      {/* Ensure deleted message content is not visible */}
+                      {lastMsg.deleted ? "This message was deleted" : lastMsg.content}
                     </p>
                   </div>
                 </button>
@@ -311,8 +305,7 @@ export default function Messages() {
       </div>
 
       {/* Chat Window */}
-      {/* Added pb-14 to account for bottom navbar on small screens */}
-      <div className={`flex-1 bg-white relative flex flex-col rounded-lg shadow-lg ${panelStatus ? '' : 'hidden md:flex'} pb-14 md:pb-0`}>
+      <div className={`flex-1 bg-white relative flex flex-col rounded-lg shadow-lg ${panelStatus ? '' : 'hidden md:flex'}`}>
         {panelStatus && (
           <>
             <div className="flex items-center p-4 border-b border-gray-200 bg-white shadow-sm rounded-t-lg">
@@ -375,7 +368,7 @@ export default function Messages() {
             </div>
 
             {/* Typing Bar - Fixed to bottom for mobile, relative for desktop */}
-            <div className="p-4 border-t border-gray-200 flex items-center gap-3 bg-white rounded-b-lg fixed bottom-0 left-0 right-0 md:relative md:bottom-auto md:left-auto md:right-auto w-full md:w-auto z-40">
+            <div className="p-4 border-t border-gray-200 flex items-center gap-3 bg-white rounded-b-lg fixed bottom-0 left-0 right-0 md:relative md:bottom-auto md:left-auto md:right-auto w-full md:w-auto z-40 mb-14 md:mb-0">
               <input
                 value={messageContent}
                 onChange={(e) => setMessageContent(e.target.value)}
