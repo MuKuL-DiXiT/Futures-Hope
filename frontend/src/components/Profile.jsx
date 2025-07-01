@@ -420,7 +420,7 @@ export default function Profile() {
               <span className="font-semibold text-lg">{userData.bondCount}</span>
               <span className="text-sm ml-1">bonds</span>
             </NavLink>
-            <NavLink to='/communities' className="flex items-center text-gray-800">
+            <NavLink to='/connections' className="flex items-center text-gray-800">
               <span className="font-semibold text-lg">{userData.comCount}</span>
               <span className="text-sm ml-1">communities</span>
             </NavLink>
