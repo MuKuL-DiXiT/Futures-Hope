@@ -280,7 +280,7 @@ export default function Profile() {
   const fetchUsersToShare = useCallback(
     async (searchTerm = "") => {
       try {
-        const res = await secureFetch(`/auth/users?q=${encodeURIComponent(searchTerm)}`, {
+        const res = await secureFetch(`/auth/posts/searchShare/bonds?query=${encodeURIComponent(searchTerm)}`, {
           method: "GET",
         });
         if (res.ok) {
@@ -384,7 +384,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="w-full md:w-5/6 min-h-screen md:px-32 px-2 sm:px-4 py-8 relative">
+    <div className="w-full md:w-5/6 min-h-screen justify-center items-center md:px-32 px-2 sm:px-4 py-8 relative">
       {/* User Info Header - Centered */}
       <div className="flex flex-wrap items-center justify-center mb-8 gap-6 text-center">
         <div className="flex flex-col items-center gap-4">
@@ -401,12 +401,6 @@ export default function Profile() {
                 }`}
             />
           </div>
-
-          <div className="flex flex-col items-center gap-2">
-            <h1 className="font-bold text-2xl">@{userData.user?.firstname}</h1>
-            <p className="text-green-700 font-semibold">{userData.user?.lastname}</p>
-          </div>
-
           <NavLink
             to="/edit"
             state={{ user: userData }}
@@ -415,6 +409,10 @@ export default function Profile() {
             <span>Edit</span>
           </NavLink>
         </div>
+        <div className="flex flex-col items-center gap-2">
+            <h1 className="font-bold text-2xl">@{userData.user?.firstname}</h1>
+            <p className="text-green-700 font-semibold">{userData.user?.lastname}</p>
+          </div>
 
         <div className="flex gap-8">
           <div className="flex flex-col items-center text-black font-serif bg-green-800/40 rounded-lg p-3">
@@ -489,7 +487,7 @@ export default function Profile() {
         const isShareOpen = activeSharePost === post._id;
 
         return (
-          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4 py-8">
+          <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
             <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-lg shadow-lg relative flex flex-col">
               <button
                 onClick={() => {
@@ -502,7 +500,7 @@ export default function Profile() {
                 <X size={24} />
               </button>
 
-              <div className="flex flex-col md:flex-row h-full">
+              <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
                 <div className="md:w-1/2 bg-black flex items-center justify-center">
                   {post.media.type === "photo" ? (
                     <img
