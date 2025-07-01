@@ -303,7 +303,7 @@ export default function Profile() {
       setShareRecipients([]);
       setShareSearchTerm("");
     }
-  }, [activeSharePost, fetchUsersToShare]);
+  }, [activeSharePost]);
 
   // Handle user search input change
   const handleShareSearchChange = (e) => {
