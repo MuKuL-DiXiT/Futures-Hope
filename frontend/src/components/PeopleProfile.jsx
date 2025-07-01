@@ -386,8 +386,14 @@ export default function PeopleProfile({ userId }) {
     if (isInitialLoading || !userData) {
         return (
             <div className="flex items-center justify-center w-full h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
-            </div>
+                <div className="flex justify-center items-center h-40">
+                    <div className="relative">
+                        <div className="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-8 h-8 bg-green-600 rounded-full animate-pulse"></div>
+                        </div>
+                    </div>
+                </div>            </div>
         );
     }
     const sendMessage = async (targetId) => {
@@ -556,7 +562,7 @@ export default function PeopleProfile({ userId }) {
                                                             <Heart
                                                                 fill={likedPosts[post._id] ? "green" : ""}
                                                                 className={`${likedPosts[post._id]
-                                                                    ? "text-green-800"
+                                                                    ? "text-green-700"
                                                                     : "text-black"
                                                                     } text-xl`}
                                                                 size={20}

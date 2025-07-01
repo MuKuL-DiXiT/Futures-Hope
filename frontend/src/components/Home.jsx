@@ -377,24 +377,28 @@ export default function Home() {
             {communities.map((community) => (
               <div
                 key={community._id}
-                className="flex-shrink-0 bg-gray-800 rounded-2xl p-4 text-white shadow-md w-64 sm:w-40 flex flex-col items-center gap-y-2"
+                className="flex-shrink-0 bg-gray-800 rounded-2xl p-4 text-white shadow-md w-96 sm:w-64  flex flex-col items-center gap-y-2"
               >
-                <img
+                <NavLink to={`/community/${community._id}`}>
+                  <img
                   src={community.profilePic}
                   alt={community.name}
-                  className="w-16 h-16 sm:w-12 sm:h-12 rounded-full"
+                  className="w-20 h-20 sm:w-12 sm:h-12 rounded-full object-cover"
                 />
+                </NavLink>
                 <h2 className="text-lg sm:text-sm font-semibold text-center">{community.name}</h2>
                 <h1 className="hidden md:inline-block text-sm sm:text-xs text-center">
                   {community.description}
                 </h1>
                 <div className="hidden sm:flex flex-col items-center text-center">
-                  <p className="text-xs">By {community.creator.firstName}</p>
-                  <img
+                  <p className="text-xs">By {community.creator.firstname}</p>
+                  <NavLink to={`/people/${community.creator._id}`}>
+                    <img
                     src={community.creator.profilePic}
-                    alt={community.creator.firstName}
-                    className="w-8 h-8 rounded-full mt-1"
+                    alt={community.creator.firstname}
+                    className="w-8 h-8 rounded-full mt-1 object-cover"
                   />
+                  </NavLink>
                 </div>
                 <div className="hidden md:flex justify-center text-xs mt-1">
                   {community.members.length} members
@@ -457,7 +461,7 @@ export default function Home() {
 
                   <div className="flex justify-around mb-2 text-gray-700">
                     <button onClick={() => togglePostLike(post._id)}>
-                      <Heart fill={likedPosts[post._id] ? "green" : ""} /> {post.likesCount}
+                      <Heart fill={likedPosts[post._id] ? "green" : ""} className="text-green-700"/> {post.likesCount}
                     </button>
                     <button
                       onClick={() => {
