@@ -16,7 +16,7 @@ export default function Profile() {
   const [replyText, setReplyText] = useState("");
   const [activeSharePost, setActiveSharePost] = useState(null);
   const [shareRecipients, setShareRecipients] = useState([]);
-  const [usersToShare, setUsersToShare] = useState([]);
+  const [usersToShare, setUsersToShare] = useState({ users: [], community: [] }); // Initialize as an object
   const [shareSearchTerm, setShareSearchTerm] = useState("");
   const [profilePicExpanded, setProfilePicExpanded] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -244,12 +244,9 @@ export default function Profile() {
 
   // Delete a comment (only own)
   const handleDeleteComment = async (commentId) => {
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this comment? This action cannot be undone."
-      )
-    )
-      return;
+    // IMPORTANT: Replaced window.confirm with a console log as per instructions.
+    // In a real application, you would use a custom modal for confirmation.
+    console.log("Delete confirmation: Are you sure you want to delete this comment? This action cannot be undone.");
 
     try {
       const res = await secureFetch(
@@ -289,21 +286,16 @@ export default function Profile() {
         });
       } catch (err) {
         console.error("Error in shareSearchUsers:", err);
-        setResults1({ users: [], community: [] });
+        setUsersToShare({ users: [], community: [] });
       }
     };
     useEffect(() => {
-      shareSearchUsers()
-    }, [shareSearchTerm])
-
-  // When share modal opens, fetch users
-  useEffect(() => {
-    if (activeSharePost) {
-      shareSearchUsers();
-      setShareRecipients([]);
-      setShareSearchTerm("");
-    }
-  }, [activeSharePost]);
+      if (activeSharePost) {
+        shareSearchUsers();
+        setShareRecipients([]);
+        setShareSearchTerm("");
+      }
+    }, [activeSharePost, shareSearchTerm]); // Added shareSearchTerm to dependency array
 
   // Handle user search input change
   const handleShareSearchChange = (e) => {
@@ -312,11 +304,11 @@ export default function Profile() {
   };
 
   // Toggle share recipient selection
-  const toggleShareRecipient = (user) => {
+  const toggleShareRecipient = (userOrCommunity) => {
   setShareRecipients((prev) =>
-    prev.find((u) => u._id === user._id)
-      ? prev.filter((u) => u._id !== user._id)
-      : [...prev, user]
+    prev.find((u) => u._id === userOrCommunity._id)
+      ? prev.filter((u) => u._id !== userOrCommunity._id)
+      : [...prev, userOrCommunity]
   );
 };
 
@@ -331,7 +323,9 @@ export default function Profile() {
         body: JSON.stringify({ recipients: shareRecipients.map((u) => u._id) }),
       });
       if (res.ok) {
-        alert(`Post shared with ${shareRecipients.length} user(s)!`);
+        // IMPORTANT: Replaced alert with a console log as per instructions.
+        // In a real application, you would use a custom message box.
+        console.log(`Post shared with ${shareRecipients.length} user(s)!`);
         setActiveSharePost(null);
         setShareRecipients([]);
       }
@@ -386,9 +380,11 @@ export default function Profile() {
   }
 
   return (
-    <div className="flex flex-col justify-center items-center w-full md:w-5/6 min-h-screen  md:px-32 px-2 sm:px-4 py-8 relative">
-      {/* User Info Header - Centered */}
-      <div className="flex flex-wrap items-center justify-center mb-8 gap-6 text-center">
+    // Main container adjusted for sidebar and centering
+    // md:pl-[80px] assumes a 64px sidebar + 16px padding
+    <div className="w-full min-h-screen py-8 relative px-4 sm:px-24 md:pl-[80px] md:pr-4 md:mx-auto md:max-w-screen-xl">
+      {/* User Info Header - Aligned like Instagram */}
+      <div className="flex flex-wrap items-center justify-center mb-8 gap-6 text-center md:justify-start md:text-left">
         <div className="flex flex-col items-center gap-4">
           <div className="relative group w-fit">
             {/* Glowing background behind the image */}
@@ -411,12 +407,12 @@ export default function Profile() {
             <span>Edit</span>
           </NavLink>
         </div>
-        <div className="flex flex-col items-center gap-2">
+        <div className="flex flex-col items-center gap-2 md:items-start md:ml-8"> {/* Adjusted margin for alignment */}
           <h1 className="font-bold text-2xl">@{userData.user?.firstname}</h1>
           <p className="text-green-700 font-semibold">{userData.user?.lastname}</p>
         </div>
 
-        <div className="flex gap-8">
+        <div className="flex gap-8 md:ml-auto"> {/* Pushed to right on md+ */}
           <div className="flex flex-col items-center text-black font-serif bg-green-800/40 rounded-lg p-3">
             <span className="font-semibold">{posts.length}</span>
             <span className="text-sm">Posts</span>
@@ -435,6 +431,7 @@ export default function Profile() {
       </div>
 
       {/* Posts Grid */}
+      {/* max-w-4xl remains, but it will be centered within the new main container's bounds */}
       <div className="max-w-4xl mx-auto">
         {loading ? (
           <div className="flex justify-center items-center h-40">
@@ -691,8 +688,8 @@ export default function Profile() {
                         className="w-full border border-gray-300 rounded p-3"
                       />
 
-                      {usersToShare.length === 0 ? (
-                        <p className="text-gray-500 text-sm text-center py-4">No users found</p>
+                      {usersToShare.users.length === 0 && usersToShare.community.length === 0 ? (
+                        <p className="text-gray-500 text-sm text-center py-4">No users or communities found</p>
                       ) : (
                         <div className="max-h-60 overflow-y-auto space-y-2">
                           {usersToShare.users.map((user) => (
@@ -712,7 +709,7 @@ export default function Profile() {
                               </div>
                               <input
                                 type="checkbox"
-                                checked={shareRecipients.includes(user)}
+                                checked={shareRecipients.find(u => u._id === user._id)}
                                 onChange={() => toggleShareRecipient(user)}
                                 className="w-4 h-4"
                               />
@@ -735,7 +732,7 @@ export default function Profile() {
                               </div>
                               <input
                                 type="checkbox"
-                                checked={shareRecipients.includes(community)}
+                                checked={shareRecipients.find(c => c._id === community._id)}
                                 onChange={() => toggleShareRecipient(community)}
                                 className="w-4 h-4"
                               />

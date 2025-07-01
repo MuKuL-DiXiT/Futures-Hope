@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { io } from "socket.io-client";
 import { Send, ArrowLeft, Trash } from "lucide-react";
 import { NavLink, useLocation } from 'react-router-dom';
@@ -16,7 +16,7 @@ export default function Messages() {
   const [loading, setLoading] = useState(false);
   const [chatOpened, setChatOpened] = useState(null);
   const [chatMessages, setChatMessages] = useState([]);
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState({ users: [], community: [] }); // Initialize as object
   const [searchTerm, setSearchTerm] = useState("");
   const [chatWith, setChatWith] = useState({});
   const [error, setError] = useState(null);
@@ -60,6 +60,7 @@ export default function Messages() {
     };
     fetchChatData();
   }, []);
+
   useEffect(() => {
     if (initialChat && currentUserId) {
       socket.emit("joinRoom", initialChat._id);
@@ -69,7 +70,6 @@ export default function Messages() {
       getMessages(initialChat._id);
     }
   }, [initialChat, currentUserId]);
-
 
 
   const createChat = async (targetId) => {
@@ -94,6 +94,7 @@ export default function Messages() {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     const handleReceiveMessage = (newMessage) => {
       if (newMessage.chat._id?.toString() === chatOpened?.toString()) {
@@ -111,7 +112,7 @@ export default function Messages() {
     socket.on("receiveMessage", handleReceiveMessage);
     if (chatOpened) socket.emit("markAsSeen", { chatId: chatOpened });
     return () => socket.off("receiveMessage", handleReceiveMessage);
-  }, [chatOpened]);
+  }, [chatOpened, currentUserId]); // Added currentUserId to dependencies
 
   const getMessages = async (chatId) => {
     setLoading(true);
@@ -129,20 +130,27 @@ export default function Messages() {
     }
   };
 
-  const searchUsers = async () => {
-    if (!searchTerm) return setResults([]);
-    const res = await secureFetch(`/auth/posts/searchShare/bonds?query=${searchTerm}`);
-    const data = await res.json();
-    setResults(data.users || data);
-  };
+  const searchUsers = useCallback(async () => {
+    if (!searchTerm) return setResults({ users: [], community: [] });
+    try {
+      const res = await secureFetch(`/auth/posts/searchShare/bonds?query=${encodeURIComponent(searchTerm)}`);
+      const data = await res.json();
+      setResults({
+        users: Array.isArray(data.users) ? data.users : [],
+        community: Array.isArray(data.community) ? data.community : [],
+      });
+    } catch (err) {
+      console.error("Error in searchUsers:", err);
+      setResults({ users: [], community: [] });
+    }
+  }, [searchTerm]);
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       searchUsers();
     }, 500);
     return () => clearTimeout(delayDebounce);
-  }, [searchTerm]);
-
+  }, [searchTerm, searchUsers]); // Added searchUsers to dependency array
 
 
   const deleteMessage = (messageId) => {
@@ -211,43 +219,59 @@ export default function Messages() {
   }, []);
 
   return (
-    <div className="flex flex-col md:flex-row h-screen w-full md:pl-32 pt-0 md:pt-0">
-      <div className={`md:bg-black/50 bg-transparent overflow-y-auto w-full md:w-1/3 ${panelStatus ? "hidden md:inline-block" : ""} flex flex-col gap-2 pt-3 pb-20 md:pb-0 md:pt-8`}>
-        <div className="flex justify-center items-center mb-4">
+    // Main container adjusted for sidebar and centering
+    // md:pl-[80px] assumes a 64px sidebar + 16px padding
+    <div className="flex flex-col md:flex-row h-screen w-full px-4 sm:px-24 md:pl-[80px] md:pr-4 md:mx-auto md:max-w-screen-xl pt-0">
+      {/* Left Panel: Chat List */}
+      <div className={`md:bg-black/50 bg-transparent overflow-y-auto w-full md:w-1/3 ${panelStatus ? "hidden md:inline-block" : ""} flex flex-col gap-2 pt-3 pb-20 md:pb-0 md:pt-8 rounded-lg shadow-lg`}>
+        <div className="flex justify-center items-center mb-4 px-4">
           <input
             type="text"
             placeholder="Search users..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="rounded-lg px-3 py-1 w-2/3 outline-none bg-black/50 text-white placeholder-gray-400"
+            className="rounded-full px-4 py-2 w-full outline-none bg-gray-100 text-gray-800 placeholder-gray-500 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all duration-200"
           />
         </div>
 
-        {searchTerm && results?.length > 0 && (
-          <div className="max-h-60 overflow-y-auto border  rounded-md shadow-black mb-5 shadow-md w-4/5 self-center bg-black/40">
-            {results.map((res) => (
+        {searchTerm && (results.users.length > 0 || results.community.length > 0) ? (
+          <div className="max-h-60 overflow-y-auto border border-gray-300 rounded-lg shadow-md mb-5 mx-4 bg-white">
+            {results.users.map((res) => (
               <div
                 key={res._id}
-                className="flex items-center gap-2 p-2 hover:bg-green-100 cursor-pointer hover:shadow-black hover:shadow-lg hover:rounded-lg"
+                className="flex items-center gap-3 p-3 hover:bg-gray-100 cursor-pointer transition-colors rounded-lg"
               >
-                <button className="flex gap-3 items-center" onClick={() => createChat(res._id)}>
-                  <img src={res.profilePic} alt="" className="w-8 h-8 rounded-full object-cover" />
-                  <strong className="text-green-700">{res.firstname} {res.lastname || ""}</strong>
+                <button className="flex gap-3 items-center w-full text-left" onClick={() => createChat(res._id)}>
+                  <img src={res.profilePic} alt="" className="w-9 h-9 rounded-full object-cover border border-gray-200" />
+                  <strong className="text-gray-800 text-base">{res.firstname} {res.lastname || ""}</strong>
+                </button>
+              </div>
+            ))}
+            {results.community.map((res) => (
+              <div
+                key={res._id}
+                className="flex items-center gap-3 p-3 hover:bg-gray-100 cursor-pointer transition-colors rounded-lg"
+              >
+                <button className="flex gap-3 items-center w-full text-left" onClick={() => createChat(res._id)}>
+                  <img src={res.profilePic} alt="" className="w-9 h-9 rounded-full object-cover border border-gray-200" />
+                  <strong className="text-gray-800 text-base">@{res.name} (Community)</strong>
                 </button>
               </div>
             ))}
           </div>
+        ) : searchTerm && (
+          <p className="text-gray-500 text-center py-4 text-sm">No users or communities found.</p>
         )}
 
         {/* existing chat list */}
-        <div className="px-3">
+        <div className="px-4 space-y-2">
           {chatData?.chats?.map((chat) => {
             const otherUser = chat.isGroupChat ? null : chat.participants.find((p) => p._id !== chatData.userId);
-            const lastMsg = chat.lastMessage || "----";
+            const lastMsg = chat.lastMessage || { content: "No messages yet.", deleted: false, sender: { _id: null } };
             const hasUnreadMessage = isUnread(lastMsg);
 
             return (
-              <div key={chat._id}>
+              <div key={chat._id} className={`rounded-lg transition-all duration-200 ${chatOpened === chat._id ? 'bg-amber-100/50 shadow-inner' : 'hover:bg-amber-100/20'}`}>
                 <button
                   onClick={() => {
                     socket.emit("joinRoom", chat._id);
@@ -256,30 +280,27 @@ export default function Messages() {
                     getMessages(chat._id);
                     setChatWith(chat.isGroupChat ? chat : otherUser);
                   }}
-                  className="flex items-center justify-start gap-4 text-white w-full p-2 hover:bg-amber-100/30 hover:text-black rounded-lg transition"
+                  className="flex items-center justify-start gap-4 text-gray-800 w-full p-3"
                 >
                   <img
-                    src={chat.isGroupChat ? chat.groupImage : otherUser?.profilePic}
+                    src={chat.isGroupChat ? chat.groupImage : otherUser?.profilePic || "/default-avatar.png"}
                     alt=""
-                    className="w-8 h-8 rounded-full object-cover"
+                    className="w-10 h-10 rounded-full object-cover border border-gray-300"
                   />
-                  <div className="flex flex-col gap-1 items-start">
-                    <strong className="text-md text-black">
+                  <div className="flex flex-col gap-1 items-start overflow-hidden">
+                    <strong className="text-lg text-black truncate w-full">
                       {chat.isGroupChat ? chat.groupName : `${otherUser?.firstname || ""} ${otherUser?.lastname || ""}`.trim()}
                     </strong>
-                    <p className="text-xs font-semibold text-amber-700 break-words">
-                      {(hasUnreadMessage && lastMsg?.sender !== chatData.userId) ? (
-                        <span className="flex items-center text-red-600 gap-1">
-                          <span className="text-4xl leading-none">•</span>
-                          <span className="text-xs">new message</span>
+                    <p className={`text-sm font-semibold truncate w-full ${hasUnreadMessage && lastMsg?.sender._id !== chatData.userId ? 'text-red-600' : 'text-gray-600'}`}>
+                      {(hasUnreadMessage && lastMsg?.sender._id !== chatData.userId) ? (
+                        <span className="flex items-center gap-1">
+                          <span className="text-4xl leading-none -mt-1">•</span>
+                          <span>New message</span>
                         </span>
                       ) : (
-                        typeof lastMsg === 'object'
-                          ? (lastMsg.deleted ? "This message was deleted" : lastMsg.content)
-                          : lastMsg
+                        lastMsg.deleted ? "This message was deleted" : lastMsg.content
                       )}
                     </p>
-
                   </div>
                 </button>
               </div>
@@ -289,93 +310,91 @@ export default function Messages() {
       </div>
 
       {/* Chat Window */}
-      <div className={`flex-1 bg-white relative ${panelStatus ? '' : 'hidden md:block'}`}>
+      <div className={`flex-1 bg-white relative flex flex-col rounded-lg shadow-lg ${panelStatus ? '' : 'hidden md:flex'}`}>
         {panelStatus && (
           <>
-            <div className="flex items-center p-3 border-b bg-white/90">
-              <button className="md:hidden mr-3" onClick={() => setPanelStatus(false)}><ArrowLeft /></button>
+            <div className="flex items-center p-4 border-b border-gray-200 bg-white shadow-sm rounded-t-lg">
+              <button className="md:hidden mr-3 text-gray-700 hover:text-gray-900" onClick={() => setPanelStatus(false)}><ArrowLeft size={24} /></button>
               {chatWith.groupName ? (
                 <NavLink to={`/community/${community}`} className="flex items-center gap-3">
-                  <img src={chatWith.groupImage} className="w-10 h-10 rounded-full" alt="" />
-                  <strong>{chatWith.groupName}</strong>
+                  <img src={chatWith.groupImage} className="w-11 h-11 rounded-full object-cover border border-gray-300" alt="" />
+                  <strong className="text-lg text-gray-800">{chatWith.groupName}</strong>
                 </NavLink>
               ) : (
                 <NavLink to={`/people/${chatWith._id}`} className="flex items-center gap-3">
-                  <img src={chatWith.profilePic || "/default-avatar.png"} className="w-10 h-10 rounded-full" alt="" />
-                  <strong>{chatWith.firstname}</strong>
+                  <img src={chatWith.profilePic || "/default-avatar.png"} className="w-11 h-11 rounded-full object-cover border border-gray-300" alt="" />
+                  <strong className="text-lg text-gray-800">{chatWith.firstname} {chatWith.lastname || ""}</strong>
                 </NavLink>
               )}
             </div>
 
-            <div className="flex flex-col h-[calc(100vh-4rem)]">
-              <div className="flex-1 overflow-y-auto p-4">
-                {chatMessages.map((msg) => (
-                  <div key={msg._id} className={`flex ${msg.sender._id === currentUserId ? 'justify-end' : 'justify-start'} mb-2`}>
-                    <div
-                      className="max-w-[75%] sm:max-w-xs md:max-w-sm p-2 bg-green-600 text-white rounded-lg relative"
-                      onContextMenu={(e) => {
-                        e.preventDefault();
-                        if (msg.sender._id === currentUserId && !msg.deleted) {
-                          setShowOptions(msg._id);
-                        }
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
-                    >
-                      {msg.deleted ? (
-                        <i className="text-xs text-gray-500">This message was deleted 🚫</i>
-                      ) : (
-                        parseTextWithLinks(msg.content).map((part, idx) =>
-                          part.isLink ? (
-                            <a key={idx} href={part.text} className="underline text-blue-200" target="_blank" rel="noreferrer">{part.text}</a>
-                          ) : (
-                            <span key={idx}>{part.text}</span>
-                          )
+            <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+              {chatMessages.map((msg) => (
+                <div key={msg._id} className={`flex ${msg.sender._id === currentUserId ? 'justify-end' : 'justify-start'} mb-3`}>
+                  <div
+                    className={`max-w-[75%] sm:max-w-xs md:max-w-sm p-3 rounded-xl relative shadow-md ${msg.sender._id === currentUserId ? 'bg-green-600 text-white rounded-br-none' : 'bg-gray-200 text-gray-800 rounded-bl-none'}`}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      if (msg.sender._id === currentUserId && !msg.deleted) {
+                        setShowOptions(msg._id);
+                      }
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowOptions(null); // Close options on click anywhere else
+                    }}
+                  >
+                    {msg.deleted ? (
+                      <i className="text-sm text-gray-500">This message was deleted 🚫</i>
+                    ) : (
+                      parseTextWithLinks(msg.content).map((part, idx) =>
+                        part.isLink ? (
+                          <a key={idx} href={part.text} className={`underline ${msg.sender._id === currentUserId ? 'text-blue-200' : 'text-blue-700'}`} target="_blank" rel="noreferrer">{part.text}</a>
+                        ) : (
+                          <span key={idx}>{part.text}</span>
                         )
-                      )}
-                      {showOptions === msg._id && msg.sender._id === currentUserId && !msg.deleted && (
-                        <div
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            socket.emit("deleteMessage", msg._id);
-                            setShowOptions(null);
-                          }}
-                          className="absolute top-full mt-1 right-0 bg-white text-red-600 text-sm px-2 py-1 rounded shadow cursor-pointer hover:bg-gray-100 z-10"
-                        >
-                          <Trash className="inline w-4 h-4 mr-1" /> Delete
-                        </div>
-                      )}
-                    </div>
+                      )
+                    )}
+                    {showOptions === msg._id && msg.sender._id === currentUserId && !msg.deleted && (
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteMessage(msg._id); // Call deleteMessage directly
+                        }}
+                        className="absolute top-full mt-1 right-0 bg-white text-red-600 text-sm px-3 py-2 rounded-lg shadow-lg cursor-pointer hover:bg-red-50 transition-colors z-10"
+                      >
+                        <Trash className="inline w-4 h-4 mr-2" /> Delete
+                      </div>
+                    )}
                   </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
 
-              <div className="p-3 border-t flex items-center gap-2 bg-white">
-                <input
-                  value={messageContent}
-                  onChange={(e) => setMessageContent(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && messageContent.trim()) {
-                      socket.emit("sendMessage", { chatId: chatOpened, content: messageContent });
-                      setMessageContent("");
-                    }
-                  }}
-                  placeholder="Type a message..."
-                  className="flex-1 p-2 border rounded-full bg-black/40 mb-12 outline-none"
-                />
-                <button
-                  onClick={() => {
-                    if (!messageContent.trim()) return;
+            <div className="p-4 border-t border-gray-200 flex items-center gap-3 bg-white rounded-b-lg">
+              <input
+                value={messageContent}
+                onChange={(e) => setMessageContent(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && messageContent.trim()) {
                     socket.emit("sendMessage", { chatId: chatOpened, content: messageContent });
                     setMessageContent("");
-                  }}
-                  className="text-white bg-green-600 px-4 mb-12 py-2 rounded-full"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
-              </div>
+                  }
+                }}
+                placeholder="Type a message..."
+                className="flex-1 p-3 border border-gray-300 rounded-full bg-gray-100 text-gray-800 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all duration-200"
+              />
+              <button
+                onClick={() => {
+                  if (!messageContent.trim()) return;
+                  socket.emit("sendMessage", { chatId: chatOpened, content: messageContent });
+                  setMessageContent("");
+                }}
+                className="text-white bg-green-600 px-5 py-3 rounded-full shadow-md hover:bg-green-700 transition-colors duration-200 flex items-center justify-center"
+              >
+                <Send className="w-5 h-5" />
+              </button>
             </div>
           </>
         )}
