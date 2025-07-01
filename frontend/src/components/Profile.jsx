@@ -278,9 +278,9 @@ export default function Profile() {
 
   // Fetch users for sharing (with optional search)
   const fetchUsersToShare = useCallback(
-    async (searchTerm = "") => {
+    async (shareSearchTerm = "") => {
       try {
-        const res = await secureFetch(`/auth/posts/searchShare/bonds?query=${encodeURIComponent(searchTerm)}`, {
+        const res = await secureFetch(`/auth/posts/searchShare/bonds?query=${encodeURIComponent(shareSearchTerm)}`, {
           method: "GET",
         });
         if (res.ok) {
@@ -410,9 +410,9 @@ export default function Profile() {
           </NavLink>
         </div>
         <div className="flex flex-col items-center gap-2">
-            <h1 className="font-bold text-2xl">@{userData.user?.firstname}</h1>
-            <p className="text-green-700 font-semibold">{userData.user?.lastname}</p>
-          </div>
+          <h1 className="font-bold text-2xl">@{userData.user?.firstname}</h1>
+          <p className="text-green-700 font-semibold">{userData.user?.lastname}</p>
+        </div>
 
         <div className="flex gap-8">
           <div className="flex flex-col items-center text-black font-serif bg-green-800/40 rounded-lg p-3">
