@@ -97,39 +97,34 @@ const CreateCommunityForm = () => {
           throw new Error(`Failed to fetch user: ${userRes.status}`);
         }
         const userData = await userRes.json();
-        const currUserId = userData._id;
+        const currUserId = String(userData._id); // Ensure currUserId is a string for consistent comparison
 
         const filteredBonds = data.bonds
           .filter(bond => {
-            // Ensure bond and its direct participants exist
             if (!bond || !bond.requester || !bond.receiver) {
-                console.warn("Skipping malformed bond (missing requester/receiver):", bond);
+                console.warn("Skipping malformed bond (missing requester/receiver object):", bond);
                 return false;
             }
-            // Ensure _id properties exist on participants
-            if (bond.requester._id === undefined || bond.requester._id === null ||
-                bond.receiver._id === undefined || bond.receiver._id === null) {
-                console.warn("Skipping bond with missing participant _id:", bond);
-                return false;
-            }
-            // Convert to string safely for comparison
-            const requesterIdStr = String(bond.requester._id);
-            const receiverIdStr = String(bond.receiver._id);
+            const requesterId = String(bond.requester._id);
+            const receiverId = String(bond.receiver._id);
 
-            // Ensure IDs are valid and not self-bonds
-            if (!requesterIdStr || !receiverIdStr || requesterIdStr === receiverIdStr) {
-                console.warn("Skipping invalid or self-bond:", bond);
+            if (requesterId === 'undefined' || requesterId === 'null' ||
+                receiverId === 'undefined' || receiverId === 'null') {
+                console.warn("Skipping bond with missing or invalid participant _id:", bond);
                 return false;
             }
-            return true;
+
+            if (requesterId === receiverId) {
+                console.warn("Skipping self-bond:", bond);
+                return false;
+            }
+
+            return requesterId === currUserId || receiverId === currUserId;
           })
           .map(bond => {
-            // Now, we are guaranteed that bond.requester._id and bond.receiver._id exist and are not null/undefined
-            // Use String() for safety in comparison as well
-            const isRequester = String(bond.requester._id) === String(currUserId);
-            return isRequester ? bond.receiver : bond.requester;
-          })
-          .filter(user => user && user._id !== undefined && user._id !== null && String(user._id) !== String(currUserId));
+            const requesterId = String(bond.requester._id);
+            return requesterId === currUserId ? bond.receiver : bond.requester;
+          });
 
 
         setBonds(filteredBonds);
@@ -575,7 +570,7 @@ const CreateCommunityForm = () => {
         </div>
       </div>
 
-      <style>{`
+      <style jsx>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
