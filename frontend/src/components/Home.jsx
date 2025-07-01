@@ -365,12 +365,12 @@ export default function Home() {
       >
         {loadingCommunities ? (
           <div className="flex justify-center items-center h-40">
-              <div className="relative">
-                <div className="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-8 h-8 bg-green-600 rounded-full animate-pulse"></div>
-                </div>
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-8 h-8 bg-green-600 rounded-full animate-pulse"></div>
               </div>
+            </div>
           </div>
         ) : (
           <div className="flex space-x-4 p-4 w-max">
@@ -381,10 +381,10 @@ export default function Home() {
               >
                 <NavLink to={`/community/${community._id}`}>
                   <img
-                  src={community.profilePic}
-                  alt={community.name}
-                  className="w-20 h-20 sm:w-12 sm:h-12 rounded-full object-cover"
-                />
+                    src={community.profilePic}
+                    alt={community.name}
+                    className="w-20 h-20 sm:w-12 sm:h-12 rounded-full object-cover"
+                  />
                 </NavLink>
                 <h2 className="text-lg sm:text-sm font-semibold text-center">{community.name}</h2>
                 <h1 className="hidden md:inline-block text-sm sm:text-xs text-center">
@@ -394,10 +394,10 @@ export default function Home() {
                   <p className="text-xs">By {community.creator.firstname}</p>
                   <NavLink to={`/people/${community.creator._id}`}>
                     <img
-                    src={community.creator.profilePic}
-                    alt={community.creator.firstname}
-                    className="w-8 h-8 rounded-full mt-1 object-cover"
-                  />
+                      src={community.creator.profilePic}
+                      alt={community.creator.firstname}
+                      className="w-8 h-8 rounded-full mt-1 object-cover"
+                    />
                   </NavLink>
                 </div>
                 <div className="hidden md:flex justify-center text-xs mt-1">
@@ -461,7 +461,10 @@ export default function Home() {
 
                   <div className="flex justify-around mb-2 text-gray-700">
                     <button onClick={() => togglePostLike(post._id)}>
-                      <Heart fill={likedPosts[post._id] ? "green" : ""} className="text-green-700"/> {post.likesCount}
+                      <Heart fill={likedPosts[post._id] ? "green" : "none"} className={`${likedPosts[post._id]
+                        ? "text-green-700"
+                        : "text-black"
+                        } text-xl`} /> {post.likesCount}
                     </button>
                     <button
                       onClick={() => {
