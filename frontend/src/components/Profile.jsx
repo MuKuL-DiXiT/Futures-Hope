@@ -277,27 +277,29 @@ export default function Profile() {
   // --- Share Logic ---
 
   // Fetch users for sharing (with optional search)
-  const fetchUsersToShare = useCallback(
-    async (shareSearchTerm = "") => {
+  const shareSearchUsers = async () => {
       try {
         const res = await secureFetch(`/auth/posts/searchShare/bonds?query=${encodeURIComponent(shareSearchTerm)}`, {
           method: "GET",
         });
-        if (res.ok) {
-          const data = await res.json();
-          setUsersToShare(data);
-        }
-      } catch (e) {
-        console.error("Error fetching users for sharing:", e);
+        const data = await res.json();
+        setUsersToShare({
+          users: Array.isArray(data.users) ? data.users : [],
+          community: Array.isArray(data.community) ? data.community : [],
+        });
+      } catch (err) {
+        console.error("Error in shareSearchUsers:", err);
+        setResults1({ users: [], community: [] });
       }
-    },
-    []
-  );
+    };
+    useEffect(() => {
+      shareSearchUsers()
+    }, [shareSearchTerm])
 
   // When share modal opens, fetch users
   useEffect(() => {
     if (activeSharePost) {
-      fetchUsersToShare();
+      shareSearchUsers();
       setShareRecipients([]);
       setShareSearchTerm("");
     }
@@ -307,7 +309,6 @@ export default function Profile() {
   const handleShareSearchChange = (e) => {
     const val = e.target.value;
     setShareSearchTerm(val);
-    fetchUsersToShare(val);
   };
 
   // Toggle share recipient selection
@@ -693,7 +694,7 @@ export default function Profile() {
                         <p className="text-gray-500 text-sm text-center py-4">No users found</p>
                       ) : (
                         <div className="max-h-60 overflow-y-auto space-y-2">
-                          {usersToShare.map((user) => (
+                          {usersToShare.users.map((user) => (
                             <div
                               key={user._id}
                               className="flex items-center justify-between bg-white rounded p-3"
@@ -712,6 +713,29 @@ export default function Profile() {
                                 type="checkbox"
                                 checked={shareRecipients.includes(user._id)}
                                 onChange={() => toggleShareRecipient(user._id)}
+                                className="w-4 h-4"
+                              />
+                            </div>
+                          ))}
+                          {usersToShare.community.map((community) => (
+                            <div
+                              key={community._id}
+                              className="flex items-center justify-between bg-white rounded p-3"
+                            >
+                              <div className="flex items-center gap-3">
+                                <img
+                                  src={community.profilePic}
+                                  alt={community.name}
+                                  className="w-8 h-8 rounded-full object-cover"
+                                />
+                                <span>
+                                  @{community.name}
+                                </span>
+                              </div>
+                              <input
+                                type="checkbox"
+                                checked={shareRecipients.includes(community._id)}
+                                onChange={() => toggleShareRecipient(community._id)}
                                 className="w-4 h-4"
                               />
                             </div>
