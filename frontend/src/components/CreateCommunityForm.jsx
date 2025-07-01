@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 const CreateCommunityForm = () => {
   // Mock navigate function for demo
   const navigate = (path) => {
     console.log(`Would navigate to: ${path}`);
-    alert(`Navigation to ${path} (demo mode)`);
+    // IMPORTANT: Replaced alert with console.log as per instructions.
+    // In a real application, you would use a custom message box or routing library.
+    console.log(`Navigation to ${path} (demo mode)`);
   };
   const [currentStep, setCurrentStep] = useState(0);
   const [bonds, setBonds] = useState([]);
@@ -99,17 +101,35 @@ const CreateCommunityForm = () => {
 
         const filteredBonds = data.bonds
           .filter(bond => {
-            if (!bond || !bond.requester || !bond.receiver) return false;
-            const requesterId = bond.requester._id?.toString?.();
-            const receiverId = bond.receiver._id?.toString?.();
-            if (!requesterId || !receiverId || requesterId === receiverId) return false;
+            // Ensure bond and its direct participants exist
+            if (!bond || !bond.requester || !bond.receiver) {
+                console.warn("Skipping malformed bond (missing requester/receiver):", bond);
+                return false;
+            }
+            // Ensure _id properties exist on participants
+            if (bond.requester._id === undefined || bond.requester._id === null ||
+                bond.receiver._id === undefined || bond.receiver._id === null) {
+                console.warn("Skipping bond with missing participant _id:", bond);
+                return false;
+            }
+            // Convert to string safely for comparison
+            const requesterIdStr = String(bond.requester._id);
+            const receiverIdStr = String(bond.receiver._id);
+
+            // Ensure IDs are valid and not self-bonds
+            if (!requesterIdStr || !receiverIdStr || requesterIdStr === receiverIdStr) {
+                console.warn("Skipping invalid or self-bond:", bond);
+                return false;
+            }
             return true;
           })
           .map(bond => {
-            const isRequester = bond.requester._id.toString() === currUserId.toString();
+            // Now, we are guaranteed that bond.requester._id and bond.receiver._id exist and are not null/undefined
+            // Use String() for safety in comparison as well
+            const isRequester = String(bond.requester._id) === String(currUserId);
             return isRequester ? bond.receiver : bond.requester;
           })
-          .filter(user => user && user._id?.toString?.() !== currUserId.toString());
+          .filter(user => user && user._id !== undefined && user._id !== null && String(user._id) !== String(currUserId));
 
 
         setBonds(filteredBonds);
@@ -122,13 +142,15 @@ const CreateCommunityForm = () => {
       }
     };
     fetchBonds();
-  }, []);
+  }, []); // Empty dependency array means this runs once on mount
 
   const handleNext = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      handleSubmit();
+    if (validateStep()) { // Validate before proceeding
+      if (currentStep < steps.length - 1) {
+        setCurrentStep(currentStep + 1);
+      } else {
+        handleSubmit();
+      }
     }
   };
 
@@ -192,14 +214,14 @@ const CreateCommunityForm = () => {
           return false;
         }
         break;
+      // No validation needed for steps 2 and 3 as they are optional selections
     }
-    setError(null);
+    setError(null); // Clear any previous error if validation passes
     return true;
   };
 
   const handleSubmit = async () => {
-    if (!validateStep()) return;
-
+    // validateStep() is already called in handleNext before reaching handleSubmit
     setIsSubmitting(true);
     setError(null);
 
@@ -261,7 +283,7 @@ const CreateCommunityForm = () => {
       console.log('Community created successfully:', result);
 
       // Show success message and navigate
-      alert('🎉 Community created successfully!');
+      console.log('🎉 Community created successfully!'); // Replaced alert
       navigate('/communities');
 
     } catch (err) {
@@ -289,7 +311,7 @@ const CreateCommunityForm = () => {
       case 1:
         return formData.description.trim().length >= 10;
       default:
-        return true;
+        return true; // Steps 2 and 3 are optional selections
     }
   };
 
@@ -553,7 +575,7 @@ const CreateCommunityForm = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }

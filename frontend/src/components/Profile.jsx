@@ -381,7 +381,7 @@ export default function Profile() {
 
   return (
     // Main container adjusted to original positioning request
-    <div className="min-h-screen w-full px-4 sm:px-6 md:px-32 flex flex-col justify-center items-center bg-transparent relative">
+    <div className="min-h-screen w-full px-4 sm:px-6 md:px-32 flex flex-col  items-center bg-transparent relative">
       {/* User Info Header - Aligned like Instagram */}
       <div className="flex flex-wrap items-center justify-center mb-8 gap-6 text-center md:justify-start md:text-left">
         <div className="flex flex-col items-center gap-4">
