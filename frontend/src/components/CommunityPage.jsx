@@ -2,7 +2,10 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { ImagePlay } from 'lucide-react';
-
+const socket = io(import.meta.env.VITE_BACKEND_URL, {
+  transports: ["websocket"],
+  withCredentials: true,
+});
 export default function CommunityProfile({ comId }) {
   const [community, setCommunity] = useState(null);
   const [userId, setUserId] = useState(null);
