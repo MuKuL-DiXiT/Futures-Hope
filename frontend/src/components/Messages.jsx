@@ -270,7 +270,7 @@ export default function Messages() {
             const otherUser = chat.isGroupChat ? null : chat.participants.find((p) => p._id !== chatData.userId);
             const lastMsg = chat.lastMessage || { content: "No messages yet.", deleted: false, sender: { _id: null } };
             const hasUnreadMessage = isUnread(lastMsg);
-            const userLength = (otherUser)?otherUser.firstname.length+otherUser.lastname.length+1:chat.groupName.length;
+            const userLength = (otherUser) ? otherUser.firstname.length + otherUser.lastname.length + 1 : chat.groupName.length;
             return (
               <div
                 key={chat._id}
@@ -303,13 +303,18 @@ export default function Messages() {
                         : `${otherUser?.firstname || ""} ${otherUser?.lastname || ""}`.trim()}
                     </strong>
                     <p
-                      className={`text-sm font-semibold truncate w-full text-left pl-1 ${lastMsg.length <= userLength ? lastMsg : lastMsg.slice(0, userLength) + "..."} ${hasUnreadMessage && lastMsg?.sender._id !== chatData.userId
+                      className={`text-sm font-semibold truncate w-full text-left pl-1 ${hasUnreadMessage && lastMsg?.sender._id !== chatData.userId
                           ? "text-red-600"
                           : "text-gray-600"
                         }`}
                     >
-                      {lastMsg.deleted ? "message deleted 🚫" : lastMsg.content}
+                      {lastMsg.deleted
+                        ? "message deleted 🚫"
+                        : lastMsg.content.length <= userLength
+                          ? lastMsg.content
+                          : lastMsg.content.slice(0, userLength) + "..."}
                     </p>
+
                   </div>
                 </button>
               </div>
