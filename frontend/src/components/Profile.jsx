@@ -312,13 +312,14 @@ export default function Profile() {
   };
 
   // Toggle share recipient selection
-  const toggleShareRecipient = (userId) => {
-    setShareRecipients((prev) =>
-      prev.includes(userId)
-        ? prev.filter((id) => id !== userId)
-        : [...prev, userId]
-    );
-  };
+  const toggleShareRecipient = (user) => {
+  setShareRecipients((prev) =>
+    prev.find((u) => u._id === user._id)
+      ? prev.filter((u) => u._id !== user._id)
+      : [...prev, user]
+  );
+};
+
 
   // Submit share request
   const handleShareSubmit = async () => {
@@ -711,8 +712,8 @@ export default function Profile() {
                               </div>
                               <input
                                 type="checkbox"
-                                checked={shareRecipients.includes(user._id)}
-                                onChange={() => toggleShareRecipient(user._id)}
+                                checked={shareRecipients.includes(user)}
+                                onChange={() => toggleShareRecipient(user)}
                                 className="w-4 h-4"
                               />
                             </div>
@@ -734,8 +735,8 @@ export default function Profile() {
                               </div>
                               <input
                                 type="checkbox"
-                                checked={shareRecipients.includes(community._id)}
-                                onChange={() => toggleShareRecipient(community._id)}
+                                checked={shareRecipients.includes(community)}
+                                onChange={() => toggleShareRecipient(community)}
                                 className="w-4 h-4"
                               />
                             </div>
