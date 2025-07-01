@@ -292,7 +292,7 @@ export default function Messages() {
                     <strong className="text-lg text-black truncate w-full">
                       {chat.isGroupChat ? chat.groupName : `${otherUser?.firstname || ""} ${otherUser?.lastname || ""}`.trim()}
                     </strong>
-                    <p className={`text-sm font-semibold truncate w-full ${hasUnreadMessage && lastMsg?.sender._id !== chatData.userId ? 'text-red-600' : 'text-gray-600'}`}>
+                    <p className={`text-sm font-semibold truncate w-full text-left ml-4 ${hasUnreadMessage && lastMsg?.sender._id !== chatData.userId ? 'text-red-600' : 'text-gray-600'}`}>
                       {/* Ensure deleted message content is not visible */}
                       {lastMsg.deleted ? "This message was deleted" : lastMsg.content}
                     </p>
@@ -368,7 +368,7 @@ export default function Messages() {
             </div>
 
             {/* Typing Bar - Fixed to bottom for mobile, relative for desktop */}
-            <div className="p-4 border-t border-gray-200 flex items-center gap-3 bg-white rounded-b-lg fixed bottom-0 left-0 right-0 md:relative md:bottom-auto md:left-auto md:right-auto w-full md:w-auto z-40 mb-14 md:mb-0">
+            <div className="p-4 border-t border-gray-200 flex items-center gap-3 bg-white rounded-b-lg fixed bottom-0 left-0 right-0 md:relative md:bottom-auto md:left-auto md:right-auto w-full md:w-auto z-40 mb-14 md845:mb-0">
               <input
                 value={messageContent}
                 onChange={(e) => setMessageContent(e.target.value)}

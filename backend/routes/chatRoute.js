@@ -64,7 +64,7 @@ router.get('/', verifyAccessToken, async (req, res) => {
     }).populate('participants', 'firstname lastname profilePic')
     .populate({
   path: 'lastMessage',
-  select: 'content sender readBy',
+  select: 'content sender readBy deleted',
   populate: {
     path: 'readBy.user',
     select: 'firstname lastname profilePic'
