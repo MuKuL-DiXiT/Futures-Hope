@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-
+import { toast } from 'react-toastify';
 const CreateCommunityForm = () => {
   // Mock navigate function for demo
   const navigate = (path) => {
@@ -249,7 +249,7 @@ const CreateCommunityForm = () => {
       console.log('Community created successfully:', result);
 
       // Show success message and navigate
-      console.log('🎉 Community created successfully!'); // Replaced alert
+      toast.success('🎉 Community created successfully!');
       navigate('/communities');
 
     } catch (err) {
