@@ -82,52 +82,23 @@ const CreateCommunityForm = () => {
     const fetchBonds = async () => {
       try {
         setError(null);
-        const response = await secureFetch("/auth/bond/allBondsAndCommunities");
-        if (!response.ok) {
-          throw new Error(`Failed to fetch bonds: ${response.status}`);
-        }
-        const data = await response.json();
-
-        if (!data.bonds || !Array.isArray(data.bonds)) {
-          throw new Error('Invalid bonds data received');
-        }
-
         const userRes = await secureFetch("/auth/extractUser");
-        if (!userRes.ok) {
-          throw new Error(`Failed to fetch user: ${userRes.status}`);
-        }
-        const userData = await userRes.json();
-        const currUserId = String(userData._id); // Ensure currUserId is a string for consistent comparison
+        const userInfo = await userRes.json();
 
-        const filteredBonds = data.bonds
-          .filter(bond => {
-            if (!bond || !bond.requester || !bond.receiver) {
-                console.warn("Skipping malformed bond (missing requester/receiver object):", bond);
-                return false;
-            }
-            const requesterId = String(bond.requester._id);
-            const receiverId = String(bond.receiver._id);
+        const res = await secureFetch("/auth/bond/allBondsAndCommunities");
+        const data = await res.json();
 
-            if (requesterId === 'undefined' || requesterId === 'null' ||
-                receiverId === 'undefined' || receiverId === 'null') {
-                console.warn("Skipping bond with missing or invalid participant _id:", bond);
-                return false;
-            }
+        const rawBonds = Array.isArray(data.bonds) ? data.bonds : [];
+        const rawCommunities = Array.isArray(data.communities) ? data.communities : [];
 
-            if (requesterId === receiverId) {
-                console.warn("Skipping self-bond:", bond);
-                return false;
-            }
-
-            return requesterId === currUserId || receiverId === currUserId;
-          })
-          .map(bond => {
-            const requesterId = String(bond.requester._id);
-            return requesterId === currUserId ? bond.receiver : bond.requester;
-          });
+        const formattedBonds = rawBonds.map(bond => {
+          const otherUser = bond.requester._id === userInfo.user._id ? bond.receiver : bond.requester;
+          return otherUser;
+        });
 
 
-        setBonds(filteredBonds);
+
+        setBonds(formattedBonds);
         setIsLoading(false);
 
       } catch (err) {
