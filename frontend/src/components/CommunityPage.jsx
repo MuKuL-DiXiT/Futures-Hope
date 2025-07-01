@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { ImagePlay } from 'lucide-react';
+import { ToastContainer, toast } from 'react-toastify'; // Import ToastContainer and toast
+import 'react-toastify/dist/ReactToastify.css'; // Import toastify CSS
 
 export default function CommunityProfile({ comId }) {
   const [community, setCommunity] = useState(null);
@@ -88,24 +90,43 @@ export default function CommunityProfile({ comId }) {
 
     try {
       await secureFetch(`/auth/community/${comId}/upload-qr`,{method:"POST", body:formData});
-      window.location.reload();
+      toast.success('QR code uploaded successfully!'); // Toast notification
+      // In a real app, you might want to re-fetch data or update state.
+      // console.log('QR code uploaded successfully, page would reload.');
     } catch (err) {
+      toast.error('QR upload failed: ' + (err.message || 'An error occurred.')); // Toast error
       console.error('QR upload failed', err);
     }
   };
 
   const uploadScreenshot = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // This will now correctly prevent default form submission
     const formData = new FormData();
     formData.append('screenShot', selectedFile);
     formData.append('amount', amount);
     formData.append('communityId', community._id);
 
     try {
-      await secureFetch(`/auth/payment`, formData, {method:"POST", body:formData});
-      alert("You won't regret donating!");
-      window.location.reload();
+      const res = await secureFetch(`/auth/payment`, {
+        method: "POST",
+        body: formData
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to process donation.');
+      }
+
+      toast.success("You won't regret donating!"); // Toast notification
+      // console.log("You won't regret donating!");
+      // console.log('Donation successful, page would reload.');
+      setAmount(0);
+      setSelectedFile(null);
+      const fileInput = document.getElementById('screenshot-upload-input');
+      if (fileInput) fileInput.value = '';
+
     } catch (err) {
+      toast.error('Donation failed: ' + (err.message || 'An error occurred.')); // Toast error
       console.error('Donation upload failed', err);
     }
   };
@@ -113,8 +134,10 @@ export default function CommunityProfile({ comId }) {
   const joinCommunity = async () => {
     try {
       await secureFetch(`/auth/community/${comId}/join`, { method:"POST" });
-      window.location.reload();
+      toast.success(joinStatus === 'none' ? 'Joined community!' : 'Left community!'); // Dynamic toast
+      // console.log('Community joined/left, page would reload.');
     } catch (err) {
+      toast.error('Failed to join/leave community: ' + (err.message || 'An error occurred.')); // Toast error
       console.error('Failed to join community', err);
     }
   };
@@ -217,47 +240,11 @@ export default function CommunityProfile({ comId }) {
                           className="hidden"
                         />
                       </label>
-                      <button className="px-3 py-2 bg-white/30 text-white rounded-lg hover:bg-white/50 transition-colors text-xs sm:text-sm font-medium">
+                      <button type="submit" className="px-3 py-2 bg-white/30 text-white rounded-lg hover:bg-white/50 transition-colors text-xs sm:text-sm font-medium">
                         Upload QR Code
                       </button>
                     </form>
                   )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="relative w-full max-w-7xl mx-auto -mt-8 sm:-mt-16">
-        {/* Creator Section */}
-        <div className="mb-12">
-          <div className="bg-gradient-to-br mb-8 from-amber-100 via-green-50 to-emerald-100 rounded-3xl p-6 sm:p-8 shadow-xl border border-amber-200 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-400 to-emerald-400 rounded-full -translate-y-16 translate-x-16 opacity-10"></div>
-            <div className="relative flex flex-col sm:flex-row items-center gap-6">
-              <div className="relative">
-                <div className="absolute -inset-3 bg-gradient-to-r from-amber-400 to-green-400 rounded-full blur opacity-50"></div>
-                <img
-                  src={community.creator.profilePic || '/default-avatar.png'}
-                  alt={community.creator.firstname}
-                  className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-white shadow-lg"
-                />
-                <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-amber-500 rounded-full flex items-center justify-center border-2 border-white">
-                  <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M9.664 1.319a.75.75 0 01.672 0 41.059 41.059 0 008.198 5.424.75.75 0 01-.254 1.285 31.372 31.372 0 00-7.86 3.83.75.75 0 01-.84 0 31.508 31.508 0 00-2.08-1.287V9.394c0-.244.116-.463.302-.592a35.504 35.504 0 013.305-2.033.75.75 0 00-.714-1.319 37 37 0 00-3.446 2.12A2.216 2.216 0 006 9.393v.38a31.293 31.293 0 00-4.28-1.746.75.75 0 01-.254-1.285 41.059 41.059 0 008.198-5.424zM6 11.459a29.848 29.848 0 00-2.455-1.158 41.029 41.029 0 00-.39 3.114.75.75 0 00.419.74c.528.256 1.046.53 1.554.82-.21-.324-.438-.643-.676-.943a.75.75 0 112.946-1.416c.106.116.22.232.342.349.14.133.289.26.448.381.82.66 1.673 1.284 2.512 1.846.75.501 1.516.986 2.29 1.45.75.45 1.509.882 2.277 1.294.75.403 1.508.79 2.275 1.16.75.361 1.509.706 2.275 1.035.75.322 1.508.628 2.275.918.75.284 1.508.553 2.275.805.75.247 1.508.477 2.275.693.75.212 1.508.408 2.275.587.75.176 1.508.335 2.275.478.75.14 1.508.264 2.275.371.75.105 1.508.193 2.275.264.75.07 1.508.123 2.275.158.75.034 1.508.052 2.275.052.75 0 1.508-.018 2.275-.052z" clipRule="evenodd" />
-                  </svg>
-                </div>
-              </div>
-
-              <div className="flex-1 text-center sm:text-left">
-                <h3 className="text-xl sm:text-2xl font-bold text-amber-900 mb-2">
-                  {community.creator.firstname} {community.creator.lastname}
-                </h3>
-                <p className="text-green-700 font-medium mb-4 text-sm sm:text-base">{community.creator.email}</p>
-                <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
-                  <span className="px-3 py-1 bg-amber-200 text-amber-800 rounded-full text-xs font-semibold">👑 Founder</span>
-                  <span className="px-3 py-1 bg-green-200 text-green-800 rounded-full text-xs font-semibold">🌱 Visionary</span>
-                  <span className="px-3 py-1 bg-emerald-200 text-emerald-800 rounded-full text-xs font-semibold">💫 Leader</span>
                 </div>
               </div>
             </div>
@@ -292,21 +279,25 @@ export default function CommunityProfile({ comId }) {
                       <span className="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-semibold">🌍 Save Environment</span>
                       <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-semibold">💚 Community Growth</span>
                     </div>
-                    <form action={uploadScreenshot} className='flex flex-col sm:flex-row bg-green-900/40 p-3 rounded-xl gap-3 sm:gap-4'>
-                      <input 
-                        type="text" 
-                        placeholder='Amount (INR)' 
-                        value={amount} 
-                        onChange={(e) => setAmount(e.target.value)} 
-                        className='bg-amber-100 rounded-full text-amber-800 focus:outline-none text-center placeholder-amber-700 focus:ring-0 ring-0 border-none px-3 py-2 text-sm flex-1' 
+                    <form onSubmit={uploadScreenshot} className='flex flex-col sm:flex-row bg-green-900/40 p-3 rounded-xl gap-3 sm:gap-4'>
+                      <input
+                        type="number"
+                        placeholder='Amount (INR)'
+                        value={amount === 0 ? '' : amount}
+                        onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+                        className='bg-amber-100 rounded-full text-amber-800 focus:outline-none text-center placeholder-amber-700 focus:ring-0 ring-0 border-none px-3 py-2 text-sm flex-1'
+                        required
                       />
                       <label className='bg-green-100 text-green-800 rounded-full flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-green-200 transition-colors'>
                         <span className="font-medium text-sm">Select Screenshot</span>
                         <ImagePlay className="w-4 h-4" />
                         <input
                           type="file"
+                          id="screenshot-upload-input"
                           onChange={handleFileChange}
                           className="hidden"
+                          accept="image/*"
+                          required
                         />
                       </label>
                       <button type='submit' className='bg-amber-100 text-amber-800 rounded-full px-4 py-2 hover:bg-amber-200 transition-colors text-sm font-medium'>
