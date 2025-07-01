@@ -20,6 +20,8 @@ export default function Profile() {
   const [shareSearchTerm, setShareSearchTerm] = useState("");
   const [profilePicExpanded, setProfilePicExpanded] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [expandedPostId, setExpandedPostId] = useState(null);
+
 
   async function secureFetch(path, options = {}) {
     const baseUrl = import.meta.env.VITE_BACKEND_URL;
@@ -337,13 +339,13 @@ export default function Profile() {
     return (
       <div className="flex items-center justify-center w-full h-screen">
         <div className="flex justify-center items-center h-40">
-              <div className="relative">
-                <div className="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-8 h-8 bg-green-600 rounded-full animate-pulse"></div>
-                </div>
-              </div>
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-8 h-8 bg-green-600 rounded-full animate-pulse"></div>
+            </div>
           </div>
+        </div>
       </div>
     );
   }
@@ -458,297 +460,261 @@ export default function Profile() {
               const isCaptionOpen = expandedCaptions[post._id];
               const isCommentOpen = activeCommentPost === post._id;
               const isShareOpen = activeSharePost === post._id;
-
+              const isExpanded = expandedPostId === post._id;
               return (
-                <div key={post._id} className="space-y-4">
-                  {/* Post Content */}
-                  <div className=" p-4  mb-6 max-w-xl mx-auto lg:mx-0">
-                    <div className="w-full">
-                      {/* Post Media */}
-                      {post.media?.url && (
-                        <div className="mb-4 pt-4 rounded-xl overflow-hidden bg-green-900/40 shadow-md ">
-                          <NavLink to={`/people/${post.user._id}`} className="flex items-center gap-2 sm:mb-5 sm:ml-5">
-                            <img src={post.user.profilePic} alt="" className="w-12 h-12 rounded-full" />
-                            <span className="font-serif font-semibold">{post.user.firstname + " " + post.user.lastname}</span>
-                          </NavLink>
-                          {post.media.type === "photo" ? (
-                            <img
-                              src={post.media.url}
-                              alt="Post"
-                              className="w-full  max-h-[32rem] bg-black/50 rounded-xl object-contain"
-                            />
-                          ) : (
-                            <video
-                              controls
-                              src={post.media.url}
-                              className="w-full rounded-lg max-h-[32rem] bg-black/50 object-contain "
-                            />
-                          )}
-                        </div>
-                      )}
+                <div
+                  key={post._id}
+                  onClick={() => setExpandedPostId(isExpanded ? null : post._id)}
+                  className={`border border-gray-300 rounded-xl p-2 transition-all cursor-pointer ${isExpanded ? "shadow-lg bg-white/5" : "hover:shadow-md"
+                    }`}
+                >
+                  {/* Media */}
+                  {post.media?.url && (
+                    post.media.type === "photo" ? (
+                      <img
+                        src={post.media.url}
+                        alt=""
+                        className={`rounded-md w-full object-cover transition-all duration-300 ${isExpanded ? "max-h-[32rem]" : "max-h-40"
+                          }`}
+                      />
+                    ) : (
+                      <video
+                        src={post.media.url}
+                        controls={isExpanded}
+                        muted
+                        className={`rounded-md w-full object-cover transition-all duration-300 ${isExpanded ? "max-h-[32rem]" : "max-h-40"
+                          }`}
+                      />
+                    )
+                  )}
+
+                  {/* Expanded Features */}
+                  {isExpanded && (
+                    <div className="mt-4 space-y-3">
+                      {/* User Info */}
+                      <div className="flex items-center gap-3">
+                        <img src={post.user.profilePic} className="w-10 h-10 rounded-full" />
+                        <span className="font-semibold">
+                          {post.user.firstname} {post.user.lastname}
+                        </span>
+                      </div>
 
                       {/* Caption */}
                       {post.caption && (
-                        <p className="text-gray-700 mb-4">
-                          {isCaptionOpen || post.caption.length <= 60
-                            ? post.caption
-                            : post.caption.slice(0, 60) + "... "}
-                          {post.caption.length > 60 && (
-                            <button
-                              className="text-green-700 font-semibold ml-1"
-                              onClick={() => toggleCaption(post._id)}
-                            >
-                              {isCaptionOpen ? "show less" : "see more"}
-                            </button>
-                          )}
-                        </p>
+                        <p className="text-gray-800">{post.caption}</p>
                       )}
 
-                      {/* Engagement Stats */}
-                      <div className="flex space-x-4 text-sm text-gray-600 mb-3 justify-around">
-                        <div className="flex flex-col items-center justify-center gap-2">
+                      {/* Likes / Comments / Share */}
+                      <div className="flex space-x-6 text-sm text-gray-700 justify-start">
+                        <button onClick={() => togglePostLike(post._id)}>
+                          <Heart
+                            fill={likedPosts[post._id] ? "green" : "none"}
+                            className={likedPosts[post._id] ? "text-green-600" : "text-black"}
+                            size={20}
+                          />
+                          <span className="ml-1">{post.likesCount || 0}</span>
+                        </button>
+                        <button onClick={() => setActiveCommentPost(post._id)}>
+                          <MessageCircle className="text-black" size={20} />
+                          <span className="ml-1">{post.commentsCount || 0}</span>
+                        </button>
+                        <button onClick={() => setActiveSharePost(post._id)}>
+                          <Share2 className="text-black" size={20} />
+                        </button>
+                      </div>
+
+                      {/* Comment Panel - Shows directly under the post on small screens */}
+                      {isCommentOpen && (
+                        <div className="lg:hidden bg-transparent  rounded-lg p-4 shadow-lg">
+                          <div className="flex justify-between items-center mb-4">
+                            <h3 className="font-bold text-lg">Comments</h3>
+                            <button
+                              onClick={() => setActiveCommentPost(null)}
+                              className="text-gray-500 hover:text-gray-700 text-xl font-bold"
+                            >
+                              <X />
+                            </button>
+                          </div>
+
+                          {commentLoading ? (
+                            <div className="text-center py-4">
+                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+                              <p className="mt-2 text-gray-600">Loading comments...</p>
+                            </div>
+                          ) : comments.length === 0 ? (
+                            <p className="italic text-gray-500 text-center py-4">
+                              No comments yet. Be the first!
+                            </p>
+                          ) : (
+                            <div className="flex flex-col gap-3 max-h-96 overflow-y-auto mb-4">
+                              {comments.map((comment) => (
+                                <div
+                                  key={comment._id}
+                                  className=" rounded-md p-3 bg-transparent"
+                                >
+                                  <div className="flex justify-between items-start">
+                                    <p className="flex items-center gap-2 text-sm">
+                                      <NavLink to={`/people/${comment.author._id}`} className="flex gap-3 items-center">
+                                        <img src={comment.author?.profilePic} alt="" className="w-10 h-10 rounded-full" />
+                                        <strong>@{comment.author?.firstname}</strong>:
+                                      </NavLink>
+                                      {comment.content}
+                                    </p>
+                                    {comment.author?._id === userData.user._id && (
+                                      <button
+                                        onClick={() => handleDeleteComment(comment._id)}
+                                        className="text-red-500 hover:text-red-700 font-bold"
+                                        title="Delete comment"
+                                      >
+                                        <Trash />
+                                      </button>
+                                    )}
+                                  </div>
+
+                                  {/* Replies */}
+                                  {comment.replies.length > 0 && (
+                                    <div className="ml-4 mt-2 space-y-1">
+                                      {comment.replies.map((reply) => (
+                                        <div
+                                          key={reply._id}
+                                          className="bg-transparent rounded-md p-2"
+                                        >
+                                          <p className="text-sm flex gap-2">
+                                            <NavLink to={`/people/${reply.author._id}`} className="flex gap-3 items-center">
+                                              <strong>@{reply.author?.firstname || "User"}</strong>:{" "}
+                                            </NavLink>
+                                            {reply.content}
+                                          </p>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+
+                                  {/* Reply button */}
+                                  {replyingTo !== comment._id ? (
+                                    <button
+                                      onClick={() => startReply(comment._id)}
+                                      className="text-green-700 mt-2 text-sm font-semibold"
+                                    >
+                                      Reply
+                                    </button>
+                                  ) : (
+                                    <div className="mt-2">
+                                      <textarea
+                                        value={replyText}
+                                        onChange={(e) => setReplyText(e.target.value)}
+                                        rows={2}
+                                        className="w-full border-none outline-none bg-black/50 rounded p-2 text-sm"
+                                        placeholder="Write your reply..."
+                                      />
+                                      <div className="flex justify-end gap-2 mt-2">
+                                        <button
+                                          onClick={cancelReply}
+                                          className="text-gray-600 hover:text-gray-800 text-sm px-3 py-1"
+                                        >
+                                          Cancel
+                                        </button>
+                                        <button
+                                          onClick={handleReplySubmit}
+                                          className="text-green-700 font-semibold text-sm px-3 py-1"
+                                        >
+                                          Submit
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Add Comment */}
+                          <div className="border-t pt-4">
+                            <textarea
+                              value={newCommentText}
+                              onChange={(e) => setNewCommentText(e.target.value)}
+                              rows={3}
+                              placeholder="Add a comment..."
+                              className="w-full border-none outline-none bg-black/50 rounded p-3 resize-none"
+                            />
+                            <button
+                              onClick={handleAddComment}
+                              className="mt-3 px-4 py-2 bg-yellow-800/70 text-black rounded"
+                            >
+                              Post Comment
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Share Panel - Shows directly under the post on small screens */}
+                      {isShareOpen && (
+                        <div className="lg:hidden bg-transparent rounded-lg p-4 shadow-lg">
+                          <div className="flex justify-between items-center mb-4">
+                            <h3 className="font-bold text-lg">Share Post</h3>
+                            <button
+                              onClick={() => setActiveSharePost(null)}
+                              className="text-gray-500 hover:text-gray-700 text-xl font-bold"
+                            >
+                              <X />
+                            </button>
+                          </div>
+
+                          <input
+                            type="text"
+                            placeholder="Search users to share..."
+                            value={shareSearchTerm}
+                            onChange={handleShareSearchChange}
+                            className="w-full border border-gray-300 rounded p-3 mb-3"
+                          />
+
+                          {usersToShare.length === 0 ? (
+                            <p className="text-gray-500 text-sm text-center py-4">No users found</p>
+                          ) : (
+                            <div className="max-h-60 overflow-y-auto space-y-2 mb-4">
+                              {usersToShare.map((user) => (
+                                <div
+                                  key={user._id}
+                                  className="flex items-center justify-between bg-gray-50 rounded p-3"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <img
+                                      src={user.profilePic}
+                                      alt={user.firstname}
+                                      className="w-8 h-8 rounded-full object-cover"
+                                    />
+                                    <span>
+                                      @{user.firstname} {user.lastname}
+                                    </span>
+                                  </div>
+                                  <input
+                                    type="checkbox"
+                                    checked={shareRecipients.includes(user._id)}
+                                    onChange={() => toggleShareRecipient(user._id)}
+                                    className="w-4 h-4"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
                           <button
-                            onClick={() => togglePostLike(post._id)}
-                            className={`font-semibold ${likedPosts[post._id]
-                              ? "text-green-700"
-                              : "hover:text-gray-700"
+                            onClick={handleShareSubmit}
+                            disabled={shareRecipients.length === 0}
+                            className={`w-full px-4 py-2 rounded text-black transition-colors ${shareRecipients.length === 0
+                              ? "bg-gray-400 cursor-not-allowed"
+                              : "bg-yellow-800/70"
                               }`}
                           >
-                            <div className="flex items-center gap-2 mt-2">
-                              <Heart
-                                fill={likedPosts[post._id] ? "green" : "none"}
-                                className={`${likedPosts[post._id]
-                                  ? "text-green-700"
-                                  : "text-black"
-                                  } text-xl`}
-                                size={20}
-                              />
-                              <span className="hidden sm:inline">Likes</span>
-                            </div>
+                            Share ({shareRecipients.length} selected)
                           </button>
-                          <span>{post.likesCount || 0}</span>
-                        </div>
-
-                        <div className="flex flex-col items-center justify-center gap-2">
-                          <button
-                            onClick={() =>
-                              setActiveCommentPost(isCommentOpen ? null : post._id)
-                            }
-                            className="flex items-center gap-2"
-                          >
-                            <MessageCircle
-                              className="text-black text-xl"
-                              size={20}
-                            />
-                            <span className="hidden sm:inline">Comment</span>
-                          </button>
-                          <span>{post.commentsCount || 0}</span>
-                        </div>
-
-                        <div className="flex flex-col items-center justify-center gap-2">
-                          <button
-                            onClick={() =>
-                              setActiveSharePost(isShareOpen ? null : post._id)
-                            }
-                            className="flex items-center gap-2"
-                          >
-                            <Share2 className="text-black text-xl" size={20} />
-                            <span className="hidden sm:inline">Share</span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Comment Panel - Shows directly under the post on small screens */}
-                  {isCommentOpen && (
-                    <div className="lg:hidden bg-transparent  rounded-lg p-4 shadow-lg">
-                      <div className="flex justify-between items-center mb-4">
-                        <h3 className="font-bold text-lg">Comments</h3>
-                        <button
-                          onClick={() => setActiveCommentPost(null)}
-                          className="text-gray-500 hover:text-gray-700 text-xl font-bold"
-                        >
-                          <X />
-                        </button>
-                      </div>
-
-                      {commentLoading ? (
-                        <div className="text-center py-4">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
-                          <p className="mt-2 text-gray-600">Loading comments...</p>
-                        </div>
-                      ) : comments.length === 0 ? (
-                        <p className="italic text-gray-500 text-center py-4">
-                          No comments yet. Be the first!
-                        </p>
-                      ) : (
-                        <div className="flex flex-col gap-3 max-h-96 overflow-y-auto mb-4">
-                          {comments.map((comment) => (
-                            <div
-                              key={comment._id}
-                              className=" rounded-md p-3 bg-transparent"
-                            >
-                              <div className="flex justify-between items-start">
-                                <p className="flex items-center gap-2 text-sm">
-                                  <NavLink to={`/people/${comment.author._id}`} className="flex gap-3 items-center">
-                                    <img src={comment.author?.profilePic} alt="" className="w-10 h-10 rounded-full" />
-                                    <strong>@{comment.author?.firstname}</strong>:
-                                  </NavLink>
-                                  {comment.content}
-                                </p>
-                                {comment.author?._id === userData.user._id && (
-                                  <button
-                                    onClick={() => handleDeleteComment(comment._id)}
-                                    className="text-red-500 hover:text-red-700 font-bold"
-                                    title="Delete comment"
-                                  >
-                                    <Trash />
-                                  </button>
-                                )}
-                              </div>
-
-                              {/* Replies */}
-                              {comment.replies.length > 0 && (
-                                <div className="ml-4 mt-2 space-y-1">
-                                  {comment.replies.map((reply) => (
-                                    <div
-                                      key={reply._id}
-                                      className="bg-transparent rounded-md p-2"
-                                    >
-                                      <p className="text-sm flex gap-2">
-                                        <NavLink to={`/people/${reply.author._id}`} className="flex gap-3 items-center">
-                                          <strong>@{reply.author?.firstname || "User"}</strong>:{" "}
-                                        </NavLink>
-                                        {reply.content}
-                                      </p>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-
-                              {/* Reply button */}
-                              {replyingTo !== comment._id ? (
-                                <button
-                                  onClick={() => startReply(comment._id)}
-                                  className="text-green-700 mt-2 text-sm font-semibold"
-                                >
-                                  Reply
-                                </button>
-                              ) : (
-                                <div className="mt-2">
-                                  <textarea
-                                    value={replyText}
-                                    onChange={(e) => setReplyText(e.target.value)}
-                                    rows={2}
-                                    className="w-full border-none outline-none bg-black/50 rounded p-2 text-sm"
-                                    placeholder="Write your reply..."
-                                  />
-                                  <div className="flex justify-end gap-2 mt-2">
-                                    <button
-                                      onClick={cancelReply}
-                                      className="text-gray-600 hover:text-gray-800 text-sm px-3 py-1"
-                                    >
-                                      Cancel
-                                    </button>
-                                    <button
-                                      onClick={handleReplySubmit}
-                                      className="text-green-700 font-semibold text-sm px-3 py-1"
-                                    >
-                                      Submit
-                                    </button>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          ))}
                         </div>
                       )}
-
-                      {/* Add Comment */}
-                      <div className="border-t pt-4">
-                        <textarea
-                          value={newCommentText}
-                          onChange={(e) => setNewCommentText(e.target.value)}
-                          rows={3}
-                          placeholder="Add a comment..."
-                          className="w-full border-none outline-none bg-black/50 rounded p-3 resize-none"
-                        />
-                        <button
-                          onClick={handleAddComment}
-                          className="mt-3 px-4 py-2 bg-yellow-800/70 text-black rounded"
-                        >
-                          Post Comment
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Share Panel - Shows directly under the post on small screens */}
-                  {isShareOpen && (
-                    <div className="lg:hidden bg-transparent rounded-lg p-4 shadow-lg">
-                      <div className="flex justify-between items-center mb-4">
-                        <h3 className="font-bold text-lg">Share Post</h3>
-                        <button
-                          onClick={() => setActiveSharePost(null)}
-                          className="text-gray-500 hover:text-gray-700 text-xl font-bold"
-                        >
-                          <X />
-                        </button>
-                      </div>
-
-                      <input
-                        type="text"
-                        placeholder="Search users to share..."
-                        value={shareSearchTerm}
-                        onChange={handleShareSearchChange}
-                        className="w-full border border-gray-300 rounded p-3 mb-3"
-                      />
-
-                      {usersToShare.length === 0 ? (
-                        <p className="text-gray-500 text-sm text-center py-4">No users found</p>
-                      ) : (
-                        <div className="max-h-60 overflow-y-auto space-y-2 mb-4">
-                          {usersToShare.map((user) => (
-                            <div
-                              key={user._id}
-                              className="flex items-center justify-between bg-gray-50 rounded p-3"
-                            >
-                              <div className="flex items-center gap-3">
-                                <img
-                                  src={user.profilePic}
-                                  alt={user.firstname}
-                                  className="w-8 h-8 rounded-full object-cover"
-                                />
-                                <span>
-                                  @{user.firstname} {user.lastname}
-                                </span>
-                              </div>
-                              <input
-                                type="checkbox"
-                                checked={shareRecipients.includes(user._id)}
-                                onChange={() => toggleShareRecipient(user._id)}
-                                className="w-4 h-4"
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      <button
-                        onClick={handleShareSubmit}
-                        disabled={shareRecipients.length === 0}
-                        className={`w-full px-4 py-2 rounded text-black transition-colors ${shareRecipients.length === 0
-                          ? "bg-gray-400 cursor-not-allowed"
-                          : "bg-yellow-800/70"
-                          }`}
-                      >
-                        Share ({shareRecipients.length} selected)
-                      </button>
                     </div>
                   )}
                 </div>
               );
+
             })
           )}
         </div>
@@ -939,3 +905,4 @@ export default function Profile() {
     </div>
   );
 }
+
