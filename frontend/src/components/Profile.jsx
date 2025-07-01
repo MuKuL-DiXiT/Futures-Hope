@@ -102,6 +102,14 @@ export default function Profile() {
     }
   };
 
+  useEffect(() => {
+    if (expandedPostId) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [expandedPostId]);
+
   // Like or unlike a post
   const togglePostLike = async (postId) => {
     try {
@@ -376,9 +384,9 @@ export default function Profile() {
   }
 
   return (
-    <div className="w-full min-h-screen md:pl-32 px-2 sm:px-4 py-8 relative">
+    <div className="w-full md:w-5/6 min-h-screen md:px-32 px-2 sm:px-4 py-8 relative">
       {/* User Info Header - Centered */}
-      <div className="flex flex-col items-center justify-center mb-8 gap-6 text-center">
+      <div className="flex flex-wrap items-center justify-center mb-8 gap-6 text-center">
         <div className="flex flex-col items-center gap-4">
           <div className="relative group w-fit">
             {/* Glowing background behind the image */}
@@ -393,7 +401,7 @@ export default function Profile() {
                 }`}
             />
           </div>
-          
+
           <div className="flex flex-col items-center gap-2">
             <h1 className="font-bold text-2xl">@{userData.user?.firstname}</h1>
             <p className="text-green-700 font-semibold">{userData.user?.lastname}</p>
@@ -482,7 +490,7 @@ export default function Profile() {
 
         return (
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4 py-8">
-            <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-lg overflow-hidden shadow-lg relative">
+            <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-lg shadow-lg relative flex flex-col">
               <button
                 onClick={() => {
                   setExpandedPostId(null);
@@ -493,7 +501,7 @@ export default function Profile() {
               >
                 <X size={24} />
               </button>
-              
+
               <div className="flex flex-col md:flex-row h-full">
                 <div className="md:w-1/2 bg-black flex items-center justify-center">
                   {post.media.type === "photo" ? (
@@ -510,8 +518,8 @@ export default function Profile() {
                     />
                   )}
                 </div>
-                
-                <div className="md:w-1/2 p-4 space-y-4 overflow-y-auto">
+
+                <div className="md:w-1/2 p-4 space-y-4 overflow-y-auto max-h-[90vh]">
                   {/* User Info */}
                   <div className="flex items-center gap-3">
                     <img src={post.user.profilePic} className="w-10 h-10 rounded-full" />
@@ -525,7 +533,7 @@ export default function Profile() {
 
                   {/* Action Buttons */}
                   <div className="flex space-x-6 text-sm text-gray-700">
-                    <button 
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         togglePostLike(post._id);
@@ -539,7 +547,7 @@ export default function Profile() {
                       />
                       <span>{post.likesCount || 0}</span>
                     </button>
-                    <button 
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setActiveCommentPost(isCommentOpen ? null : post._id);
@@ -549,7 +557,7 @@ export default function Profile() {
                       <MessageCircle className="text-black" size={20} />
                       <span>{post.commentsCount || 0}</span>
                     </button>
-                    <button 
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setActiveSharePost(isShareOpen ? null : post._id);
