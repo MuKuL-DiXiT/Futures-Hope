@@ -17,7 +17,7 @@ export default function Profile() {
   const [activeSharePost, setActiveSharePost] = useState(null);
   const [shareRecipients, setShareRecipients] = useState([]);
   const [usersToShare, setUsersToShare] = useState({ users: [], community: [] }); // Initialize as an object
-  const [shareSearchTerm, setShareSearchTerm] = useState("");
+  const [shareSearchTerm, setSearchTerm] = useState("");
   const [profilePicExpanded, setProfilePicExpanded] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [expandedPostId, setExpandedPostId] = useState(null);
@@ -293,14 +293,14 @@ export default function Profile() {
       if (activeSharePost) {
         shareSearchUsers();
         setShareRecipients([]);
-        setShareSearchTerm("");
+        setSearchTerm("");
       }
     }, [activeSharePost, shareSearchTerm]); // Added shareSearchTerm to dependency array
 
   // Handle user search input change
   const handleShareSearchChange = (e) => {
     const val = e.target.value;
-    setShareSearchTerm(val);
+    setSearchTerm(val);
   };
 
   // Toggle share recipient selection
@@ -380,9 +380,8 @@ export default function Profile() {
   }
 
   return (
-    // Main container adjusted for sidebar and centering
-    // md:pl-[80px] assumes a 64px sidebar + 16px padding
-    <div className="w-full min-h-screen py-8 relative px-4 sm:px-24 md:pl-[80px] md:pr-4 md:mx-auto md:max-w-screen-xl">
+    // Main container adjusted to original positioning request
+    <div className="min-h-screen w-full px-4 sm:px-6 md:px-32 flex flex-col justify-center items-center bg-transparent relative">
       {/* User Info Header - Aligned like Instagram */}
       <div className="flex flex-wrap items-center justify-center mb-8 gap-6 text-center md:justify-start md:text-left">
         <div className="flex flex-col items-center gap-4">

@@ -413,9 +413,8 @@ export default function PeopleProfile({ userId }) {
   }
 
   return (
-    // Main container adjusted for sidebar and centering
-    // md:pl-[80px] assumes a 64px sidebar + 16px padding
-    <div className="w-full min-h-screen py-8 relative px-4 sm:px-24 md:pl-[80px] md:pr-4 md:mx-auto md:max-w-screen-xl">
+    // Main container adjusted to original positioning request
+    <div className="min-h-screen w-full px-4 sm:px-6 md:px-32 flex flex-col justify-center items-center bg-transparent relative">
       {/* User Info Header - Aligned like Instagram */}
       <div className="flex flex-wrap items-center justify-center mb-8 gap-6 text-center md:justify-start md:text-left">
         <div className="flex flex-col items-center gap-4">
