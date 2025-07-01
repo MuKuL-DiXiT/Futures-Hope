@@ -8,6 +8,15 @@ const Notification = require('../models/notification')
 const { verifyAccessToken } = require('../controllers/jwtController');
 const upload = require('../middlewares/multer_middleware');
 
+router.get('/communityDataBase', async (req, res) => {
+  try {
+    const community = await Community.find().populate('creator', 'firstname profilePic');
+    res.status(200).json(community);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 // Create community with automatic chat creation
 router.post('/', verifyAccessToken, upload.single('profilePic'), async (req, res) => {
   try {
@@ -291,15 +300,7 @@ router.get('/allUsers/:comId', verifyAccessToken, async (res, req) => {
   }
 });
 
-router.get('/communityDataBase', async (req, res) => {
-  try {
-    const community = await Community.find().populate('creator', 'firstname profilePic');
-    res.status(200).json(community);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
+
 
 
 
