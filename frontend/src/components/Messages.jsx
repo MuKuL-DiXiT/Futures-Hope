@@ -294,7 +294,7 @@ export default function Messages() {
                     </strong>
                     <p className={`text-sm font-semibold truncate w-full text-left ml-4 ${hasUnreadMessage && lastMsg?.sender._id !== chatData.userId ? 'text-red-600' : 'text-gray-600'}`}>
                       {/* Ensure deleted message content is not visible */}
-                      {lastMsg.deleted ? "This message was deleted" : lastMsg.content}
+                      {lastMsg.deleted ? "message deleted 🚫" : lastMsg.content}
                     </p>
                   </div>
                 </button>

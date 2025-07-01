@@ -425,7 +425,7 @@ export default function Home() {
               return (
                 <div key={post._id} className=" p-4  mb-6 mx-auto lg:mx-0">
                   {post.media?.url && (
-                    <div className="mb-4 pt-4 rounded-xl overflow-hidden z-10 bg-black/40 shadow-md ">
+                    <div className="mb-4 pt-4 rounded-xl overflow-hidden z-50 bg-black/40 shadow-md ">
                       <NavLink to={`/people/${post.user._id}`} className="flex items-center gap-2 sm:mb-5 sm:ml-5">
                         <img src={post.user.profilePic} alt="" className="w-12 h-12 rounded-full" />
                         <span className="font-serif font-semibold">{post.user.firstname + " " + post.user.lastname}</span>
