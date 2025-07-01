@@ -28,7 +28,7 @@ const paymentSchema = new mongoose.Schema({
 
     community: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "community",
+        ref: "Community",
         required: true
     },
 
