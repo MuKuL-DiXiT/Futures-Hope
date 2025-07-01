@@ -11,7 +11,9 @@ const notificationSchema = new mongoose.Schema({
   message: String,
   post: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' }, // for like/comment
   chat: { type: mongoose.Schema.Types.ObjectId, ref: 'Chat' }, // for message
+  pay: { type: mongoose.Schema.Types.ObjectId, ref: 'payment' }, // for payment
   seen: { type: Boolean, default: false },
+  link: {type:String, default: ''},
   createdAt: { type: Date, default: Date.now }
 });
 

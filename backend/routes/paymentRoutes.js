@@ -33,7 +33,9 @@ router.post('/', verifyAccessToken, upload.single('screenShot'), async (req, res
             user: community.creator,
             from: req.user._id,
             type: 'payment',
-            message: `New payment of ₹${amount} from ${name} to ${community.name}`
+            message: `New payment of ₹${amount} from ${name} to ${community.name}`,
+            pay:payment._id,
+            link:req?.file?.path
         });
         await notification.save();
         io.to(`user_${community.creator}`).emit("notify", {
@@ -46,7 +48,8 @@ router.post('/', verifyAccessToken, upload.single('screenShot'), async (req, res
             },
             message: notification.message,
             type: notification.type,
-            post: notification.post,
+            link:req?.file?.path,
+            pay:payment._id,
             createdAt: notification.createdAt
         });
         return res.status(201).json({ message: 'Payment created successfully', payment });
