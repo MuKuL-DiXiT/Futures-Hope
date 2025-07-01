@@ -291,7 +291,14 @@ router.get('/allUsers/:comId', verifyAccessToken, async (res, req) => {
   }
 });
 
-
+router.get('/communityDataBase', verifyAccessToken, async(req, res)=>{
+  try{
+    const community = await Community.find().populate('creator', 'firstName profilePic');
+    res.status(200).json(community);
+  }catch(err){
+    console.log(err);
+  }
+})
 
 
 
