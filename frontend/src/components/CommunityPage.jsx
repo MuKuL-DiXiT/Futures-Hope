@@ -90,6 +90,7 @@ export default function CommunityProfile({ comId }) {
 
     try {
       await secureFetch(`/auth/community/${comId}/upload-qr`,{method:"POST", body:formData});
+      alert("QR uploaded");
       toast.success('QR code uploaded successfully!'); // Toast notification
     } catch (err) {
       toast.error('QR upload failed: ' + (err.message || 'An error occurred.')); // Toast error
@@ -115,7 +116,7 @@ export default function CommunityProfile({ comId }) {
         const errorData = await res.json();
         throw new Error(errorData.message || 'Failed to process donation.');
       }
-
+      alert("donation completed");
       toast.success("You won't regret donating!"); // Toast notification
       setAmount(0);
       setSelectedFile(null);
