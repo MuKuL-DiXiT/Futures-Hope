@@ -325,10 +325,12 @@ export default function Messages() {
       </div>
 
       {/* Chat Window */}
-      <div className={`flex-1 bg-white relative flex flex-col rounded-lg shadow-lg ${panelStatus ? '' : 'hidden md:flex'}`}>
+      {/* Ensure this div takes full height and manages its children's layout */}
+      <div className={`flex-1 bg-white relative flex flex-col rounded-lg shadow-lg h-full ${panelStatus ? '' : 'hidden md:flex'}`}>
         {panelStatus && (
           <>
-            <div className="flex items-center p-4 border-b border-gray-200 bg-white shadow-sm rounded-t-lg">
+            {/* Chat Header - Fixed to top on small screens */}
+            <div className="flex items-center p-4 border-b border-gray-200 bg-white shadow-sm rounded-t-lg fixed top-0 left-0 right-0 md:relative md:top-auto md:left-auto md:right-auto w-full z-20">
               <button className="md:hidden mr-3 text-gray-700 hover:text-gray-900" onClick={() => setPanelStatus(false)}><ArrowLeft size={24} /></button>
               {chatWith.groupName ? (
                 <NavLink to={`/community/${community}`} className="flex items-center gap-3">
@@ -343,8 +345,9 @@ export default function Messages() {
               )}
             </div>
 
-            {/* Messages Area - Adjusted padding-bottom */}
-            <div className="flex-1 overflow-y-auto p-4 bg-gray-50 pb-32">
+            {/* Messages Area - Scrollable, with padding to account for fixed header and typing bar */}
+            {/* Calculate pt and pb based on fixed header/footer heights + mobile navbar */}
+            <div className="flex-1 overflow-y-auto p-4 bg-gray-50 pt-[64px] pb-[120px]">
               {chatMessages.map((msg) => (
                 <div key={msg._id} className={`flex ${msg.sender._id === currentUserId ? 'justify-end' : 'justify-start'} mb-3`}>
                   <div
@@ -388,8 +391,8 @@ export default function Messages() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Typing Bar - Now a regular flex item within the chat window */}
-            <div className="p-4 flex items-center gap-3 rounded-b-lg w-full z-40">
+            {/* Typing Bar - Fixed to bottom on small screens, above mobile navbar */}
+            <div className="p-4 flex items-center gap-3 rounded-b-lg fixed bottom-0 left-0 right-0 md:relative md:bottom-auto md:left-auto md:right-auto w-full z-20 bottom-[56px]">
               <input
                 value={messageContent}
                 onChange={(e) => setMessageContent(e.target.value)}
