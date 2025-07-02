@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { Bell, CheckCircle, User2Icon, UserPlus, DollarSign } from "lucide-react"; // Added DollarSign icon
 import { NavLink } from "react-router-dom";
+import {toast} from 'react-toastify'
 
 export const socket = io(import.meta.env.VITE_BACKEND_URL, {
   withCredentials: true,
@@ -74,6 +75,7 @@ const Notification = () => {
       });
       if (res.ok) {
         console.log(`Payment ${paymentId} verified successfully!`);
+        toast.success("verified successfully");
         fetchUnverifiedPayments(); // Re-fetch to update the list
       } else {
         const errorData = await res.json();
