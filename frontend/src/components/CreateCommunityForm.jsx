@@ -249,6 +249,7 @@ const CreateCommunityForm = () => {
       console.log('Community created successfully:', result);
 
       // Show success message and navigate
+      alert("🎉 Community created successfully!");
       toast.success('🎉 Community created successfully!');
       navigate('/communities');
 
