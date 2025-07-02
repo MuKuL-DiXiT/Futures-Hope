@@ -83,7 +83,7 @@ router.patch('/verify/:paymentId', verifyAccessToken, async (req, res) => {
   try {
     const io = req.io;
     const { paymentId } = req.params;
-
+    const user = await User.findById(req.user._id);
     const payment = await Payment.findById(paymentId).populate('community');
     if (!payment) {
       return res.status(404).json({ message: 'Payment not found' });
@@ -112,9 +112,9 @@ router.patch('/verify/:paymentId', verifyAccessToken, async (req, res) => {
         _id: notification._id,
         from: {
           _id: req.user._id,
-          firstname: req.user.firstname,
-          lastname: req.user.lastname,
-          profilePic: req.user.profilePic
+          firstname: user.firstname,
+          lastname: user.lastname,
+          profilePic: user.profilePic
         },
         message: notification.message,
         type: notification.type,
