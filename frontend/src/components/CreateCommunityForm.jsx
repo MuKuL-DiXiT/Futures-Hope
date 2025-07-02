@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 const CreateCommunityForm = () => {
   // Mock navigate function for demo
   const navigate = (path) => {
@@ -296,6 +296,7 @@ const CreateCommunityForm = () => {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 bg-gradient-to-br from-amber-50 to-green-100">
+      <ToastContainer />
       <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl p-8 max-w-md w-full border border-amber-200 shadow-xl overflow-hidden">
         {/* Progress bar */}
         <div className="mb-8">
