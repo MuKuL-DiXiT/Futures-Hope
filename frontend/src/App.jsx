@@ -19,7 +19,7 @@ import Edit from './components/Edit';
 // This component needs to be inside BrowserRouter
 function Layout() {
   const location = useLocation();
-  const showNavbar = location.pathname != ("/" || "/signup");
+  const showNavbar = location.pathname != ("/") && location.pathname != ("/signup");
 
   return (
     <div className="flex">

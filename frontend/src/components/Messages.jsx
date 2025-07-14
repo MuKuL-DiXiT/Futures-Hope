@@ -224,8 +224,8 @@ export default function Messages() {
     // md:pl-[80px] assumes a 64px sidebar + 16px padding on medium and larger screens
     <div className="flex flex-col md:flex-row h-screen w-full px-0 sm:px-0 md:pl-[80px] md:pr-4 md:mx-auto md:max-w-screen-xl pt-0">
       {/* Left Panel: Chat List */}
-      <div className={`md:bg-black/50 bg-transparent overflow-y-auto w-full md:w-1/3 ${panelStatus ? "hidden md:inline-block" : ""} flex flex-col gap-2 pt-3 pb-20 md:pb-0 md:pt-8 rounded-lg shadow-lg`}>
-        <div className="flex items-center mb-4 px-4"> {/* Removed justify-center */}
+      <div className={`md:bg-white bg-transparent overflow-y-auto w-full md:w-1/3 ${panelStatus ? "hidden md:inline-block" : ""} flex flex-col gap-2 pt-3 pb-20 md:pb-0 md:pt-8 rounded-lg shadow-lg`}>
+        <div className="flex items-center mb-4 px-4">
           <input
             type="text"
             placeholder="Search users..."
@@ -235,42 +235,54 @@ export default function Messages() {
           />
         </div>
 
-        {searchTerm && (results.users.length > 0 || results.community.length > 0) ? (
-          <div className="max-h-60 overflow-y-auto border border-gray-300 rounded-lg shadow-md mb-5 mx-4 bg-white">
-            {results.users.map((res) => (
-              <div
-                key={res._id}
-                className="flex items-center gap-3 p-3 hover:bg-gray-100 cursor-pointer transition-colors rounded-lg"
-              >
-                <button className="flex gap-3 items-center w-full text-left" onClick={() => createChat(res._id)}>
-                  <img src={res.profilePic} alt="" className="w-9 h-9 rounded-full object-cover border border-gray-200" />
-                  <strong className="text-gray-800 text-base">{res.firstname} {res.lastname || ""}</strong>
-                </button>
-              </div>
-            ))}
-            {results.community.map((res) => (
-              <div
-                key={res._id}
-                className="flex items-center gap-3 p-3 hover:bg-gray-100 cursor-pointer transition-colors rounded-lg"
-              >
-                <button className="flex gap-3 items-center w-full text-left" onClick={() => createChat(res._id)}>
-                  <img src={res.profilePic} alt="" className="w-9 h-9 rounded-full object-cover border border-gray-200" />
-                  <strong className="text-gray-800 text-base">@{res.name} (Community)</strong>
-                </button>
-              </div>
-            ))}
+        {/* Search Results */}
+        {searchTerm && (
+          <div className="mx-4 mb-5 bg-white border border-gray-200 rounded-lg shadow-sm max-h-60 overflow-y-auto">
+            {(results.users.length > 0 || results.community.length > 0) ? (
+              <>
+                {results.users.map((res) => (
+                  <div
+                    key={res._id}
+                    className="flex items-center gap-3 p-3 hover:bg-gray-100 cursor-pointer transition-colors"
+                  >
+                    <button className="flex gap-3 items-center w-full text-left" onClick={() => createChat(res._id)}>
+                      <img src={res.profilePic} alt="" className="w-9 h-9 rounded-full object-cover border border-gray-200" />
+                      <strong className="text-gray-800 text-base">{res.firstname} {res.lastname || ""}</strong>
+                    </button>
+                  </div>
+                ))}
+                {results.community.map((res) => (
+                  <div
+                    key={res._id}
+                    className="flex items-center gap-3 p-3 hover:bg-gray-100 cursor-pointer transition-colors"
+                  >
+                    <button className="flex gap-3 items-center w-full text-left" onClick={() => createChat(res._id)}>
+                      <img src={res.profilePic} alt="" className="w-9 h-9 rounded-full object-cover border border-gray-200" />
+                      <strong className="text-gray-800 text-base">@{res.name} (Community)</strong>
+                    </button>
+                  </div>
+                ))}
+              </>
+            ) : (
+              <p className="text-gray-500 text-center py-4 text-sm">No users or communities found.</p>
+            )}
           </div>
-        ) : searchTerm && (
-          <p className="text-gray-500 text-center py-4 text-sm">No users or communities found.</p>
         )}
 
-        {/* existing chat list */}
+        {/* Existing Chat List */}
         <div className="px-4 space-y-2">
           {chatData?.chats?.map((chat) => {
             const otherUser = chat.isGroupChat ? null : chat.participants.find((p) => p._id !== chatData.userId);
             const lastMsg = chat.lastMessage || { content: "No messages yet.", deleted: false, sender: { _id: null } };
-            const hasUnreadMessage = isUnread(lastMsg);
-            const userLength = (otherUser) ? (otherUser.firstname.length + (otherUser.lastname ? otherUser.lastname.length : 0) + 1) : chat.groupName.length;
+            const hasUnreadMessage = isUnread(lastMsg) && lastMsg?.sender._id !== chatData.userId;
+
+            // More robust truncation
+            const displayLastMessage = lastMsg.deleted
+              ? "message deleted 🚫"
+              : lastMsg.content.length > 30 // Example: truncate after 30 characters
+                ? lastMsg.content.slice(0, 27) + "..."
+                : lastMsg.content;
+
             return (
               <div
                 key={chat._id}
@@ -294,27 +306,27 @@ export default function Messages() {
                         : otherUser?.profilePic || "/default-avatar.png"
                     }
                     alt=""
-                    className="w-10 h-10 rounded-full object-cover border border-gray-300"
+                    className="w-12 h-12 rounded-full object-cover border border-gray-300 flex-shrink-0" // Added flex-shrink-0
                   />
-                  <div className="flex flex-col items-start overflow-hidden">
-                    <strong className="text-lg text-black truncate w-full pl-1">
-                      {chat.isGroupChat
-                        ? chat.groupName
-                        : `${otherUser?.firstname || ""} ${otherUser?.lastname || ""}`.trim()}
-                    </strong>
+                  <div className="flex flex-col items-start overflow-hidden flex-grow"> {/* Added flex-grow */}
+                    <div className="flex items-center w-full">
+                      <strong className="text-lg text-black truncate flex-grow text-left">
+                        {chat.isGroupChat
+                          ? chat.groupName
+                          : `${otherUser?.firstname || ""} ${otherUser?.lastname || ""}`.trim()}
+                      </strong>
+                      {hasUnreadMessage && (
+                        <span className="w-2.5 h-2.5 bg-blue-500 rounded-full ml-2 flex-shrink-0"></span>
+                      )}
+                    </div>
                     <p
-                      className={`text-sm font-semibold truncate w-full text-left pl-1 ${hasUnreadMessage && lastMsg?.sender._id !== chatData.userId
-                          ? "text-red-600"
+                      className={`text-sm truncate w-full text-left ${hasUnreadMessage
+                          ? "font-bold text-gray-800" // Make unread messages bolder
                           : "text-gray-600"
                         }`}
                     >
-                      {lastMsg.deleted
-                        ? "message deleted 🚫"
-                        : lastMsg.content.length <= userLength
-                          ? lastMsg.content
-                          : lastMsg.content.slice(0, userLength) + "..."}
+                      {displayLastMessage}
                     </p>
-
                   </div>
                 </button>
               </div>

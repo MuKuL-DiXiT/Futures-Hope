@@ -92,32 +92,33 @@ export default function Signup() {
   };
 
   return (
-    <div className="flex items-center w-full sm:px-32 justify-center min-h-screen bg-gradient-to-br from-teal-900 to-green-900 text-white px-4 py-8">
-      <div className="bg-white text-black rounded-2xl shadow-2xl flex flex-col sm:flex-row max-w-4xl w-full overflow-hidden">
-
-        {/* Left Side Image */}
-        <div className="hidden sm:block sm:w-1/2">
-          <img src="/tree.webp" alt="Nature" className="object-cover h-full w-full" />
+    <div className="w-full min-h-screen flex flex-col items-center justify-center "> {/* Dark background for contrast */}
+      <div className="min-h-screen flex flex-col items-center justify-evenly w-full">
+        <div>
+          <img src="/tree.webp" alt="Logo" width={150} />
+          <h1 className="font-marker text-center text-green-700 text-xl font-bold">
+            Future's Hope
+          </h1>
         </div>
 
         {/* Signup Form */}
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col gap-4 p-8 sm:w-1/2 w-full"
+          className="flex flex-col gap-6 p-6 bg-green-900/40 shadow-lg shadow-black rounded-lg w-full max-w-md text-white items-center"
           encType="multipart/form-data"
         >
-          <h2 className="text-3xl font-bold text-center text-green-800 mb-2">
+          <h2 className="text-3xl  font-bold text-center text-teal-800 mb-2">
             Create Account
           </h2>
-          <p className="text-sm text-center text-gray-500 mb-4">It's quick and easy.</p>
-          <hr className="border-gray-300" />
+          <p className="text-sm text-center text-gray-300 mb-4">It's quick and easy.</p>
+          <hr className="border-gray-700 w-5/6" /> {/* Darker hr */}
 
-          <div className="flex gap-2">
+          <div className="flex gap-4 w-5/6"> {/* Adjusted gap and width */}
             <input
               type="text"
               name="firstname"
               placeholder="First Name"
-              className="p-2 border border-gray-300 rounded-lg w-1/2"
+              className="p-2 rounded text-white bg-black/40 w-1/2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-600"
               required
               value={formData.firstname}
               onChange={handleChange}
@@ -126,7 +127,7 @@ export default function Signup() {
               type="text"
               name="lastname"
               placeholder="Last Name"
-              className="p-2 border border-gray-300 rounded-lg w-1/2"
+              className="p-2 rounded text-white bg-black/40 w-1/2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-600"
               required
               value={formData.lastname}
               onChange={handleChange}
@@ -137,7 +138,7 @@ export default function Signup() {
             type="number"
             name="age"
             placeholder="Age (min 13)"
-            className="p-2 border border-gray-300 rounded-lg"
+            className="p-2 rounded text-white bg-black/40 w-5/6 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-600"
             required
             min={13}
             value={formData.age}
@@ -148,7 +149,7 @@ export default function Signup() {
             type="tel"
             name="mobile"
             placeholder="Mobile Number"
-            className="p-2 border border-gray-300 rounded-lg"
+            className="p-2 rounded text-white bg-black/40 w-5/6 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-600"
             required
             value={formData.mobile}
             onChange={handleChange}
@@ -158,7 +159,7 @@ export default function Signup() {
             type="email"
             name="email"
             placeholder="Email"
-            className="p-2 border border-gray-300 rounded-lg"
+            className="p-2 rounded text-white bg-black/40 w-5/6 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-600"
             required
             value={formData.email}
             onChange={handleChange}
@@ -168,20 +169,20 @@ export default function Signup() {
             type="password"
             name="password"
             placeholder="Password (8+ aA1)"
-            className="p-2 border border-gray-300 rounded-lg"
+            className="p-2 rounded text-white bg-black/40 w-5/6 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-600"
             required
             value={formData.password}
             onChange={handleChange}
           />
 
-          <div className="flex justify-between">
+          <div className="flex justify-between w-5/6"> {/* Adjusted width */}
             {["male", "female", "other"].map((g) => (
-              <label key={g} className="flex items-center text-sm">
+              <label key={g} className="flex items-center text-white text-sm"> {/* Text color adjusted */}
                 <input
                   type="radio"
                   name="gender"
                   value={g}
-                  className="mr-1"
+                  className="mr-1 form-radio text-green-600 focus:ring-green-600" // Tailwind radio styling
                   checked={formData.gender === g}
                   onChange={handleChange}
                 />
@@ -190,34 +191,41 @@ export default function Signup() {
             ))}
           </div>
 
-          <div>
-            <label className="block text-sm mb-1">Upload Profile Picture</label>
+          <div className="w-5/6"> {/* Adjusted width */}
+            <label className="block text-sm mb-2 text-gray-300">Upload Profile Picture</label>
+            <label htmlFor="profilePicUpload" className="cursor-pointer bg-black/40 text-white py-2 px-4 rounded-lg flex items-center justify-center hover:bg-black/60 transition-colors duration-200">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              {formData.profilePic ? formData.profilePic.name : "Choose File"}
+            </label>
             <input
+              id="profilePicUpload"
               type="file"
               name="profilePic"
               accept="image/*"
               onChange={handleFileChange}
-              className="text-sm"
+              className="hidden" // Hide default file input
             />
           </div>
 
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-400 text-center w-5/6"> {/* Adjusted width and text color */}
             By signing up, you agree to our{" "}
-            <span className="text-green-700 underline">Terms</span>,{" "}
-            <span className="text-green-700 underline">Privacy</span>, and{" "}
-            <span className="text-green-700 underline">Cookies</span> policies.
+            <span className="text-green-500 underline hover:text-green-400 cursor-pointer">Terms</span>,{" "}
+            <span className="text-green-500 underline hover:text-green-400 cursor-pointer">Privacy</span>, and{" "}
+            <span className="text-green-500 underline hover:text-green-400 cursor-pointer">Cookies</span> policies.
           </p>
 
           <button
             type="submit"
-            className="bg-green-700 hover:bg-green-900 text-white py-2 rounded-lg font-semibold transition-all duration-300"
+            className="bg-green-600 hover:bg-green-900 text-white font-semibold py-2 rounded w-1/3 transition-all duration-300"
           >
             Sign Up
           </button>
 
-          <p className="text-sm text-center mt-4">
+          <p className="text-sm text-center mt-4 text-gray-300"> {/* Text color adjusted */}
             Already have an account?{" "}
-            <NavLink to="/" className="text-green-700 underline hover:text-green-900">
+            <NavLink to="/" className="text-green-500 underline hover:text-green-400">
               Log in
             </NavLink>
           </p>
@@ -225,5 +233,4 @@ export default function Signup() {
       </div>
     </div>
   );
-
 }
