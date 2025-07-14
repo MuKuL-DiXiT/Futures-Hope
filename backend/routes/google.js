@@ -48,15 +48,15 @@ router.get('/callback', passport.authenticate('google', {
 
  res.cookie('accessToken', accessToken, {
   httpOnly: true,
-  sameSite: 'None',       // ✅ Must be 'None' for cross-origin
-  secure: true,           // ✅ Must be true for cross-origin cookies to work
-  maxAge: 60 * 60 * 1000  // 1 hour
+  sameSite: 'None',       
+  secure: true,          
+  maxAge: 60 * 60 * 1000  
 });
 
 res.cookie('refreshToken', refreshToken, {
   httpOnly: true,
-  sameSite: 'None',       // ✅ Must be 'None' for cross-origin
-  secure: true,           // ✅ Must be true for cross-origin
+  sameSite: 'None',       
+  secure: true,           
   maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days
 });
 
