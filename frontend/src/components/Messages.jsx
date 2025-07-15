@@ -16,7 +16,7 @@ export default function Messages() {
   const [loading, setLoading] = useState(false);
   const [chatOpened, setChatOpened] = useState(null);
   const [chatMessages, setChatMessages] = useState([]);
-  const [results, setResults] = useState({ users: [], community: [] }); // Initialize as object
+  const [results, setResults] = useState({ users: [], community: [] });
   const [searchTerm, setSearchTerm] = useState("");
   const [chatWith, setChatWith] = useState({});
   const [error, setError] = useState(null);
@@ -112,7 +112,7 @@ export default function Messages() {
     socket.on("receiveMessage", handleReceiveMessage);
     if (chatOpened) socket.emit("markAsSeen", { chatId: chatOpened });
     return () => socket.off("receiveMessage", handleReceiveMessage);
-  }, [chatOpened, currentUserId]); // Added currentUserId to dependencies
+  }, [chatOpened, currentUserId]);
 
   const getMessages = async (chatId) => {
     setLoading(true);
@@ -131,7 +131,10 @@ export default function Messages() {
   };
 
   const searchUsers = useCallback(async () => {
-    if (!searchTerm) return setResults({ users: [], community: [] });
+    if (!searchTerm.trim()) { // Only search if searchTerm is not empty or just whitespace
+      setResults({ users: [], community: [] });
+      return;
+    }
     try {
       const res = await secureFetch(`/auth/posts/searchShare/bonds?query=${encodeURIComponent(searchTerm)}`);
       const data = await res.json();
@@ -150,7 +153,7 @@ export default function Messages() {
       searchUsers();
     }, 500);
     return () => clearTimeout(delayDebounce);
-  }, [searchTerm, searchUsers]); // Added searchUsers to dependency array
+  }, [searchTerm, searchUsers]);
 
 
   const deleteMessage = (messageId) => {
@@ -210,7 +213,7 @@ export default function Messages() {
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (!e.target.closest(".message-block")) {
+      if (!e.target.closest(".message-bubble")) { // Changed to message-bubble
         setShowOptions(null);
       }
     };
@@ -219,12 +222,10 @@ export default function Messages() {
   }, []);
 
   return (
-    // Main container adjusted for sidebar and centering
-    // px-0 sm:px-0 for no padding on small screens
-    // md:pl-[80px] assumes a 64px sidebar + 16px padding on medium and larger screens
     <div className="flex flex-col md:flex-row h-screen w-full px-0 sm:px-0 md:pl-[80px] md:pr-4 md:mx-auto md:max-w-screen-xl pt-0">
-      {/* Left Panel: Chat List */}
-      <div className={`md:bg-white bg-transparent overflow-y-auto w-full md:w-1/3 ${panelStatus ? "hidden md:inline-block" : ""} flex flex-col gap-2 pt-3 pb-20 md:pb-0 md:pt-8 rounded-lg shadow-lg`}>
+      {/* Left Panel: Chat List & Search Results */}
+      {/* The panelStatus logic controls visibility on small screens */}
+      <div className={`md:bg-white bg-transparent overflow-y-auto w-full md:w-1/3 ${panelStatus ? "hidden md:inline-block" : "inline-block"} flex flex-col gap-2 pt-3 pb-20 md:pb-0 md:pt-8 rounded-lg shadow-lg`}>
         <div className="flex items-center mb-4 px-4">
           <input
             type="text"
@@ -235,9 +236,9 @@ export default function Messages() {
           />
         </div>
 
-        {/* Search Results */}
-        {searchTerm && (
-          <div className="mx-4 mb-5 bg-white border border-gray-200 rounded-lg shadow-sm max-h-60 overflow-y-auto">
+        {/* Search Results Panel - Always shown when searchTerm is not empty */}
+        {searchTerm.trim() && (
+          <div className="mx-4 mb-5 min-h-60 bg-white border border-gray-200 rounded-lg shadow-sm max-h-60 overflow-y-auto">
             {(results.users.length > 0 || results.community.length > 0) ? (
               <>
                 {results.users.map((res) => (
@@ -246,7 +247,7 @@ export default function Messages() {
                     className="flex items-center gap-3 p-3 hover:bg-gray-100 cursor-pointer transition-colors"
                   >
                     <button className="flex gap-3 items-center w-full text-left" onClick={() => createChat(res._id)}>
-                      <img src={res.profilePic} alt="" className="w-9 h-9 rounded-full object-cover border border-gray-200" />
+                      <img src={res.profilePic || "/default-avatar.png"} alt="Profile" className="w-9 h-9 rounded-full object-cover border border-gray-200" />
                       <strong className="text-gray-800 text-base">{res.firstname} {res.lastname || ""}</strong>
                     </button>
                   </div>
@@ -257,7 +258,7 @@ export default function Messages() {
                     className="flex items-center gap-3 p-3 hover:bg-gray-100 cursor-pointer transition-colors"
                   >
                     <button className="flex gap-3 items-center w-full text-left" onClick={() => createChat(res._id)}>
-                      <img src={res.profilePic} alt="" className="w-9 h-9 rounded-full object-cover border border-gray-200" />
+                      <img src={res.profilePic || "/default-avatar.png"} alt="Community" className="w-9 h-9 rounded-full object-cover border border-gray-200" />
                       <strong className="text-gray-800 text-base">@{res.name} (Community)</strong>
                     </button>
                   </div>
@@ -276,11 +277,11 @@ export default function Messages() {
             const lastMsg = chat.lastMessage || { content: "No messages yet.", deleted: false, sender: { _id: null } };
             const hasUnreadMessage = isUnread(lastMsg) && lastMsg?.sender._id !== chatData.userId;
 
-            // More robust truncation
+            // Consistent truncation for last message
             const displayLastMessage = lastMsg.deleted
               ? "message deleted 🚫"
-              : lastMsg.content.length > 30 // Example: truncate after 30 characters
-                ? lastMsg.content.slice(0, 27) + "..."
+              : lastMsg.content.length > 35 // Truncate after 35 characters for consistency
+                ? lastMsg.content.slice(0, 32) + "..."
                 : lastMsg.content;
 
             return (
@@ -305,10 +306,10 @@ export default function Messages() {
                         ? chat.groupImage
                         : otherUser?.profilePic || "/default-avatar.png"
                     }
-                    alt=""
-                    className="w-12 h-12 rounded-full object-cover border border-gray-300 flex-shrink-0" // Added flex-shrink-0
+                    alt="Chat avatar"
+                    className="w-12 h-12 rounded-full object-cover border border-gray-300 flex-shrink-0"
                   />
-                  <div className="flex flex-col items-start overflow-hidden flex-grow"> {/* Added flex-grow */}
+                  <div className="flex flex-col items-start overflow-hidden flex-grow">
                     <div className="flex items-center w-full">
                       <strong className="text-lg text-black truncate flex-grow text-left">
                         {chat.isGroupChat
@@ -321,7 +322,7 @@ export default function Messages() {
                     </div>
                     <p
                       className={`text-sm truncate w-full text-left ${hasUnreadMessage
-                          ? "font-bold text-gray-800" // Make unread messages bolder
+                          ? "font-bold text-gray-800"
                           : "text-gray-600"
                         }`}
                     >
@@ -337,7 +338,6 @@ export default function Messages() {
       </div>
 
       {/* Chat Window */}
-      {/* Ensure this div takes full height and manages its children's layout */}
       <div className={`flex-1 bg-white relative flex flex-col rounded-lg shadow-lg h-full ${panelStatus ? '' : 'hidden md:flex'}`}>
         {panelStatus && (
           <>
@@ -346,19 +346,18 @@ export default function Messages() {
               <button className="md:hidden mr-3 text-gray-700 hover:text-gray-900" onClick={() => setPanelStatus(false)}><ArrowLeft size={24} /></button>
               {chatWith.groupName ? (
                 <NavLink to={`/community/${community}`} className="flex items-center gap-3">
-                  <img src={chatWith.groupImage} className="w-11 h-11 rounded-full object-cover border border-gray-300" alt="" />
+                  <img src={chatWith.groupImage || "/default-avatar.png"} className="w-11 h-11 rounded-full object-cover border border-gray-300" alt="Group avatar" />
                   <strong className="text-lg text-gray-800">{chatWith.groupName}</strong>
                 </NavLink>
               ) : (
                 <NavLink to={`/people/${chatWith._id}`} className="flex items-center gap-3">
-                  <img src={chatWith.profilePic || "/default-avatar.png"} className="w-11 h-11 rounded-full object-cover border border-gray-300" alt="" />
+                  <img src={chatWith.profilePic || "/default-avatar.png"} className="w-11 h-11 rounded-full object-cover border border-gray-300" alt="User avatar" />
                   <strong className="text-lg text-gray-800">{chatWith.firstname} {chatWith.lastname || ""}</strong>
                 </NavLink>
               )}
             </div>
 
             {/* Messages Area - Scrollable, with padding to account for fixed header and typing bar */}
-            {/* Calculate pt and pb based on fixed header/footer heights + mobile navbar */}
             <div className="flex-1 overflow-y-auto p-4 bg-gray-50 pt-[64px] pb-[120px]">
               {chatMessages.map((msg) => (
                 <div key={msg._id} className={`flex ${msg.sender._id === currentUserId ? 'justify-end' : 'justify-start'} mb-3`}>
@@ -372,7 +371,7 @@ export default function Messages() {
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      setShowOptions(null); // Close options on click anywhere else
+                      setShowOptions(null);
                     }}
                   >
                     {msg.deleted ? (
@@ -390,7 +389,7 @@ export default function Messages() {
                       <div
                         onClick={(e) => {
                           e.stopPropagation();
-                          deleteMessage(msg._id); // Call deleteMessage directly
+                          deleteMessage(msg._id);
                         }}
                         className="absolute top-full mt-1 right-0 bg-white text-red-600 text-sm px-3 py-2 rounded-lg shadow-lg cursor-pointer hover:bg-red-50 transition-colors z-10"
                       >
@@ -415,7 +414,7 @@ export default function Messages() {
                   }
                 }}
                 placeholder="Type a message..."
-                className="flex-1 p-3 border border-gray-300 rounded-full bg-black/40 text-white  outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all duration-200"
+                className="flex-1 p-3 border border-gray-300 rounded-full bg-black/40 text-white outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all duration-200"
               />
               <button
                 onClick={() => {
@@ -429,6 +428,11 @@ export default function Messages() {
               </button>
             </div>
           </>
+        )}
+        {!panelStatus && (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-gray-500 text-lg">Select a chat to start messaging😇</p>
+          </div>
         )}
       </div>
     </div>
