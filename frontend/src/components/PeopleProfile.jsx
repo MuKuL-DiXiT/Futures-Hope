@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Heart, Share2, MessageCircle, X, Trash, Send } from "lucide-react";
+import { Heart, Share2, MessageCircle, X, Trash2, Send } from "lucide-react"; // Changed Trash to Trash2 for consistency
 import { NavLink, useNavigate } from "react-router-dom";
 
 export default function PeopleProfile({ userId }) {
@@ -10,15 +10,15 @@ export default function PeopleProfile({ userId }) {
   const [expandedCaptions, setExpandedCaptions] = useState({});
   const [likedPosts, setLikedPosts] = useState({});
   const [activeCommentPost, setActiveCommentPost] = useState(null);
-  const [comments, setComments] = useState([]);
+  const [comments, setComments] = useState({}); // Changed to object for consistency with Profile.jsx
   const [commentLoading, setCommentLoading] = useState(false);
   const [newCommentText, setNewCommentText] = useState("");
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyText, setReplyText] = useState("");
   const [activeSharePost, setActiveSharePost] = useState(null);
   const [shareRecipients, setShareRecipients] = useState([]);
-  const [usersToShare, setUsersToShare] = useState({ users: [], community: [] }); // Initialize as an object
-  const [shareSearchTerm, setShareSearchTerm] = useState("");
+  const [usersToShare, setUsersToShare] = useState({ users: [], community: [] });
+  const [shareSearchTerm, setSearchTerm] = useState(""); // Changed from setShareSearchTerm for consistency
   const [profilePicExpanded, setProfilePicExpanded] = useState(false);
   const [BondStatus, setBondStatus] = useState({});
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -37,7 +37,7 @@ export default function PeopleProfile({ userId }) {
       });
 
       if (refresh.ok) {
-        return fetch(url, { ...options, credentials: "include" }); // retry original request
+        return fetch(url, { ...options, credentials: "include" });
       } else {
         await fetch(`${baseUrl}/auth/logout`, {
           method: "GET",
@@ -51,6 +51,7 @@ export default function PeopleProfile({ userId }) {
     return res;
   }
 
+  // Effect to check bond status
   useEffect(() => {
     const checkBondStatus = async () => {
       try {
@@ -71,6 +72,7 @@ export default function PeopleProfile({ userId }) {
     }
   }, [userId]);
 
+  // Function to toggle bond status
   const toggleBond = async () => {
     const res = await secureFetch(`/auth/bond/toggle/${userId}`, {
       method: "POST",
@@ -83,10 +85,10 @@ export default function PeopleProfile({ userId }) {
     }
   };
 
-
+  // Effect to fetch user data and posts
   useEffect(() => {
     if (!userId) {
-      setIsInitialLoading(false); // If no userId, no user to fetch, so loading is done
+      setIsInitialLoading(false);
       return;
     }
 
@@ -119,7 +121,6 @@ export default function PeopleProfile({ userId }) {
         const data = await res.json();
         setPosts(data);
 
-        // Fetch liked status for each post
         const likedStatus = {};
         await Promise.all(
           data.map(async (post) => {
@@ -143,13 +144,14 @@ export default function PeopleProfile({ userId }) {
     }
   };
 
+  // Effect to control body overflow when modal is open
   useEffect(() => {
-    if (expandedPostId) {
+    if (expandedPostId || activeCommentPost || activeSharePost) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
-  }, [expandedPostId]);
+  }, [expandedPostId, activeCommentPost, activeSharePost]);
 
   // Like or unlike a post
   const togglePostLike = async (postId) => {
@@ -180,20 +182,17 @@ export default function PeopleProfile({ userId }) {
     setExpandedCaptions((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  // --- Comments Logic ---
-
-  // Fetch comments for a post
+  // Fetch comments for a post (memoized)
   const fetchComments = useCallback(async (postId) => {
     if (!postId) return;
     setCommentLoading(true);
     try {
       const res = await secureFetch(`/auth/posts/${postId}/comments`, {
         method: "GET",
-        credentials: "include",
       });
       if (res.ok) {
         const data = await res.json();
-        setComments(data);
+        setComments((prev) => ({ ...prev, [postId]: data })); // Store comments by postId
       }
     } catch (e) {
       console.error("Error fetching comments:", e);
@@ -210,27 +209,30 @@ export default function PeopleProfile({ userId }) {
       setReplyingTo(null);
       setReplyText("");
     } else {
-      setComments([]);
+      setComments({}); // Clear comments when modal closes
     }
   }, [activeCommentPost, fetchComments]);
 
   // Add a new comment
-  const handleAddComment = async () => {
+  const handleAddComment = async (postId) => { // Added postId parameter
     if (!newCommentText.trim()) return;
 
     try {
-      const res = await secureFetch(`/auth/posts/${activeCommentPost}/comment`, {
+      const res = await secureFetch(`/auth/posts/${postId}/comment`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: newCommentText.trim() }),
       });
       if (res.ok) {
+        const data = await res.json();
+        setComments((prev) => ({
+          ...prev,
+          [postId]: [data.comment, ...(prev[postId] || [])], // Add new comment to the specific post's comments
+        }));
         setNewCommentText("");
-        fetchComments(activeCommentPost);
-        // Update posts comments count
         setPosts((prev) =>
           prev.map((post) =>
-            post._id === activeCommentPost
+            post._id === postId
               ? { ...post, commentsCount: (post.commentsCount || 0) + 1 }
               : post
           )
@@ -254,12 +256,12 @@ export default function PeopleProfile({ userId }) {
   };
 
   // Submit a reply to a comment
-  const handleReplySubmit = async () => {
+  const handleReplySubmit = async (postId, commentId) => { // Added postId and commentId
     if (!replyText.trim() || !replyingTo) return;
 
     try {
       const res = await secureFetch(
-        `/auth/posts/${activeCommentPost}/comment/${replyingTo}/reply`,
+        `/auth/posts/${postId}/comment/${commentId}/reply`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -269,11 +271,10 @@ export default function PeopleProfile({ userId }) {
       if (res.ok) {
         setReplyText("");
         setReplyingTo(null);
-        fetchComments(activeCommentPost);
-        // Update posts comments count
+        fetchComments(postId); // Re-fetch comments for the specific post
         setPosts((prev) =>
           prev.map((post) =>
-            post._id === activeCommentPost
+            post._id === postId
               ? { ...post, commentsCount: (post.commentsCount || 0) + 1 }
               : post
           )
@@ -286,8 +287,6 @@ export default function PeopleProfile({ userId }) {
 
   // Delete a comment (only own)
   const handleDeleteComment = async (commentId) => {
-    // IMPORTANT: Replaced window.confirm with a console log as per instructions.
-    // In a real application, you would use a custom modal for confirmation.
     console.log("Delete confirmation: Are you sure you want to delete this comment? This action cannot be undone.");
 
     try {
@@ -299,7 +298,6 @@ export default function PeopleProfile({ userId }) {
       );
       if (res.ok) {
         fetchComments(activeCommentPost);
-        // Update posts comments count
         setPosts((prev) =>
           prev.map((post) =>
             post._id === activeCommentPost
@@ -313,12 +311,9 @@ export default function PeopleProfile({ userId }) {
     }
   };
 
-  // --- Share Logic ---
-
   // Fetch users for sharing (with optional search)
   const shareSearchUsers = async () => {
     try {
-      // Changed endpoint from /auth/users to /auth/posts/searchShare/bonds as per Profile.jsx
       const res = await secureFetch(`/auth/posts/searchShare/bonds?query=${encodeURIComponent(shareSearchTerm)}`, {
         method: "GET",
       });
@@ -329,22 +324,29 @@ export default function PeopleProfile({ userId }) {
       });
     } catch (err) {
       console.error("Error in shareSearchUsers:", err);
-      setUsersToShare({ users: [], community: [] }); // Reset on error
+      setUsersToShare({ users: [], community: [] });
     }
   };
 
+  // Modified useEffect for share search term persistence
   useEffect(() => {
-    if (activeSharePost) {
-      shareSearchUsers();
+    if (activeSharePost !== null) {
+      if (shareSearchTerm !== "" || shareRecipients.length > 0) {
+        shareSearchUsers();
+      } else {
+        setUsersToShare({ users: [], community: [] });
+      }
+    } else {
       setShareRecipients([]);
-      setShareSearchTerm("");
+      setSearchTerm("");
     }
-  }, [activeSharePost, shareSearchTerm]); // Add shareSearchTerm to dependency array
+  }, [activeSharePost, shareSearchTerm]);
+
 
   // Handle user search input change
   const handleShareSearchChange = (e) => {
     const val = e.target.value;
-    setShareSearchTerm(val);
+    setSearchTerm(val); // Use setSearchTerm for consistency
   };
 
   // Toggle share recipient selection - adapted to handle both users and communities
@@ -356,18 +358,16 @@ export default function PeopleProfile({ userId }) {
     );
   };
 
-  // Submit share request - adapted to map recipients by _id
-  const handleShareSubmit = async () => {
+  // Submit share request
+  const handleShareSubmit = async (postId) => { // Added postId
     if (shareRecipients.length === 0) return;
     try {
-      const res = await secureFetch(`/auth/posts/${activeSharePost}/share`, {
+      const res = await secureFetch(`/auth/posts/${postId}/share`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recipients: shareRecipients.map((u) => u._id) }), // Changed to recipients: shareRecipients.map((u) => u._id)
+        body: JSON.stringify({ recipients: shareRecipients.map((u) => u._id) }),
       });
       if (res.ok) {
-        // IMPORTANT: Replaced alert with a console log as per instructions.
-        // In a real application, you would use a custom message box.
         console.log(`Post shared with ${shareRecipients.length} user(s)!`);
         setActiveSharePost(null);
         setShareRecipients([]);
@@ -376,22 +376,6 @@ export default function PeopleProfile({ userId }) {
       console.error("Error sharing post:", error);
     }
   };
-
-
-  if (isInitialLoading || !userData) {
-    return (
-      <div className="flex items-center justify-center w-full h-screen bg-white">
-        <div className="flex justify-center items-center h-40">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-gray-200 border-t-gray-600 rounded-full animate-spin"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-8 h-8 bg-gray-600 rounded-full animate-pulse"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   const sendMessage = async (targetId) => {
     setLoading(true);
@@ -412,30 +396,39 @@ export default function PeopleProfile({ userId }) {
     }
   }
 
+  if (isInitialLoading || !userData) {
+    return (
+      <div className="flex items-center justify-center w-full h-screen">
+        <div className="flex justify-center items-center h-40">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-gray-200 border-t-gray-600 rounded-full animate-spin"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-8 h-8 bg-gray-600 rounded-full animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const selectedPost = posts.find(post => post._id === expandedPostId);
+
   return (
-    // Main container adjusted for desktop sidebar offset and overall centering
-    // Removed px-4 sm:px-6 md:px-32 to allow for full width control
-    // Added md:pl-20 to account for the fixed desktop navbar width (w-20 from Navbar.jsx)
     <div className="min-h-screen w-full bg-white flex flex-col items-center relative md:pl-20 pb-14 md:pb-0">
-      {/* User Info Header - Aligned like Instagram */}
       <div className="w-full max-w-4xl px-4 sm:px-6 md:px-8 py-8 flex flex-col md:flex-row items-center md:items-start justify-center md:justify-start gap-6 border-b border-gray-200">
         <div className="flex-shrink-0 relative group w-32 h-32 md:w-40 md:h-40">
-          {/* Removed glowing effect for cleaner Instagram-like aesthetic */}
           <img
             onClick={() => setProfilePicExpanded(!profilePicExpanded)}
-            src={userData.profilePic || '/default-avatar.png'} // Fallback for profile pic
-            alt={userData.firstname}
-            className={`relative z-10 rounded-full object-cover border-2 border-gray-300 cursor-pointer transition-all duration-300 ${profilePicExpanded ? "w-full h-full" : "w-full h-full"
-              }`}
+            src={userData.profilePic || '/default-avatar.png'}
+            alt={userData.username}
+            className={`relative z-10 rounded-full object-cover border-2 border-gray-300 cursor-pointer transition-all duration-300 ${profilePicExpanded ? "w-full h-full" : "w-full h-full"}`}
           />
         </div>
-        
         <div className="flex flex-col items-center md:items-start md:ml-10 flex-grow">
           <div className="flex items-center gap-4 mb-2">
             <h1 className="font-semibold text-2xl text-gray-800">
               {userData.username || `${userData.firstname} ${userData.lastname}`.trim()}
             </h1>
-            {/* Bond Button */}
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={toggleBond}
@@ -464,17 +457,13 @@ export default function PeopleProfile({ userId }) {
               )}
             </div>
           </div>
-
           <div className="flex gap-8 mb-4">
             <div className="flex items-center text-gray-800">
-              <span className="font-semibold text-lg">{posts.length}</span>
-              <span className="text-sm ml-1">posts</span>
+              <span className="font-semibold text-lg">{posts.length}</span> <span className="text-sm ml-1">posts</span>
             </div>
             {/* Bond and Community counts are not directly available for other users in this component's state */}
             {/* If you want to show these, you'd need to fetch them specifically for the 'userId' */}
           </div>
-          
-          {/* User Full Name and Bio (if available) */}
           <p className="font-semibold text-gray-800 text-left w-full">
             {userData.firstname} {userData.lastname}
           </p>
@@ -486,7 +475,6 @@ export default function PeopleProfile({ userId }) {
         </div>
       </div>
 
-      {/* Posts Grid */}
       <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-6">
         {loading ? (
           <div className="flex justify-center items-center h-40">
@@ -504,38 +492,28 @@ export default function PeopleProfile({ userId }) {
         ) : (
           <div className="grid grid-cols-3 gap-1 sm:gap-2">
             {posts.map((post) => (
-              <div
-                key={post._id}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setExpandedPostId(post._id);
-                }}
-                className="cursor-pointer transition-all duration-300 overflow-hidden aspect-square relative group"
-              >
-                {/* Media */}
+              <div key={post._id} onClick={(e) => { e.stopPropagation(); setExpandedPostId(post._id); }}
+                className="relative w-full pb-[100%] bg-gray-100 cursor-pointer overflow-hidden group">
                 {post.media?.url && (
                   post.media.type === "photo" ? (
                     <img
                       src={post.media.url}
-                      className="w-full h-full object-cover"
-                      alt="Post"
+                      alt="Post Thumbnail"
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   ) : (
                     <video
                       src={post.media.url}
-                      className="w-full h-full object-cover"
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   )
                 )}
-                {/* Overlay for likes/comments on hover */}
                 <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="flex items-center text-white font-bold">
-                    <Heart fill="white" size={20} className="mr-1" />
-                    <span>{post.likesCount || 0}</span>
+                  <div className="flex items-center text-white font-semibold">
+                    <Heart className="w-5 h-5 mr-1" /> {post.likesCount}
                   </div>
-                  <div className="flex items-center text-white font-bold">
-                    <MessageCircle fill="white" size={20} className="mr-1" />
-                    <span>{post.commentsCount || 0}</span>
+                  <div className="flex items-center text-white font-semibold">
+                    <MessageCircle className="w-5 h-5 mr-1" /> {post.commentsCount}
                   </div>
                 </div>
               </div>
@@ -544,275 +522,290 @@ export default function PeopleProfile({ userId }) {
         )}
       </div>
 
-      {/* Expanded Post Modal */}
-      {expandedPostId && (() => {
-        const post = posts.find(p => p._id === expandedPostId);
-        if (!post) return null; // Should not happen if expandedPostId is valid
+      {expandedPostId && selectedPost && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-75 transition-opacity overflow-y-auto">
+          <div className="relative flex flex-col md:flex-row bg-white rounded-2xl shadow-2xl overflow-hidden w-[90vw] h-[90vh] max-w-6xl">
+            <button
+              onClick={() => {
+                setExpandedPostId(null);
+                setActiveCommentPost(null);
+                setActiveSharePost(null);
+                setNewCommentText("");
+                setReplyText("");
+                setReplyingTo(null);
+                setShareRecipients([]);
+                setSearchTerm("");
+              }}
+              className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition-all"
+            >
+              <X size={20} />
+            </button>
 
-        const isLiked = likedPosts[post._id];
-        const isCommentOpen = activeCommentPost === post._id;
-        const isShareOpen = activeSharePost === post._id;
+            <div className="w-full md:w-3/5 flex items-center justify-center bg-black p-2 md:p-0">
+              {selectedPost.media?.url && (
+                selectedPost.media.type === "photo" ? (
+                  <img
+                    src={selectedPost.media.url}
+                    alt="Post"
+                    className="max-h-full max-w-full object-contain"
+                  />
+                ) : (
+                  <video
+                    controls
+                    src={selectedPost.media.url}
+                    className="max-h-full max-w-full object-contain"
+                  />
+                )
+              )}
+            </div>
 
-        return (
-          <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
-            <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-lg shadow-lg relative flex flex-col">
-              <button
-                onClick={() => {
-                  setExpandedPostId(null);
-                  setActiveCommentPost(null);
-                  setActiveSharePost(null);
-                }}
-                className="absolute top-2 right-2 text-gray-700 hover:text-gray-900 z-10 p-1 rounded-full bg-white/50 hover:bg-white"
-              >
-                <X size={24} />
-              </button>
+            <div className="w-full md:w-2/5 flex flex-col h-full">
+              <div className="flex items-center gap-3 p-4 border-b border-gray-100">
+                <NavLink to={`/people/${selectedPost.user._id}`} className="flex items-center gap-3">
+                  <img src={selectedPost.user?.profilePic} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm" />
+                  <div>
+                    <span className="font-semibold text-gray-800">{selectedPost.user.firstname + " " + selectedPost.user.lastname}</span>
+                    <p className="text-xs text-gray-500">@{selectedPost.user.username}</p>
+                  </div>
+                </NavLink>
+              </div>
 
-              <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
-                <div className="md:w-1/2 bg-black flex items-center justify-center">
-                  {post.media.type === "photo" ? (
-                    <img
-                      src={post.media.url}
-                      className="w-full h-full object-contain max-h-[500px]"
-                      alt="Post media"
-                    />
-                  ) : (
-                    <video
-                      src={post.media.url}
-                      controls
-                      className="w-full h-full object-contain max-h-[500px]"
-                    />
+              {selectedPost.caption && (
+                <div className="px-4 pb-3 text-sm text-gray-800 border-b border-gray-100">
+                  <span className="font-semibold">{selectedPost.user.firstname + " " + selectedPost.user.lastname}</span>{" "}
+                  {expandedCaptions[selectedPost._id] || selectedPost.caption.length <= 60 ? selectedPost.caption : selectedPost.caption.slice(0, 60) + "..."}
+                  {selectedPost.caption.length > 60 && (
+                    <button
+                      className="text-gray-500 ml-1 text-xs hover:text-teal-500"
+                      onClick={() =>
+                        setExpandedCaptions((prev) => ({ ...prev, [selectedPost._id]: !prev[selectedPost._id] }))
+                      }
+                    >
+                      {expandedCaptions[selectedPost._id] ? "Show less" : "Show more"}
+                    </button>
                   )}
                 </div>
+              )}
 
-                <div className="md:w-1/2 p-4 space-y-4 overflow-y-auto max-h-[90vh] flex flex-col">
-                  {/* User Info in Modal */}
-                  <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
-                    <img src={post.user.profilePic || '/default-avatar.png'} className="w-10 h-10 rounded-full object-cover" alt="User profile" />
-                    <span className="font-semibold text-gray-800">
-                      {post.user.username || `${post.user.firstname} ${post.user.lastname}`.trim()}
-                    </span>
-                  </div>
+              <div className="flex justify-around p-3 border-b border-gray-200 bg-gray-50">
+                <button
+                  onClick={() => togglePostLike(selectedPost._id)}
+                  className="flex flex-col items-center text-gray-600 hover:text-green-500 transition-colors"
+                >
+                  <Heart className={`w-6 h-6 ${likedPosts[selectedPost._id] ? "fill-green-500 text-green-500" : ""}`} />
+                  <span className="text-xs mt-1">Like ({selectedPost.likesCount})</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveCommentPost(selectedPost._id);
+                    setActiveSharePost(null);
+                  }}
+                  className="flex flex-col items-center text-gray-600 hover:text-teal-500 transition-colors"
+                >
+                  <MessageCircle className="w-6 h-6" />
+                  <span className="text-xs mt-1">Comment ({selectedPost.commentsCount})</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveSharePost(selectedPost._id);
+                    setActiveCommentPost(null);
+                  }}
+                  className="flex flex-col items-center text-gray-600 hover:text-blue-500 transition-colors"
+                >
+                  <Share2 className="w-6 h-6" />
+                  <span className="text-xs mt-1">Share</span>
+                </button>
+              </div>
 
-                  {/* Caption */}
-                  {post.caption && (
-                    <div className="mb-2 text-gray-700 text-sm">
-                      <span className="font-semibold mr-1">{post.user.username || `${post.user.firstname} ${post.user.lastname}`.trim()}</span>
-                      {expandedCaptions[post._id] || post.caption.length < 150 ? (
-                        <span>{post.caption}</span>
-                      ) : (
-                        <span>
-                          {post.caption.substring(0, 150)}...
-                          <button
-                            onClick={() => toggleCaption(post._id)}
-                            className="text-blue-500 hover:text-blue-700 ml-1"
-                          >
-                            more
-                          </button>
-                        </span>
-                      )}
+              {/* Conditional rendering for comments/share panels based on screen size */}
+              {/* Desktop view (md and up) */}
+              <div className="hidden md:flex flex-1 flex-col overflow-hidden">
+                {activeCommentPost === selectedPost._id && (
+                  <>
+                    <div className="p-4 border-b border-gray-100">
+                      <h3 className="font-semibold text-gray-800">Comments</h3>
                     </div>
-                  )}
-
-                  {/* Action Buttons */}
-                  <div className="flex space-x-6 text-sm text-gray-700 py-3 border-y border-gray-200">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        togglePostLike(post._id);
-                      }}
-                      className="flex items-center gap-1 text-gray-700 hover:text-red-500 transition-colors"
-                    >
-                      <Heart
-                        fill={isLiked ? "green" : "none"}
-                        className={isLiked ? "text-green-700" : "text-gray-700"}
-                        size={20}
-                      />
-                      <span>{post.likesCount || 0}</span>
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveCommentPost(isCommentOpen ? null : post._id);
-                        setActiveSharePost(null); // Close share if opening comments
-                      }}
-                      className="flex items-center gap-1 text-gray-700 hover:text-blue-500 transition-colors"
-                    >
-                      <MessageCircle size={20} />
-                      <span>{post.commentsCount || 0}</span>
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveSharePost(isShareOpen ? null : post._id);
-                        setActiveCommentPost(null); // Close comments if opening share
-                      }}
-                      className="flex items-center gap-1 text-gray-700 hover:text-green-500 transition-colors"
-                    >
-                      <Share2 size={20} />
-                    </button>
-                  </div>
-
-                  {/* Comments Section */}
-                  {isCommentOpen && (
-                    <div className="flex-1 bg-gray-50 rounded-lg p-4 space-y-4 overflow-y-auto mt-4">
-                      <h3 className="font-bold text-lg text-gray-800">Comments</h3>
-
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
                       {commentLoading ? (
-                        <div className="text-center py-4">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto"></div>
-                          <p className="mt-2 text-gray-600">Loading comments...</p>
+                        <div className="flex justify-center items-center h-full">
+                          <div className="w-8 h-8 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
                         </div>
-                      ) : comments.length === 0 ? (
-                        <p className="italic text-gray-500 text-center py-4">
-                          No comments yet. Be the first!
-                        </p>
+                      ) : comments[selectedPost._id]?.length === 0 ? (
+                        <div className="text-center text-gray-500 py-10">
+                          No comments yet. Be the first to comment!
+                        </div>
                       ) : (
-                        <div className="space-y-3">
-                          {comments.map((comment) => (
-                            <div key={comment._id} className="bg-white rounded-md p-3 shadow-sm">
-                              <div className="flex justify-between items-start">
-                                <p className="flex items-center gap-2 text-sm text-gray-700">
-                                  <NavLink to={`/people/${comment.author._id}`} className="flex gap-2 items-center font-semibold text-gray-800 hover:underline">
-                                    <img src={comment.author?.profilePic || '/default-avatar.png'} alt="" className="w-6 h-6 rounded-full object-cover" />
-                                    <span>{comment.author?.username || `${comment.author?.firstname} ${comment.author?.lastname}`.trim()}</span>:
-                                  </NavLink>
-                                  <span className="flex-1">{comment.content}</span>
-                                </p>
-                                {comment.author?._id === userData?._id && (
-                                  <button
-                                    onClick={() => handleDeleteComment(comment._id)}
-                                    className="text-red-500 hover:text-red-700 ml-2"
-                                    title="Delete comment"
-                                  >
-                                    <Trash size={16} />
-                                  </button>
-                                )}
-                              </div>
-
-                              {/* Replies */}
-                              {comment.replies.length > 0 && (
-                                <div className="ml-8 mt-2 space-y-1 border-l pl-3 border-gray-200">
-                                  {comment.replies.map((reply) => (
-                                    <div key={reply._id} className="bg-gray-100 rounded-md p-2 text-sm text-gray-700">
-                                      <p className="flex gap-2 items-center">
-                                        <NavLink to={`/people/${reply.author._id}`} className="flex gap-2 items-center font-semibold text-gray-800 hover:underline">
-                                          <img src={reply.author?.profilePic || '/default-avatar.png'} alt="" className="w-5 h-5 rounded-full object-cover" />
-                                          <span>{reply.author?.username || `${reply.author?.firstname} ${reply.author?.lastname}`.trim()}</span>:
-                                        </NavLink>
-                                        <span className="flex-1">{reply.content}</span>
-                                      </p>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-
-                              {/* Reply Section */}
-                              {replyingTo !== comment._id ? (
-                                <button
-                                  onClick={() => startReply(comment._id)}
-                                  className="text-blue-500 hover:text-blue-700 mt-2 text-sm font-semibold"
-                                >
-                                  Reply
-                                </button>
-                              ) : (
-                                <div className="mt-2">
-                                  <textarea
-                                    value={replyText}
-                                    onChange={(e) => setReplyText(e.target.value)}
-                                    rows={2}
-                                    className="w-full border border-gray-300 rounded p-2 text-sm resize-none focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="Write your reply..."
-                                  />
-                                  <div className="flex justify-end gap-2 mt-2">
+                        comments[selectedPost._id]?.map((comment) => (
+                          <div key={comment._id} className="flex flex-col">
+                            <div className="flex justify-between items-start gap-2">
+                              <div className="flex items-start gap-2 flex-1">
+                                <NavLink to={`/people/${comment.author?._id}`} className="flex-shrink-0">
+                                  <img src={comment.author?.profilePic || '/default-avatar.png'} alt="" className="w-8 h-8 rounded-full object-cover border border-gray-200" />
+                                </NavLink>
+                                <div className="bg-gray-50 p-3 rounded-xl flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <NavLink to={`/people/${comment.author?._id}`} className="font-semibold text-gray-800 text-sm">
+                                      {comment.author?.firstname} {comment.author?.lastname}
+                                    </NavLink>
+                                    <span className="text-gray-500 text-xs">
+                                      {new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <p className="text-gray-700 mt-1">{comment.content}</p>
+                                    {/* Removed conditional check for userData?.user?._id === comment.author?._id as this is PeopleProfile */}
+                                    {/* You might want to add a check here if you want only the current logged-in user to delete their own comments */}
                                     <button
-                                      onClick={cancelReply}
-                                      className="text-gray-600 hover:text-gray-800 text-sm px-3 py-1 rounded-md"
+                                      onClick={() => handleDeleteComment(comment._id)}
+                                      className="text-red-500 hover:text-red-700 ml-2"
+                                      title="Delete comment"
                                     >
-                                      Cancel
-                                    </button>
-                                    <button
-                                      onClick={handleReplySubmit}
-                                      className="bg-blue-500 text-white font-semibold text-sm px-3 py-1 rounded-md hover:bg-blue-600 transition-colors"
-                                    >
-                                      Submit
+                                      <Trash2 size={16} />
                                     </button>
                                   </div>
+                                  <button
+                                    onClick={() => startReply(comment._id)}
+                                    className="text-blue-500 text-xs mt-1"
+                                  >
+                                    Reply
+                                  </button>
                                 </div>
-                              )}
+                              </div>
                             </div>
-                          ))}
-                        </div>
+
+                            {replyingTo === comment._id && (
+                              <div className="mt-2 ml-12">
+                                <div className="flex items-start gap-2">
+                                  {/* Using a placeholder for current user's profile pic as userData.user is not available directly here */}
+                                  <img
+                                    src={'/default-avatar.png'} // Placeholder for current user's profile pic
+                                    alt="Your profile"
+                                    className="w-6 h-6 rounded-full object-cover border border-gray-200"
+                                  />
+                                  <div className="flex-1 bg-white rounded-lg shadow-sm">
+                                    <textarea
+                                      value={replyText}
+                                      onChange={(e) => setReplyText(e.target.value)}
+                                      className="w-full border-none rounded-lg p-2 text-xs resize-none focus:ring-1 focus:ring-blue-200"
+                                      placeholder="Write a reply..."
+                                      rows="2"
+                                    ></textarea>
+                                    <div className="flex justify-end gap-2 p-1">
+                                      <button
+                                        onClick={cancelReply}
+                                        className="px-2 py-1 text-gray-500 text-xs rounded hover:bg-gray-100"
+                                      >
+                                        Cancel
+                                      </button>
+                                      <button
+                                        onClick={() => handleReplySubmit(selectedPost._id, comment._id)}
+                                        className="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
+                                      >
+                                        Reply
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {comment.replies?.length > 0 && (
+                              <div className="ml-12 mt-2 space-y-2">
+                                {comment.replies.map((reply) => (
+                                  <div key={reply._id} className="flex items-start gap-2">
+                                    <NavLink to={`/people/${reply.author?._id}`} className="flex-shrink-0">
+                                      <img src={reply.author?.profilePic || '/default-avatar.png'} alt="" className="w-6 h-6 rounded-full object-cover border border-gray-200" />
+                                    </NavLink>
+                                    <div className="bg-white p-2 rounded-lg shadow-sm flex-1">
+                                      <div className="flex items-center gap-2">
+                                        <NavLink to={`/people/${reply.author?._id}`} className="font-semibold text-gray-800 text-xs">
+                                          {reply.author?.firstname} {reply.author?.lastname}
+                                        </NavLink>
+                                        <span className="text-gray-500 text-[10px]">
+                                          {new Date(reply.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                      </div>
+                                      <p className="text-gray-700 text-xs mt-1">{reply.content}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))
                       )}
-
-                      {/* Add Comment */}
-                      <div className="border-t pt-4 mt-auto">
-                        <textarea
-                          value={newCommentText}
-                          onChange={(e) => setNewCommentText(e.target.value)}
-                          rows={3}
-                          placeholder="Add a comment..."
-                          className="w-full border border-gray-300 rounded p-3 resize-none focus:ring-blue-500 focus:border-blue-500"
-                        />
-                        <button
-                          onClick={handleAddComment}
-                          className="mt-3 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                        >
-                          Post Comment
-                        </button>
-                      </div>
                     </div>
-                  )}
-
-                  {/* Share Section */}
-                  {isShareOpen && (
-                    <div className="flex-1 bg-gray-50 rounded-lg p-4 space-y-4 overflow-y-auto mt-4">
-                      <h3 className="font-bold text-lg text-gray-800">Share Post</h3>
-
+                    <div className="p-4 border-t border-gray-200 flex items-center gap-3">
+                      {/* Using a placeholder for current user's profile pic */}
+                      <img
+                        src={'/default-avatar.png'}
+                        alt="Your Profile"
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
                       <input
                         type="text"
-                        placeholder="Search users or communities to share..."
+                        value={newCommentText}
+                        onChange={(e) => setNewCommentText(e.target.value)}
+                        placeholder="Add a comment..."
+                        className="flex-1 px-4 py-2 rounded-full bg-gray-100 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-800"
+                      />
+                      <button
+                        onClick={() => handleAddComment(selectedPost._id)}
+                        disabled={!newCommentText.trim()}
+                        className={`px-5 py-2 rounded-full text-white transition-colors ${newCommentText.trim() ? "bg-blue-500 hover:bg-blue-600" : "bg-gray-400 cursor-not-allowed"
+                          }`}
+                      >
+                        Post
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {activeSharePost === selectedPost._id && (
+                  <>
+                    <div className="p-4 border-b border-gray-100">
+                      <h3 className="font-semibold text-gray-800">Share Post</h3>
+                    </div>
+                    <div className="p-4 border-b border-gray-100">
+                      <input
+                        type="text"
+                        placeholder="Search users or communities..."
                         value={shareSearchTerm}
                         onChange={handleShareSearchChange}
-                        className="w-full border border-gray-300 rounded p-3 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-800"
                       />
+                    </div>
 
-                      {usersToShare.users.length === 0 && usersToShare.community.length === 0 ? (
-                        <p className="text-gray-500 text-sm text-center py-4">No users or communities found</p>
+                    <div className="flex-1 overflow-y-auto custom-scrollbar">
+                      {(usersToShare.users.length === 0 && usersToShare.community.length === 0 && shareSearchTerm !== "") ? (
+                        <p className="p-4 text-center text-gray-500">No results found.</p>
                       ) : (
-                        <div className="max-h-60 overflow-y-auto space-y-2">
+                        <div className="p-4 space-y-3">
                           {usersToShare.users.map((user) => (
-                            <div
-                              key={user._id}
-                              className="flex items-center justify-between bg-white rounded p-3 shadow-sm"
-                            >
+                            <div key={user._id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg shadow-sm">
                               <div className="flex items-center gap-3">
                                 <img
                                   src={user.profilePic || '/default-avatar.png'}
-                                  alt={user.firstname}
+                                  alt={user.username}
                                   className="w-8 h-8 rounded-full object-cover"
                                 />
-                                <span className="text-gray-800">
-                                  {user.username || `${user.firstname} ${user.lastname}`.trim()}
-                                </span>
+                                <span className="text-gray-800">{user.firstname} {user.lastname}</span>
                               </div>
                               <input
                                 type="checkbox"
-                                checked={shareRecipients.find(u => u._id === user._id)} // Check for object presence
+                                checked={shareRecipients.some((r) => r._id === user._id)}
                                 onChange={() => toggleShareRecipient(user)}
-                                className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
+                                className="form-checkbox h-5 w-5 text-teal-700 rounded"
                               />
                             </div>
                           ))}
                           {usersToShare.community.map((community) => (
-                            <div
-                              key={community._id}
-                              className="flex items-center justify-between bg-white rounded p-3 shadow-sm"
-                            >
+                            <div key={community._id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg shadow-sm">
                               <div className="flex items-center gap-3">
                                 <img
                                   src={community.profilePic || '/default-community.png'}
                                   alt={community.name}
-                                  className="w-8 h-8 rounded-full object-cover"
+                                  className="w-8 h-8 rounded-lg object-cover"
                                 />
                                 <span className="text-gray-800">
                                   @{community.name}
@@ -820,33 +813,210 @@ export default function PeopleProfile({ userId }) {
                               </div>
                               <input
                                 type="checkbox"
-                                checked={shareRecipients.find(c => c._id === community._id)} // Check for object presence
+                                checked={shareRecipients.some(c => c._id === community._id)}
                                 onChange={() => toggleShareRecipient(community)}
-                                className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                                className="form-checkbox h-5 w-5 text-purple-600 rounded"
                               />
                             </div>
                           ))}
                         </div>
                       )}
-
+                    </div>
+                    <div className="p-4 border-t border-gray-100 flex justify-end">
                       <button
-                        onClick={handleShareSubmit}
+                        onClick={() => handleShareSubmit(selectedPost._id)}
                         disabled={shareRecipients.length === 0}
-                        className={`w-full px-4 py-2 rounded-md text-white transition-colors ${shareRecipients.length === 0
-                          ? "bg-gray-400 cursor-not-allowed"
-                          : "bg-blue-500 hover:bg-blue-600"
-                          }`}
+                        className="bg-gradient-to-r from-teal-800/60 to-black/60 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-teal-800 hover:to-black transition-all disabled:opacity-50"
                       >
                         Share ({shareRecipients.length} selected)
                       </button>
                     </div>
-                  )}
-                </div>
+                  </>
+                )}
+              </div>
+
+              {/* Mobile view (below md) - panels shown below the post in expanded mode */}
+              <div className="md:hidden flex-1 flex flex-col overflow-hidden">
+                {activeCommentPost === selectedPost._id && (
+                  <div className="p-4 border-t border-gray-100 bg-gray-50 mt-4">
+                    <h4 className="font-medium text-gray-700 mb-3">Comments</h4>
+                    <div className="mb-3 flex items-start gap-2">
+                      {/* Using a placeholder for current user's profile pic */}
+                      <img
+                        src={'/default-avatar.png'}
+                        alt="Your profile"
+                        className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                      />
+                      <div className="flex-1 bg-white rounded-xl shadow-sm">
+                        <textarea
+                          value={newCommentText}
+                          onChange={(e) => setNewCommentText(e.target.value)}
+                          placeholder="Add a comment..."
+                          className="w-full border-none rounded-xl p-3 text-sm resize-none focus:ring-1 focus:ring-teal-200"
+                          rows="2"
+                        ></textarea>
+                        <div className="flex justify-end p-2">
+                          <button
+                            onClick={() => handleAddComment(selectedPost._id)}
+                            className="px-3 py-1 bg-gradient-to-r from-teal-800 to-black text-white text-sm font-medium rounded-lg hover:from-teal-800 hover:to-black transition-all "
+                            disabled={!newCommentText.trim()}
+                          >
+                            Comment
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="max-h-60 overflow-y-auto space-y-4 text-sm custom-scrollbar">
+                      {(comments[selectedPost._id] || []).map((c) => (
+                        <div key={c._id} className="flex flex-col">
+                          <div className="flex justify-between items-start gap-2">
+                            <div className="flex items-start gap-2 flex-1">
+                              <NavLink to={`/people/${c.author?._id}`} className="flex-shrink-0">
+                                <img src={c.author?.profilePic || '/default-avatar.png'} alt="" className="w-8 h-8 rounded-full object-cover border border-gray-200" />
+                              </NavLink>
+                              <div className="bg-white p-3 rounded-xl shadow-sm flex-1">
+                                <div className="flex items-center gap-2">
+                                  <NavLink to={`/people/${c.author?._id}`} className="font-semibold text-gray-800 text-sm">
+                                    {c.author?.firstname} {c.author?.lastname}
+                                  </NavLink>
+                                  <span className="text-gray-500 text-xs">
+                                    {new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <p className="text-gray-700 mt-1">{c.content}</p>
+                                  {/* Removed conditional check for userData?.user?._id === c.author?._id */}
+                                  <button
+                                    onClick={() => handleDeleteComment(c._id)}
+                                    className="text-red-500 hover:text-red-700 ml-2"
+                                    title="Delete comment"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </div>
+                                <button
+                                  onClick={() => startReply(c._id)}
+                                  className="text-blue-500 text-xs mt-1"
+                                >
+                                  Reply
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {replyingTo === c._id && (
+                            <div className="mt-2 ml-12">
+                              <div className="flex items-start gap-2">
+                                {/* Using a placeholder for current user's profile pic */}
+                                <img
+                                  src={'/default-avatar.png'}
+                                  alt="Your profile"
+                                  className="w-6 h-6 rounded-full object-cover border border-gray-200"
+                                />
+                                <div className="flex-1 bg-white rounded-lg shadow-sm">
+                                  <textarea
+                                    value={replyText}
+                                    onChange={(e) => setReplyText(e.target.value)}
+                                    className="w-full border-none rounded-lg p-2 text-xs resize-none focus:ring-1 focus:ring-teal-200"
+                                    placeholder="Write a reply..."
+                                    rows="2"
+                                  ></textarea>
+                                  <div className="flex justify-end gap-2 p-1">
+                                    <button
+                                      onClick={cancelReply}
+                                      className="px-2 py-1 text-gray-500 text-xs rounded hover:bg-gray-100"
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button
+                                      onClick={() => handleReplySubmit(selectedPost._id, c._id)}
+                                      className="px-2 py-1 bg-teal-700 text-white text-xs rounded hover:bg-teal-900"
+                                    >
+                                      Reply
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                              </div>
+                            )}
+
+                            {c.replies?.length > 0 && (
+                              <div className="ml-12 mt-2 space-y-2">
+                                {c.replies.map((r) => (
+                                  <div key={r._id} className="flex items-start gap-2">
+                                    <NavLink to={`/people/${r.author?._id}`} className="flex-shrink-0">
+                                      <img src={r.author?.profilePic || '/default-avatar.png'} alt="" className="w-6 h-6 rounded-full object-cover border border-gray-200" />
+                                    </NavLink>
+                                    <div className="bg-white p-2 rounded-lg shadow-sm flex-1">
+                                      <div className="flex items-center gap-2">
+                                        <NavLink to={`/people/${r.author?._id}`} className="font-semibold text-gray-800 text-xs">
+                                          {r.author?.firstname} {r.author?.lastname}
+                                        </NavLink>
+                                        <span className="text-gray-500 text-[10px]">
+                                          {new Date(r.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                      </div>
+                                      <p className="text-gray-700 text-xs mt-1">{r.content}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      }
+                    </div>
+                  </div>
+                )}
+
+                {activeSharePost === selectedPost._id && (
+                  <div className="p-4 border-t border-gray-100 bg-gray-50 mt-4">
+                    <h3 className="font-medium text-gray-700 mb-3">Share Post</h3>
+                    <input
+                      type="text"
+                      value={shareSearchTerm}
+                      onChange={handleShareSearchChange}
+                      placeholder="Search users to share..."
+                      className="w-full border-b border-gray-200 outline-none p-2 text-sm resize-none text-gray-800"
+                    />
+                    {shareSearchTerm.trim() !== "" && (
+                      <div className="space-y-2 max-h-40 overflow-y-auto mt-3 custom-scrollbar">
+                        {usersToShare.users.map((u) => (
+                          <div key={u._id} className="flex justify-between items-center">
+                            <span>{u.firstname} {u.lastname}</span>
+                            <input
+                              type="checkbox"
+                              checked={shareRecipients.some((sel) => sel._id === u._id)}
+                              onChange={() => toggleShareRecipient(u)}
+                            />
+                          </div>
+                        ))}
+                        {usersToShare.community.map((u) => (
+                          <div key={u._id} className="flex justify-between items-center">
+                            <span>{u.name}</span>
+                            <input
+                              type="checkbox"
+                              checked={shareRecipients.some((sel) => sel._id === u._id)}
+                              onChange={() => toggleShareRecipient(u)}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <button
+                      onClick={() => handleShareSubmit(selectedPost._id)}
+                      className="bg-gradient-to-tr from-teal-800 to-black text-white px-3 py-1 mt-3 rounded-md text-sm float-right"
+                      disabled={shareRecipients.length === 0}
+                    >
+                      Share
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
-        );
-      })()}
+        </div>
+      )}
     </div>
   );
 }

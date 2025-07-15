@@ -294,17 +294,16 @@ export default function Home() {
     <div className="w-full md:w-5/6 mx-auto px-0 py-6 mb-10 relative md:ml-20 lg:ml-24">
 
       {/* Header Container - Premium Design */}
-      <div className="flex items-center justify-between gap-4 px-6 py-4 mb-8 bg-white rounded-xl shadow-sm sticky top-0 z-10 backdrop-blur-sm bg-opacity-90">
-        {/* App Logo Placeholder */}
-        <div className="w-10 h-10 rounded-lg hidden bg-gradient-to-r from-teal-800 to-teal-600 md845:flex items-center justify-center">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-          </svg>
-        </div>
+      <div className="flex flex-col gap-4 px-6 py-4 mb-8 bg-white rounded-xl shadow-sm sticky top-0 z-10 backdrop-blur-sm bg-opacity-90">
+        <div className="flex items-center justify-between gap-4">
+          <div className="w-10 h-10 rounded-lg hidden bg-gradient-to-r from-teal-800 to-teal-600 md845:flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          </div>
 
-        {/* Search and Search Results Container */}
-        <div className="relative flex-1 max-w-md mx-4"> {/* New relative container */}
-          <div className="relative"> {/* Original search input container */}
+          {/* Search Input Container */}
+          <div className="relative flex-1 max-w-md mx-4">
             <input
               type="text"
               placeholder="Search people, communities..."
@@ -317,103 +316,102 @@ export default function Home() {
             </svg>
           </div>
 
-          {/* Search Results - Premium Dropdown */}
-          <div className={`${(searchTerm === "" || (results.users?.length === 0 && results.community?.length === 0)) ? "hidden" : ""} absolute top-full mt-2 left-0 right-0 max-h-72 overflow-y-auto border border-gray-200 rounded-xl shadow-xl bg-white backdrop-blur-sm bg-opacity-95 z-20`}>
-            {(results.users?.length > 0 || results.community?.length > 0) && (
-              <div className="flex flex-col divide-y divide-gray-100">
-                {results.users?.map((res) => (
-                  <div
-                    key={res._id}
-                    className="flex items-center w-full gap-3 p-3 hover:bg-gray-50 cursor-pointer transition-colors duration-200"
-                  >
-                    <NavLink to={`/people/${res._id}`} className="flex gap-3 items-center flex-1">
-                      <div className="relative">
-                        <img
-                          src={res.profilePic}
-                          alt=""
-                          className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
-                        />
-                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                      </div>
-                      <div>
-                        <strong className="text-gray-800">{res.firstname} {res.lastname}</strong>
-                      </div>
-                    </NavLink>
-
-                  </div>
-                ))}
-
-                {results.community?.map((res) => (
-                  <div
-                    key={res._id}
-                    className="flex items-center w-full gap-3 p-3 hover:bg-gray-50 cursor-pointer transition-colors duration-200"
-                  >
-                    <NavLink to={`/community/${res._id}`} className="flex gap-3 items-center flex-1">
-                      <div className="relative">
-                        <img
-                          src={res.profilePic}
-                          alt=""
-                          className="w-10 h-10 rounded-xl object-cover border-2 border-white shadow-sm"
-                        />
-                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-purple-500 rounded-full border-2 border-white"></div>
-                      </div>
-                      <div>
-                        <strong className="text-gray-800">{res.name}</strong>
-                      </div>
-                    </NavLink>
-                  </div>
-                ))}
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3">
+            {/* Community Button */}
+            <NavLink
+              to="/createCommunity"
+              className="flex items-center justify-center h-10 px-3 rounded-xl bg-gradient-to-r from-teal-50 to-purple-50 text-teal-800 hover:from-blue-100 hover:to-purple-100 transition-all duration-300 group"
+              title="Create Community"
+            >
+              <div className="w-6 h-6 rounded-md bg-gradient-to-r from-teal-800 to-teal-500 flex items-center justify-center sm:mr-2  transition-all duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
               </div>
-            )}
+              <span className="font-medium text-sm hidden sm:inline-block">
+                Community
+              </span>
+            </NavLink>
+
+            {/* Logout Button */}
+            <button
+              onClick={logout}
+              className="flex items-center justify-center h-10 px-3 rounded-xl bg-gray-50 text-gray-600 hover:bg-gray-100 transition-all duration-300 group"
+              title="Logout"
+            >
+              <div className="w-6 h-6 rounded-md bg-gradient-to-r from-gray-500 to-gray-600 flex items-center justify-center sm:mr-2 group-hover:from-gray-600 group-hover:to-gray-700 transition-all duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+              </div>
+              <span className="font-medium text-sm hidden sm:inline-block">
+                Logout
+              </span>
+            </button>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-3">
-          {/* Community Button */}
-          <NavLink
-            to="/createCommunity"
-            className="flex items-center justify-center h-10 px-3 rounded-xl bg-gradient-to-r from-teal-50 to-purple-50 text-teal-800 hover:from-blue-100 hover:to-purple-100 transition-all duration-300 group"
-            title="Create Community"
-          >
-            <div className="w-6 h-6 rounded-md bg-gradient-to-r from-teal-800 to-teal-500 flex items-center justify-center mr-2  transition-all duration-300">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </div>
-            <span className="font-medium text-sm hidden sm:inline-block">
-              Community
-            </span>
-          </NavLink>
+        {/* Search Results - Premium Dropdown (moved outside the relative search input container) */}
+        <div className={`${(searchTerm === "" || (results.users?.length === 0 && results.community?.length === 0)) ? "hidden" : ""} w-full max-h-72 overflow-y-auto border border-gray-200 rounded-xl shadow-xl bg-white backdrop-blur-sm bg-opacity-95 z-20`}>
+          {(results.users?.length > 0 || results.community?.length > 0) && (
+            <div className="flex flex-col">
+              {results.users?.map((res) => (
+                <div
+                  key={res._id}
+                  className="flex items-center w-full  gap-3 p-3 hover:bg-gray-50 cursor-pointer transition-colors duration-200"
+                >
+                  <NavLink to={`/people/${res._id}`} className="flex gap-3 items-center flex-1">
+                    <div className="relative">
+                      <img
+                        src={res.profilePic}
+                        alt=""
+                        className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
+                      />
+                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                    </div>
+                    <div>
+                      <strong className="text-gray-800">{res.firstname} {res.lastname}</strong>
+                    </div>
+                  </NavLink>
+                </div>
+              ))}
 
-          {/* Logout Button */}
-          <button
-            onClick={logout}
-            className="flex items-center justify-center h-10 px-3 rounded-xl bg-gray-50 text-gray-600 hover:bg-gray-100 transition-all duration-300 group"
-            title="Logout"
-          >
-            <div className="w-6 h-6 rounded-md bg-gradient-to-r from-gray-500 to-gray-600 flex items-center justify-center mr-2 group-hover:from-gray-600 group-hover:to-gray-700 transition-all duration-300">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
+              {results.community?.map((res) => (
+                <div
+                  key={res._id}
+                  className="flex items-center w-full gap-3 p-3 hover:bg-gray-50 cursor-pointer transition-colors duration-200"
+                >
+                  <NavLink to={`/community/${res._id}`} className="flex gap-3 items-center flex-1">
+                    <div className="relative">
+                      <img
+                        src={res.profilePic}
+                        alt=""
+                        className="w-10 h-10 rounded-xl object-cover border-2 border-white shadow-sm"
+                      />
+                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-purple-500 rounded-full border-2 border-white"></div>
+                    </div>
+                    <div>
+                      <strong className="text-gray-800">{res.name}</strong>
+                    </div>
+                  </NavLink>
+                </div>
+              ))}
             </div>
-            <span className="font-medium text-sm hidden sm:inline-block">
-              Logout
-            </span>
-          </button>
+          )}
         </div>
       </div>
 
-      {/* Stories/Communities Section - Premium Carousel */}
+      {/* Communities Section  */}
       <div
         ref={scrollRef}
-        className="w-full overflow-x-auto scrollbar-hide mb-8"
+        className="w-full overflow-x-auto border-b-2 border-gray-300 scrollbar-hide mb-8"
       >
         <div className="flex space-x-4 w-max mx-auto px-1 py-2">
           {loadingCommunities ? (
             <div className="flex justify-center items-center h-32 w-full">
               <div className="relative w-64 h-2 bg-gray-300 overflow-hidden rounded-full">
-                <div className="absolute inset-0 bg-gradient-to-r from-black via-gray-700 to-black w-1/3 h-full animate-slide" />
+                <div className="absolute inset-0 bg-gradient-to-tl from-teal-800 via-gray-700 to-amber-800 w-1/3 h-full animate-slide" />
               </div>
             </div>
 
@@ -425,8 +423,8 @@ export default function Home() {
                   className="flex-shrink-0 flex flex-col items-center gap-2 cursor-pointer group"
                 >
                   <NavLink to={`/community/${community._id}`} className="relative flex flex-col items-center">
-                    <div className="relative w-32 h-32 rounded-2xl flex flex-col items-center justify-center p-1 bg-gradient-to-tr from-teal-800 via-blue-900 to-black shadow-lg">
-                      <div className="w-full h-full rounded-xl bg-white flex flex-col items-center justify-center overflow-hidden p-2">
+                    <div className="relative w-32 h-32 rounded-2xl flex flex-col items-center justify-center p-1 bg-gradient-to-tl from-teal-800 via-blue-900 to-amber-800 shadow-lg">
+                      <div className="w-full h-full rounded-lg bg-gradient-to-br from-teal-800 to-yellow-800 flex flex-col items-center justify-center overflow-hidden p-2">
                         <img
                           src={community.profilePic}
                           alt={community.name}
