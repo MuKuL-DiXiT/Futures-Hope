@@ -504,7 +504,7 @@ router.post('/:postId/comment/:commentId/unlike', verifyAccessToken, async (req,
 // });
 
 // Search users
-router.get('/search/users', verifyAccessToken, async (req, res) => {
+router.get('/search/users', async (req, res) => {
   try {
     const { query } = req.query;
     if (!query) return res.json([]);
