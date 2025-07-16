@@ -286,7 +286,7 @@ router.get('/allCommunities', verifyAccessToken, async (req, res) => {
 });
 
 //get all the members
-router.get('/allUsers/:comId', verifyAccessToken, async (res, req) => {
+router.get('/allUsers/:comId', async (res, req) => {
   try {
     const community = await Community.findById(req.params.com_id)
       .populate('members', 'firstname lastname email profilePic _id');
