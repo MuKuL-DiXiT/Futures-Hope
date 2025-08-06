@@ -423,17 +423,17 @@ export default function Home() {
                   className="flex-shrink-0 flex flex-col items-center gap-2 cursor-pointer group"
                 >
                   <NavLink to={`/community/${community._id}`} className="relative flex flex-col items-center">
-                    <div className="relative w-32 h-32 rounded-2xl flex flex-col items-center justify-center p-1 bg-gradient-to-tl from-teal-800 via-blue-900 to-amber-800 shadow-lg">
-                      <div className="w-full h-full rounded-lg bg-gradient-to-br from-teal-800 to-yellow-800 flex flex-col items-center justify-center overflow-hidden p-2">
+                    <div className="relative w-32 h-32 flex flex-col bg-gradient-to-t from-gray-200 to-gray-600 items-center justify-center p-1 rounded-lg shadow-lg">
+                      <div className="w-full h-full rounded-lg bg-white flex flex-col items-center justify-center overflow-hidden p-2">
                         <img
-                          src={community.profilePic}
+                          src={community.profilePic || 'dummyGroup.png'}
                           alt={community.name}
-                          className="w-16 h-16 rounded-full object-cover mb-2 shadow-sm"
+                          className="w-16 h-16 rounded-full object-cover border-2 border-gray-600 mb-2 shadow-sm"
                         />
                         <h2 className="text-xs font-semibold text-gray-800 truncate w-full text-center">
                           {community.name}
                         </h2>
-                        <p className="text-[10px] text-gray-500 mt-1">
+                        <p className="text-[10px] text-black mt-1">
                           by {community.creator.firstname}
                         </p>
                       </div>
@@ -448,7 +448,7 @@ export default function Home() {
 
       {/* Main Content */}
       <div className="w-full flex flex-col lg:flex-row gap-6 justify-center">
-        <div className="flex-1 space-y-6 max-w-2xl w-full mx-auto">
+        <div className="flex-1 space-y-6 max-w-5xl w-full mx-auto">
           {loading ? (
             <div className="flex justify-center items-center h-64">
               <div className="relative">
@@ -477,7 +477,7 @@ export default function Home() {
                   <div className="flex items-center justify-between p-4">
                     <NavLink to={`/people/${post.user._id}`} className="flex items-center gap-3">
                       <div className="relative">
-                        <img src={post.user?.profilePic} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm" />
+                        <img src={post.user?.profilePic || 'dummy.png'} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm" />
                         <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
                       </div>
                       <div>
