@@ -419,7 +419,7 @@ export default function PeopleProfile({ userId }) {
         <div className="flex-shrink-0 relative group w-32 h-32 md:w-40 md:h-40">
           <img
             onClick={() => setProfilePicExpanded(!profilePicExpanded)}
-            src={userData.profilePic || '/default-avatar.png'}
+            src={userData.profilePic}
             alt={userData.username}
             className={`relative z-10 rounded-full object-cover border-2 border-gray-300 cursor-pointer transition-all duration-300 ${profilePicExpanded ? "w-full h-full" : "w-full h-full"}`}
           />
@@ -562,7 +562,7 @@ export default function PeopleProfile({ userId }) {
             <div className="w-full md:w-2/5 flex flex-col h-full">
               <div className="flex items-center gap-3 p-4 border-b border-gray-100">
                 <NavLink to={`/people/${selectedPost.user._id}`} className="flex items-center gap-3">
-                  <img src={selectedPost.user?.profilePic} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm" />
+                  <img src={selectedPost.user?.profilePic || 'dummy.png'} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm" />
                   <div>
                     <span className="font-semibold text-gray-800">{selectedPost.user.firstname + " " + selectedPost.user.lastname}</span>
                     <p className="text-xs text-gray-500">@{selectedPost.user.username}</p>
@@ -640,7 +640,7 @@ export default function PeopleProfile({ userId }) {
                             <div className="flex justify-between items-start gap-2">
                               <div className="flex items-start gap-2 flex-1">
                                 <NavLink to={`/people/${comment.author?._id}`} className="flex-shrink-0">
-                                  <img src={comment.author?.profilePic || '/default-avatar.png'} alt="" className="w-8 h-8 rounded-full object-cover border border-gray-200" />
+                                  <img src={comment.author?.profilePic || 'dummy.png'} alt="" className="w-8 h-8 rounded-full object-cover border border-gray-200" />
                                 </NavLink>
                                 <div className="bg-gray-50 p-3 rounded-xl flex-1">
                                   <div className="flex items-center gap-2">
@@ -714,7 +714,7 @@ export default function PeopleProfile({ userId }) {
                                 {comment.replies.map((reply) => (
                                   <div key={reply._id} className="flex items-start gap-2">
                                     <NavLink to={`/people/${reply.author?._id}`} className="flex-shrink-0">
-                                      <img src={reply.author?.profilePic || '/default-avatar.png'} alt="" className="w-6 h-6 rounded-full object-cover border border-gray-200" />
+                                      <img src={reply.author?.profilePic} alt="" className="w-6 h-6 rounded-full object-cover border border-gray-200" />
                                     </NavLink>
                                     <div className="bg-white p-2 rounded-lg shadow-sm flex-1">
                                       <div className="flex items-center gap-2">
@@ -785,7 +785,7 @@ export default function PeopleProfile({ userId }) {
                             <div key={user._id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg shadow-sm">
                               <div className="flex items-center gap-3">
                                 <img
-                                  src={user.profilePic || '/default-avatar.png'}
+                                  src={user.profilePic }
                                   alt={user.username}
                                   className="w-8 h-8 rounded-full object-cover"
                                 />
@@ -803,7 +803,7 @@ export default function PeopleProfile({ userId }) {
                             <div key={community._id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg shadow-sm">
                               <div className="flex items-center gap-3">
                                 <img
-                                  src={community.profilePic || '/default-community.png'}
+                                  src={community.profilePic}
                                   alt={community.name}
                                   className="w-8 h-8 rounded-lg object-cover"
                                 />
@@ -872,7 +872,7 @@ export default function PeopleProfile({ userId }) {
                           <div className="flex justify-between items-start gap-2">
                             <div className="flex items-start gap-2 flex-1">
                               <NavLink to={`/people/${c.author?._id}`} className="flex-shrink-0">
-                                <img src={c.author?.profilePic || '/default-avatar.png'} alt="" className="w-8 h-8 rounded-full object-cover border border-gray-200" />
+                                <img src={c.author?.profilePic} alt="" className="w-8 h-8 rounded-full object-cover border border-gray-200" />
                               </NavLink>
                               <div className="bg-white p-3 rounded-xl shadow-sm flex-1">
                                 <div className="flex items-center gap-2">
@@ -945,7 +945,7 @@ export default function PeopleProfile({ userId }) {
                                 {c.replies.map((r) => (
                                   <div key={r._id} className="flex items-start gap-2">
                                     <NavLink to={`/people/${r.author?._id}`} className="flex-shrink-0">
-                                      <img src={r.author?.profilePic || '/default-avatar.png'} alt="" className="w-6 h-6 rounded-full object-cover border border-gray-200" />
+                                      <img src={r.author?.profilePic || 'dummy.png'} alt="" className="w-6 h-6 rounded-full object-cover border border-gray-200" />
                                     </NavLink>
                                     <div className="bg-white p-2 rounded-lg shadow-sm flex-1">
                                       <div className="flex items-center gap-2">

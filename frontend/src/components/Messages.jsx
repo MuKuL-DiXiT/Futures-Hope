@@ -247,7 +247,7 @@ export default function Messages() {
                     className="flex items-center gap-3 p-3 hover:bg-gray-100 cursor-pointer transition-colors"
                   >
                     <button className="flex gap-3 items-center w-full text-left" onClick={() => createChat(res._id)}>
-                      <img src={res.profilePic || "/default-avatar.png"} alt="Profile" className="w-9 h-9 rounded-full object-cover border border-gray-200" />
+                      <img src={res.profilePic || 'dummy.png' || "/default-avatar.png"} alt="Profile" className="w-9 h-9 rounded-full object-cover border border-gray-200" />
                       <strong className="text-gray-800 text-base">{res.firstname} {res.lastname || ""}</strong>
                     </button>
                   </div>
@@ -258,7 +258,7 @@ export default function Messages() {
                     className="flex items-center gap-3 p-3 hover:bg-gray-100 cursor-pointer transition-colors"
                   >
                     <button className="flex gap-3 items-center w-full text-left" onClick={() => createChat(res._id)}>
-                      <img src={res.profilePic || "/default-avatar.png"} alt="Community" className="w-9 h-9 rounded-full object-cover border border-gray-200" />
+                      <img src={res.profilePic || 'dummyGroup.png' || "/default-avatar.png"} alt="Community" className="w-9 h-9 rounded-full object-cover border border-gray-200" />
                       <strong className="text-gray-800 text-base">@{res.name} (Community)</strong>
                     </button>
                   </div>
@@ -303,8 +303,8 @@ export default function Messages() {
                   <img
                     src={
                       chat.isGroupChat
-                        ? chat.groupImage
-                        : otherUser?.profilePic || "/default-avatar.png"
+                        ? chat.groupImage || 'dummyGroup.png'
+                        : otherUser?.profilePic || 'dummy.png'
                     }
                     alt="Chat avatar"
                     className="w-12 h-12 rounded-full object-cover border border-gray-300 flex-shrink-0"
@@ -351,7 +351,7 @@ export default function Messages() {
                 </NavLink>
               ) : (
                 <NavLink to={`/people/${chatWith._id}`} className="flex items-center gap-3">
-                  <img src={chatWith.profilePic || "/default-avatar.png"} className="w-11 h-11 rounded-full object-cover border border-gray-300" alt="User avatar" />
+                  <img src={chatWith.profilePic || 'dummy.png' || "/default-avatar.png"} className="w-11 h-11 rounded-full object-cover border border-gray-300" alt="User avatar" />
                   <strong className="text-lg text-gray-800">{chatWith.firstname} {chatWith.lastname || ""}</strong>
                 </NavLink>
               )}
