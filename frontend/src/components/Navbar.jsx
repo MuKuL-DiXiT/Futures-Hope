@@ -7,7 +7,7 @@ export default function Navbar() {
   const navclass = ({ isActive }) =>
     isActive
       ? "text-green-700 flex items-center gap-3 font-semibold font-sans"
-      : "text-black flex items-center gap-3 hover:text-black font-sans";
+      : "text-white flex items-center gap-3 hover:text-gray-300 font-sans";
 
   const [unseenNotifications, setUnseenNotifications] = useState(0);
   const [unseenMessages, setUnseenMessages] = useState(0);

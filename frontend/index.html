@@ -8,65 +8,7 @@
   <title>Future's Hope</title>
   <link rel="icon" type="image/webp" href="/favicon.jpeg" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <style>
-    #root {
-      position: relative;
-      z-index: 10;
-    }
-
-    @keyframes float {
-
-      0%,
-      100% {
-        transform: translateY(0px);
-      }
-
-      50% {
-        transform: translateY(-20px);
-      }
-    }
-
-    @keyframes float-delayed {
-
-      0%,
-      100% {
-        transform: translateY(0px);
-      }
-
-      50% {
-        transform: translateY(-15px);
-      }
-    }
-
-    @keyframes tilt {
-
-      0%,
-      50%,
-      100% {
-        transform: rotate(0deg);
-      }
-
-      25% {
-        transform: rotate(1deg);
-      }
-
-      75% {
-        transform: rotate(-1deg);
-      }
-    }
-
-    .animate-float {
-      animation: float 6s ease-in-out infinite;
-    }
-
-    .animate-float-delayed {
-      animation: float-delayed 8s ease-in-out infinite;
-    }
-
-    .animate-tilt {
-      animation: tilt 10s infinite linear;
-    }
-  </style>
+  
 </head>
 
 <body class="
@@ -76,13 +18,7 @@
   bg-no-repeat bg-center bg-contain bg-fixed
 ">
   <div id="root"></div>
-  <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-    <div class="absolute top-20 left-10 w-32 h-32 bg-green-200 rounded-full opacity-20 animate-float"></div>
-    <div class="absolute top-40 right-20 w-24 h-24 bg-amber-200 rounded-full opacity-30 animate-float-delayed"></div>
-    <div class="absolute bottom-32 left-1/4 w-20 h-20 bg-emerald-200 rounded-full opacity-25 animate-float"></div>
-    <div class="absolute bottom-20 right-1/3 w-28 h-28 bg-yellow-200 rounded-full opacity-20 animate-float-delayed">
-    </div>
-  </div>
+ 
 
   <script type="module" src="/src/main.jsx"></script>
 </body>
