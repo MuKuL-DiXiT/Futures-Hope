@@ -3,6 +3,7 @@ import { FaSignOutAlt } from "react-icons/fa";
 import { Heart, MessageCircle, Share2, Trash, LogOut, Loader2 } from "lucide-react";
 import { useNavigate, NavLink } from "react-router-dom";
 import { io } from "socket.io-client";
+import Notification from "./Notification"; // Import Notification component
 const socket = io(import.meta.env.VITE_BACKEND_URL, {
   transports: ["websocket"],
   withCredentials: true,
@@ -292,9 +293,11 @@ export default function Home() {
 
   return (
     <div className="w-full md:w-5/6 mx-auto px-0 py-6 mb-10 relative md:ml-20 lg:ml-24">
+    
+    <div className="w-full lg:w-3/4 mx-auto px-0 py-6 mb-10 relative md845:ml-20 lg:ml-0">
 
       {/* Header Container - Premium Design */}
-      <div className="flex flex-col gap-4 px-6 py-4 mb-8 bg-white rounded-xl shadow-sm sticky top-0 z-10 backdrop-blur-sm bg-opacity-90">
+      <div className="flex flex-col gap-4 px-6 py-4 mb-8 bg-white rounded-xl shadow-sm sticky lg:fixed top-0 lg:left-64 z-10 backdrop-blur-sm bg-opacity-90">
         <div className="flex items-center justify-between gap-4">
           <div className="w-10 h-10 rounded-lg hidden bg-gradient-to-r from-teal-800 to-teal-600 md845:flex items-center justify-center">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -405,7 +408,7 @@ export default function Home() {
       {/* Communities Section  */}
       <div
         ref={scrollRef}
-        className="w-full overflow-x-auto border-b-2 border-gray-300 scrollbar-hide mb-8"
+        className="w-full overflow-x-auto scrollbar-hide lg:mt-16  mb-8"
       >
         <div className="flex space-x-4 w-max mx-auto px-1 py-2">
           {loadingCommunities ? (
@@ -423,8 +426,8 @@ export default function Home() {
                   className="flex-shrink-0 flex flex-col items-center gap-2 cursor-pointer group"
                 >
                   <NavLink to={`/community/${community._id}`} className="relative flex flex-col items-center">
-                    <div className="relative w-32 h-32 flex flex-col bg-gradient-to-t from-gray-200 to-gray-600 items-center justify-center p-1 rounded-lg shadow-lg">
-                      <div className="w-full h-full rounded-lg bg-white flex flex-col items-center justify-center overflow-hidden p-2">
+                    <div className="relative w-64 h-48 flex flex-col bg-gradient-to-t from-gray-200 to-gray-600 items-center justify-center p-1 rounded-lg shadow-lg">
+                      <div className="w-full h-full rounded-lg bg-black/30 flex flex-col items-center justify-center overflow-hidden p-2">
                         <img
                           src={community.profilePic || 'dummyGroup.png'}
                           alt={community.name}
@@ -521,7 +524,7 @@ export default function Home() {
                         <span className={`text-sm ${likedPosts[post._id] ? "text-green-500" : "text-gray-600"}`}>
                           {post.likesCount}
                         </span>
-                      </button>
+                        </button>
                       <button
                         onClick={() => {
                           setOpenCommentsFor((prev) => {
@@ -1036,5 +1039,11 @@ export default function Home() {
         </div>
       )}
     </div>
+    {/* Notification bar - visible on large screens */}
+    <div className="hidden lg:block fixed bottom-4 right-4 w-1/4 h-screen top-10 bg-white rounded-xl shadow-xl border border-gray-200 overflow-y-auto">
+      <Notification />
+    </div>
+  </div>
+    
   );
 }

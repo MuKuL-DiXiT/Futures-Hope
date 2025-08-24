@@ -136,7 +136,7 @@ const Notification = () => {
   const Section = ({ icon: Icon, label, toggle, show, children }) => (
     <div className="mt-6">
       <button
-        className="text-sm text-blue-500 hover:underline flex items-center gap-2 mb-3" // Adjusted styling for button
+        className="text-sm text-black hover:underline flex items-center gap-2 mb-3" // Adjusted styling for button
         onClick={toggle}
       >
         <Icon className="w-4 h-4" />
@@ -194,7 +194,7 @@ const Notification = () => {
         {proofScreenshotUrl && (
           <button
             onClick={() => window.open(proofScreenshotUrl, '_blank')}
-            className="text-xs text-blue-500 hover:underline mt-2 text-left"
+            className="text-xs text-black hover:underline mt-2 text-left"
           >
             View Proof
           </button>
@@ -206,10 +206,10 @@ const Notification = () => {
 
   return (
     <div className="min-h-screen w-full bg-transparent flex flex-col items-center p-4 pt-16 md:pt-8 pb-[80px] md:pb-8">
-      <div className="w-full max-w-lg bg-white/30 rounded-xl shadow-lg overflow-hidden">
+      <div className="w-full max-w-lg bg-black/30 rounded-xl shadow-lg overflow-hidden">
         {/* Header - Simple and Clean */}
         <div className="flex items-center justify-start p-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">Activity</h2>
+          <h2 className="text-xl font-semibold text-white">Activity</h2>
         </div>
 
         <div className="p-5 space-y-6">
@@ -231,7 +231,7 @@ const Notification = () => {
                     type="payment"
                     actionButton={
                       <button
-                        className="text-sm px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors duration-200"
+                        className="text-sm px-3 py-1 bg-gradient-to-tr from-purple-700 via-purple-500 to-black hover:bg-purple-700 text-white rounded-md transition-colors duration-200"
                         onClick={(e) => {
                           e.stopPropagation();
                           verifyPayment(payment._id);
@@ -276,60 +276,27 @@ const Notification = () => {
           {/* Bond Requests Section */}
           <Section icon={User2Icon} label="Bond Requests" toggle={() => setShowRequests(!showRequests)} show={showRequests}>
             <div className="space-y-3 mt-4">
-              {bondRequests.length === 0 ? (
+              {bondRequests.length === 0 && (
                 <p className="text-sm italic text-gray-500">No pending bond requests.</p>
-              ) : (
-                bondRequests.map((req) => (
-                  <ActionCard
-                    key={req._id}
-                    user={req.requester}
-                    date={req.createdAt}
-                    type="bondRequest"
-                  />
-                ))
               )}
             </div>
           </Section>
 
           {/* Unseen Notifications Section - Always Visible */}
           <div className="mt-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
-              <Bell className="w-5 h-5 text-gray-600" /> Unseen Notifications
+            <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+              <Bell className="w-5 h-5 text-purple-600" /> Unseen Notifications
             </h3>
-            {unseen.length === 0 ? (
+            {unseen.length === 0 && (
               <p className="text-sm italic text-gray-500">You're all caught up!</p>
-            ) : (
-              <ul className="space-y-3">
-                {unseen.map((n) => (
-                  <li key={n._id} onClick={() => setToSeen(n._id)} className="cursor-pointer">
-                    <ActionCard
-                      user={n.from}
-                      date={n.createdAt}
-                      message={n.message}
-                      type="notification"
-                    />
-                  </li>
-                ))}
-              </ul>
             )}
           </div>
 
           {/* Seen Notifications Section - Toggable */}
           <Section icon={CheckCircle} label="Seen Notifications" toggle={() => setShowSeen(!showSeen)} show={showSeen}>
             <ul className="mt-4 space-y-3">
-              {seen.length === 0 ? (
+              {seen.length === 0 && (
                 <p className="text-sm italic text-gray-500">No seen notifications yet.</p>
-              ) : (
-                seen.map((n) => (
-                  <li key={n._id}>
-                    <ActionCard
-                      user={n.from}
-                      date={n.createdAt}
-                      message={n.message}
-                      type="notification"
-                    />
-                  </li>
-                ))
               )}
             </ul>
           </Section>
