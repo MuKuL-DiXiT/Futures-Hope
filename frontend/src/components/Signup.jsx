@@ -100,33 +100,24 @@ export default function Signup() {
   };
 
   return (
-    <div
-      className="w-full min-h-screen bg-gradient-to-b from-teal-950 via-black to-teal-950 text-white flex items-center justify-center"
-    >
-     
-      <div className="min-h-screen flex flex-col items-center justify-evenly w-full">
-        <div>
-          <h1 className="font-extralight text-center  bg-clip-text text-transparent bg-gradient-to-tr from-purple-900 via-purple-600 to-slate-50 text-4xl mt-12 mb-3">
-            Future's Hope
-          </h1>
-        </div>
+    <div className="w-full min-h-screen bg-gradient-to-b from-white to-slate-50 text-slate-900 flex items-center justify-center">
+      <div className="w-full max-w-3xl px-6 py-12">
+       
 
-        {/* Signup Form */}
+        {/* Signup Form (light themed) */}
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col gap-6 p-6 bg-black/30 border border-black rounded-xl shadow-lg w-full max-w-md text-white items-center"
+          className="mx-auto flex flex-col gap-4 p-8 bg-white rounded-2xl shadow-md w-full max-w-md border border-gray-100"
           encType="multipart/form-data"
         >
-          <h2 className="text-xl font-semibold text-center text-white mb-2">
-            Sign Up
-          </h2>
+          <h2 className="text-lg font-semibold text-slate-900 text-center mb-1">Sign Up</h2>
 
-          <div className="flex gap-4 w-5/6">
+          <div className="flex gap-3">
             <input
               type="text"
               name="firstname"
               placeholder="First Name"
-              className="p-3 rounded-lg bg-black text-white focus:ring-0 outline-none w-1/2"
+              className="p-3 rounded-lg border border-gray-200 w-1/2 text-slate-800"
               required
               value={formData.firstname}
               onChange={handleChange}
@@ -135,7 +126,7 @@ export default function Signup() {
               type="text"
               name="lastname"
               placeholder="Last Name"
-              className="p-3 rounded bg-black text-white focus:ring-0 outline-none w-1/2"
+              className="p-3 rounded-lg border border-gray-200 w-1/2 text-slate-800"
               required
               value={formData.lastname}
               onChange={handleChange}
@@ -146,7 +137,7 @@ export default function Signup() {
             type="number"
             name="age"
             placeholder="Age (min 13)"
-            className="p-3 rounded bg-black text-white focus:ring-0 outline-none w-5/6"
+            className="p-3 rounded-lg border border-gray-200 w-full text-slate-800"
             required
             min={13}
             value={formData.age}
@@ -157,7 +148,7 @@ export default function Signup() {
             type="tel"
             name="mobile"
             placeholder="Mobile Number"
-            className="p-3 rounded bg-black text-white focus:ring-0 outline-none w-5/6"
+            className="p-3 rounded-lg border border-gray-200 w-full text-slate-800"
             required
             value={formData.mobile}
             onChange={handleChange}
@@ -167,7 +158,7 @@ export default function Signup() {
             type="email"
             name="email"
             placeholder="Email"
-            className="p-3 rounded bg-black text-white focus:ring-0 outline-none w-5/6"
+            className="p-3 rounded-lg border border-gray-200 w-full text-slate-800"
             required
             value={formData.email}
             onChange={handleChange}
@@ -177,20 +168,20 @@ export default function Signup() {
             type="password"
             name="password"
             placeholder="Password (8+ aA1)"
-            className="p-3 rounded bg-black text-white focus:ring-0 outline-none w-5/6"
+            className="p-3 rounded-lg border border-gray-200 w-full text-slate-800"
             required
             value={formData.password}
             onChange={handleChange}
           />
 
-          <div className="flex justify-between w-5/6">
+          <div className="flex gap-3 justify-start">
             {["male", "female", "other"].map((g) => (
-              <label key={g} className="flex items-center text-white text-sm">
+              <label key={g} className="flex items-center gap-2 text-sm text-slate-700">
                 <input
                   type="radio"
                   name="gender"
                   value={g}
-                  className="mr-1 form-radio text-purple-600 focus:ring-green-600"
+                  className="mr-1 form-radio"
                   checked={formData.gender === g}
                   onChange={handleChange}
                 />
@@ -199,10 +190,10 @@ export default function Signup() {
             ))}
           </div>
 
-          <div className="w-5/6">
+          <div>
             <label
               htmlFor="profilePicUpload"
-              className="cursor-pointer border border-gray-500  bg-black text-white py-3 px-4 rounded-lg flex items-center justify-center hover:bg-gray-800 transition-colors duration-200"
+              className="cursor-pointer border border-gray-200 bg-white text-slate-700 py-3 px-4 rounded-lg flex items-center justify-center hover:bg-gray-50 transition-colors duration-150 w-full"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -218,7 +209,7 @@ export default function Signup() {
                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
                 />
               </svg>
-              {formData.profilePic ? formData.profilePic.name : "Upload Profile Picture"}
+              <span className="text-sm text-slate-700">{formData.profilePic ? formData.profilePic.name : "Upload Profile Picture"}</span>
             </label>
             <input
               id="profilePicUpload"
@@ -226,47 +217,22 @@ export default function Signup() {
               name="profilePic"
               accept="image/*"
               onChange={handleFileChange}
-              className="hidden" // Hide default file input
+              className="hidden"
             />
           </div>
+
           <button
             type="submit"
-            className="border border-gray-400  px-4 py-2 rounded-lg shadow-md font-semibold"
+            className="btn-primary w-full py-3 rounded-lg mt-1"
           >
             Sign Up
           </button>
 
-          <p className="text-xs text-gray-400 text-center w-5/6">
-            By signing up, you agree to our{" "}
-            <span className="text-purple-500 underline hover:text-purple-400 cursor-pointer">Terms</span>,{" "}
-            <span className="text-purple-500 underline hover:text-purple-400 cursor-pointer">Privacy</span>, and{" "}
-            <span className="text-purple-500 underline hover:text-purple-400 cursor-pointer">Cookies</span> policies.
+          <p className="text-xs text-slate-500 text-center">
+            By signing up, you agree to our <span className="text-emerald-600">Terms</span>, <span className="text-emerald-600">Privacy</span>, and <span className="text-emerald-600">Cookies</span> policies.
           </p>
 
-          {/* Divider */}
-          <div className="flex justify-center items-center gap-2 my-4 text-gray-500">
-            <span className="w-16 h-px bg-gray-700"></span>
-            OR
-            <span className="w-16 h-px bg-gray-700"></span>
-          </div>
-
-          {/* Google Login */}
-          <button
-            onClick={handleGoogleLogin}
-            className="flex w-full items-center justify-center gap-3  border border-gray-400 px-6 py-3 rounded-lg  transition-all"
-          >
-            <FaGoogle size={22} className="text-purple-200 " />
-            <span className="text-gray-300">
-              Continue with Google
-            </span>
-          </button>
-
-          <p className="text-sm text-center mt-4 text-gray-300">
-            Already have an account?{" "}
-            <NavLink to="/" className="text-purple-500 underline">
-              Log in
-            </NavLink>
-          </p>
+        
         </form>
       </div>
     </div>

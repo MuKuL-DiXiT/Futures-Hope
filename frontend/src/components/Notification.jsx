@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
-import { Bell, CheckCircle, User2Icon, UserPlus, DollarSign } from "lucide-react";
+import { Bell, CheckCircle, User, UserPlus, DollarSign, Users, MessageSquare, Heart, ChevronDown, ChevronUp, Clock, Check } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import { toast } from 'react-toastify';
 
 export const socket = io(import.meta.env.VITE_BACKEND_URL, {
   withCredentials: true,
@@ -12,13 +11,14 @@ export const socket = io(import.meta.env.VITE_BACKEND_URL, {
 const Notification = () => {
   const [unseen, setUnseen] = useState([]);
   const [seen, setSeen] = useState([]);
-  const [showSeen, setShowSeen] = useState(false); // Reinstated toggle
+  const [showSeen, setShowSeen] = useState(false);
   const [bondRequests, setBondRequests] = useState([]);
-  const [showRequests, setShowRequests] = useState(false); // Reinstated toggle
+  const [showRequests, setShowRequests] = useState(false);
   const [communityJoinRequests, setCommunityJoinRequests] = useState([]);
-  const [showJoinRequests, setShowJoinRequests] = useState(false); // Reinstated toggle
+  const [showJoinRequests, setShowJoinRequests] = useState(false);
   const [unverifiedPayments, setUnverifiedPayments] = useState([]);
-  const [showPayments, setShowPayments] = useState(false); // Reinstated toggle
+  const [showPayments, setShowPayments] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   async function secureFetch(path, options = {}) {
     const baseUrl = import.meta.env.VITE_BACKEND_URL;
@@ -33,13 +33,12 @@ const Notification = () => {
       });
 
       if (refresh.ok) {
-        return fetch(url, { ...options, credentials: "include" }); // retry original request
+        return fetch(url, { ...options, credentials: "include" });
       } else {
         await fetch(`${baseUrl}/auth/logout`, {
           method: "GET",
           credentials: "include",
         });
-
         throw new Error("Session expired. Logged out.");
       }
     }
@@ -48,6 +47,7 @@ const Notification = () => {
   }
 
   const fetchAllNotificationData = async () => {
+    setLoading(true);
     try {
       const [
         notificationsRes,
@@ -62,21 +62,22 @@ const Notification = () => {
       ]);
 
       const notificationsData = await notificationsRes.json();
-      setUnseen(notificationsData.unseen);
-      setSeen(notificationsData.seen);
+      setUnseen(notificationsData.unseen || []);
+      setSeen(notificationsData.seen || []);
 
       const bondRequestsData = await bondRequestsRes.json();
-      setBondRequests(bondRequestsData);
+      setBondRequests(Array.isArray(bondRequestsData) ? bondRequestsData : []);
 
       const joinRequestsData = await joinRequestsRes.json();
-      setCommunityJoinRequests(joinRequestsData);
+      setCommunityJoinRequests(Array.isArray(joinRequestsData) ? joinRequestsData : []);
 
       const paymentsData = await paymentsRes.json();
-      setUnverifiedPayments(paymentsData);
+      setUnverifiedPayments(Array.isArray(paymentsData) ? paymentsData : []);
 
     } catch (error) {
       console.error("Error fetching notification data:", error);
-      toast.error("Failed to load notifications.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -90,217 +91,340 @@ const Notification = () => {
   const setToSeen = async (id) => {
     try {
       await secureFetch(`/auth/notification/${id}`, { method: "PATCH" });
-      setUnseen((prev) => prev.filter((n) => n._id !== id));
-      setSeen((prev) => [...prev, unseen.find((n) => n._id === id)]);
+      const notification = unseen.find((n) => n._id === id);
+      if (notification) {
+        setUnseen((prev) => prev.filter((n) => n._id !== id));
+        setSeen((prev) => [notification, ...prev]);
+      }
     } catch (error) {
       console.error("Error marking notification as seen:", error);
-      toast.error("Failed to mark as seen.");
     }
   };
 
-  const acceptCommunityRequest = async (id) => {
+  const acceptBondRequest = async (requestId) => {
     try {
-      const res = await secureFetch(`/auth/community/accept/${id}`, { method: "POST" });
-      if (res.ok) {
-        toast.success("Community request accepted!");
-        setCommunityJoinRequests((prev) => prev.filter((req) => req._id !== id));
-      } else {
-        toast.error("Failed to accept community request.");
-      }
+      await secureFetch(`/auth/bond/accept/${requestId}`, { method: "PATCH" });
+      setBondRequests((prev) => prev.filter((req) => req._id !== requestId));
     } catch (error) {
-      console.error("Error accepting community request:", error);
-      toast.error("Failed to accept community request.");
+      console.error("Error accepting bond request:", error);
+    }
+  };
+
+  const rejectBondRequest = async (requestId) => {
+    try {
+      await secureFetch(`/auth/bond/reject/${requestId}`, { method: "DELETE" });
+      setBondRequests((prev) => prev.filter((req) => req._id !== requestId));
+    } catch (error) {
+      console.error("Error rejecting bond request:", error);
     }
   };
 
   const verifyPayment = async (paymentId) => {
-    console.log(`Confirming verification for payment ID: ${paymentId}`);
     try {
-      const res = await secureFetch(`/auth/payment/verify/${paymentId}`, {
-        method: "PATCH",
-      });
-      if (res.ok) {
-        toast.success("Payment verified successfully!");
-        setUnverifiedPayments((prev) => prev.filter((p) => p._id !== paymentId));
-      } else {
-        const errorData = await res.json();
-        toast.error(errorData.message || "Failed to verify payment.");
-      }
+      await secureFetch(`/auth/payment/verify/${paymentId}`, { method: "PATCH" });
+      setUnverifiedPayments((prev) => prev.filter((p) => p._id !== paymentId));
     } catch (error) {
-      console.error(`Error verifying payment ${paymentId}:`, error);
-      toast.error("Error verifying payment.");
+      console.error("Error verifying payment:", error);
     }
   };
 
-  // Reinstated Section component
-  const Section = ({ icon: Icon, label, toggle, show, children }) => (
-    <div className="mt-6">
-      <button
-        className="text-sm text-black hover:underline flex items-center gap-2 mb-3" // Adjusted styling for button
-        onClick={toggle}
-      >
-        <Icon className="w-4 h-4" />
-        {show ? `Hide ${label}` : `Show ${label} (${children.length > 0 ? children.length : '0'})`} {/* Show count */}
-      </button>
-      {show && children}
-    </div>
-  );
+  // Notification Item Component
+  const NotificationItem = ({ notification, isUnseen }) => {
+    const getIcon = () => {
+      switch (notification.type) {
+        case 'like': return <Heart className="w-4 h-4 text-red-500" />;
+        case 'comment': return <MessageSquare className="w-4 h-4 text-blue-500" />;
+        case 'bond': return <Users className="w-4 h-4 text-green-500" />;
+        default: return <Bell className="w-4 h-4 text-gray-500" />;
+      }
+    };
 
-  // Generic card for requests/payments/notifications
-  const ActionCard = ({ user, community, amount, date, proofScreenshotUrl, actionButton, message, type = "notification" }) => (
-    <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadows duration-200">
-      {user && ( // Only render image if user object exists
-        <NavLink to={user._id ? `/people/${user._id}` : '#'} className="flex-shrink-0">
-          <img src={user.profilePic || "/default-avatar.png"} alt={user.firstname || "User"} className="w-10 h-10 rounded-full object-cover" />
-        </NavLink>
-      )}
-      <div className="flex-1 flex flex-col">
-        <p className="text-sm text-gray-800">
-          {type === "bondRequest" && (
-            <>
-              <NavLink to={`/people/${user._id}`} className="font-semibold hover:underline">
-                {user.firstname} {user.lastname}
-              </NavLink>{" "}
-              sent you a bond request.
-            </>
-          )}
-          {type === "communityJoinRequest" && (
-            <>
-              <NavLink to={`/people/${user._id}`} className="font-semibold hover:underline">
-                {user.firstname} {user.lastname}
-              </NavLink>{" "}
-              wants to join{" "}
-              <NavLink to={`/community/${community._id}`} className="font-semibold hover:underline">
-                {community.name}
-              </NavLink>
-              .
-            </>
-          )}
-          {type === "payment" && (
-            <>
-              <span className="font-semibold">{user.firstname || 'Someone'}</span> donated{" "}
-              <span className="font-semibold">₹{amount}</span> to{" "}
-              <NavLink to={`/community/${community?._id || '#'}`} className="font-semibold hover:underline">
-                {community?.name || 'Unknown Community'}
-              </NavLink>
-              .
-            </>
-          )}
-          {type === "notification" && (
-            <span dangerouslySetInnerHTML={{ __html: message }} />
-          )}
-        </p>
-        <p className="text-xs text-gray-500 mt-1">{new Date(date).toLocaleString()}</p>
-        {proofScreenshotUrl && (
-          <button
-            onClick={() => window.open(proofScreenshotUrl, '_blank')}
-            className="text-xs text-black hover:underline mt-2 text-left"
-          >
-            View Proof
-          </button>
-        )}
+    return (
+      <div 
+        onClick={() => isUnseen && setToSeen(notification._id)}
+        className={`flex items-start gap-3 p-4 rounded-lg border transition-all duration-200 cursor-pointer hover:shadow-md ${
+          isUnseen 
+            ? 'bg-blue-50 border-blue-200 hover:bg-blue-100' 
+            : 'bg-white border-gray-200 hover:bg-gray-50'
+        }`}
+      >
+        <div className="flex-shrink-0 mt-1">
+          {getIcon()}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm text-gray-900 leading-relaxed">
+            {notification.message}
+          </p>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-xs text-gray-500">
+              {new Date(notification.createdAt).toLocaleDateString()}
+            </span>
+            {isUnseen && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                New
+              </span>
+            )}
+          </div>
+        </div>
       </div>
-      {actionButton && <div className="flex-shrink-0">{actionButton}</div>}
+    );
+  };
+
+  // Request Item Component  
+  const RequestItem = ({ request, type, onAccept, onReject }) => {
+    return (
+      <div className="flex items-center gap-4 p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-all duration-200">
+        <NavLink to={`/people/${request.requester?._id || request._id}`} className="flex-shrink-0">
+          <img 
+            src={request.requester?.profilePic || request.profilePic || '/dummy.png'} 
+            alt="" 
+            className="w-12 h-12 rounded-full object-cover border-2 border-gray-100" 
+          />
+        </NavLink>
+        
+        <div className="flex-1 min-w-0">
+          <NavLink 
+            to={`/people/${request.requester?._id || request._id}`} 
+            className="font-medium text-gray-900 hover:text-blue-600 transition-colors"
+          >
+            {request.requester?.firstname || request.firstname} {request.requester?.lastname || request.lastname}
+          </NavLink>
+          <p className="text-sm text-gray-500 mt-1">
+            {type === 'bond' ? 'Wants to bond with you' : `Wants to join ${request.community?.name}`}
+          </p>
+          <span className="text-xs text-gray-400">
+            {new Date(request.createdAt).toLocaleDateString()}
+          </span>
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            onClick={() => onAccept(request._id)}
+            className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
+          >
+            Accept
+          </button>
+          <button
+            onClick={() => onReject(request._id)}
+            className="px-3 py-1.5 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700 transition-colors"
+          >
+            Reject
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  // Section Component
+  const Section = ({ icon: Icon, title, count, isOpen, onToggle, children }) => (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-gray-100 rounded-lg">
+            <Icon className="w-5 h-5 text-gray-600" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-gray-900">{title}</h3>
+            {count > 0 && (
+              <span className="text-sm text-gray-500">{count} item{count !== 1 ? 's' : ''}</span>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {count > 0 && (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              {count}
+            </span>
+          )}
+          {isOpen ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+        </div>
+      </button>
+      {isOpen && (
+        <div className="border-t border-gray-100">
+          <div className="p-4 space-y-3">
+            {children}
+          </div>
+        </div>
+      )}
     </div>
   );
 
   return (
-    <div className="min-h-screen w-full bg-transparent flex flex-col items-center p-4 pt-16 md:pt-8 pb-[80px] md:pb-8">
-      <div className="w-full max-w-lg bg-black/30 rounded-xl shadow-lg overflow-hidden">
-        {/* Header - Simple and Clean */}
-        <div className="flex items-center justify-start p-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-white">Activity</h2>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto bg-white min-h-screen">
+        
+        {/* Header */}
+        <div className="sticky top-0 md:top-8 lg:top-4 z-10 bg-white border-b border-gray-200 p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Bell className="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <h1 className="text-xl font-semibold text-gray-900">Notifications</h1>
+              <p className="text-sm text-gray-500">Stay updated with your activities</p>
+            </div>
+          </div>
         </div>
 
-        <div className="p-5 space-y-6">
-
-          {/* Incoming Payments Section */}
-          <Section icon={DollarSign} label="Incoming Payments" toggle={() => setShowPayments(!showPayments)} show={showPayments}>
-            <div className="space-y-3 mt-4">
+        {loading ? (
+          <div className="flex items-center justify-center p-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
+          </div>
+        ) : (
+          <div className="p-4 space-y-6">
+            
+            {/* Unverified Payments */}
+            <Section
+              icon={DollarSign}
+              title="Payment Verifications"
+              count={unverifiedPayments.length}
+              isOpen={showPayments}
+              onToggle={() => setShowPayments(!showPayments)}
+            >
               {unverifiedPayments.length === 0 ? (
-                <p className="text-sm italic text-gray-500">No unverified payments.</p>
+                <div className="text-center py-8 text-gray-500">
+                  <DollarSign className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <p>No payments to verify</p>
+                </div>
               ) : (
                 unverifiedPayments.map((payment) => (
-                  <ActionCard
-                    key={payment._id}
-                    user={{ firstname: payment.name, profilePic: "/default-avatar.png" }} // Use name for user in card
-                    amount={payment.amount}
-                    community={payment.community}
-                    date={payment.createdAt}
-                    proofScreenshotUrl={payment.proofScreenshotUrl}
-                    type="payment"
-                    actionButton={
+                  <div key={payment._id} className="flex items-center gap-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <DollarSign className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900">₹{payment.amount}</p>
+                      <p className="text-sm text-gray-600">From {payment.name}</p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(payment.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      {payment.proofScreenshotUrl && (
+                        <button
+                          onClick={() => window.open(payment.proofScreenshotUrl, '_blank')}
+                          className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          View Proof
+                        </button>
+                      )}
                       <button
-                        className="text-sm px-3 py-1 bg-gradient-to-tr from-purple-700 via-purple-500 to-black hover:bg-purple-700 text-white rounded-md transition-colors duration-200"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          verifyPayment(payment._id);
-                        }}
+                        onClick={() => verifyPayment(payment._id)}
+                        className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
                       >
                         Verify
                       </button>
-                    }
-                  />
+                    </div>
+                  </div>
                 ))
               )}
-            </div>
-          </Section>
+            </Section>
 
-          {/* Community Join Requests Section */}
-          <Section icon={UserPlus} label="Community Requests" toggle={() => setShowJoinRequests(!showJoinRequests)} show={showJoinRequests}>
-            <div className="space-y-3 mt-4">
-              {communityJoinRequests.length === 0 ? (
-                <p className="text-sm italic text-gray-500">No pending community requests.</p>
+            {/* Bond Requests */}
+            <Section
+              icon={UserPlus}
+              title="Bond Requests"
+              count={bondRequests.length}
+              isOpen={showRequests}
+              onToggle={() => setShowRequests(!showRequests)}
+            >
+              {bondRequests.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <UserPlus className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <p>No bond requests</p>
+                </div>
               ) : (
-                communityJoinRequests.map((req) => (
-                  <ActionCard
-                    key={req._id}
-                    user={req.user}
-                    community={req.community}
-                    date={req.requestedAt}
-                    type="communityJoinRequest"
-                    actionButton={
-                      <button
-                        className="text-sm px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors duration-200"
-                        onClick={() => acceptCommunityRequest(req._id)}
-                      >
-                        Accept
-                      </button>
-                    }
+                bondRequests.map((request) => (
+                  <RequestItem
+                    key={request._id}
+                    request={request}
+                    type="bond"
+                    onAccept={acceptBondRequest}
+                    onReject={rejectBondRequest}
                   />
                 ))
               )}
-            </div>
-          </Section>
+            </Section>
 
-          {/* Bond Requests Section */}
-          <Section icon={User2Icon} label="Bond Requests" toggle={() => setShowRequests(!showRequests)} show={showRequests}>
-            <div className="space-y-3 mt-4">
-              {bondRequests.length === 0 && (
-                <p className="text-sm italic text-gray-500">No pending bond requests.</p>
+            {/* Community Join Requests */}
+            <Section
+              icon={Users}
+              title="Community Requests"
+              count={communityJoinRequests.length}
+              isOpen={showJoinRequests}
+              onToggle={() => setShowJoinRequests(!showJoinRequests)}
+            >
+              {communityJoinRequests.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <p>No join requests</p>
+                </div>
+              ) : (
+                communityJoinRequests.map((request) => (
+                  <RequestItem
+                    key={request._id}
+                    request={request}
+                    type="community"
+                    onAccept={acceptBondRequest}
+                    onReject={rejectBondRequest}
+                  />
+                ))
               )}
-            </div>
-          </Section>
+            </Section>
 
-          {/* Unseen Notifications Section - Always Visible */}
-          <div className="mt-6">
-            <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-              <Bell className="w-5 h-5 text-purple-600" /> Unseen Notifications
-            </h3>
-            {unseen.length === 0 && (
-              <p className="text-sm italic text-gray-500">You're all caught up!</p>
+            {/* New Notifications */}
+            {unseen.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="flex items-center gap-2 font-semibold text-gray-900">
+                  <Clock className="w-4 h-4" />
+                  New Notifications
+                  <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">
+                    {unseen.length}
+                  </span>
+                </h3>
+                {unseen.map((notification) => (
+                  <NotificationItem
+                    key={notification._id}
+                    notification={notification}
+                    isUnseen={true}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Previous Notifications */}
+            {seen.length > 0 && (
+              <Section
+                icon={Check}
+                title="Previous Notifications"
+                count={seen.length}
+                isOpen={showSeen}
+                onToggle={() => setShowSeen(!showSeen)}
+              >
+                {seen.map((notification) => (
+                  <NotificationItem
+                    key={notification._id}
+                    notification={notification}
+                    isUnseen={false}
+                  />
+                ))}
+              </Section>
+            )}
+
+            {/* Empty State */}
+            {unseen.length === 0 && seen.length === 0 && bondRequests.length === 0 && 
+             communityJoinRequests.length === 0 && unverifiedPayments.length === 0 && (
+              <div className="text-center py-12">
+                <Bell className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">All caught up!</h3>
+                <p className="text-gray-500">You have no new notifications</p>
+              </div>
             )}
           </div>
-
-          {/* Seen Notifications Section - Toggable */}
-          <Section icon={CheckCircle} label="Seen Notifications" toggle={() => setShowSeen(!showSeen)} show={showSeen}>
-            <ul className="mt-4 space-y-3">
-              {seen.length === 0 && (
-                <p className="text-sm italic text-gray-500">No seen notifications yet.</p>
-              )}
-            </ul>
-          </Section>
-        </div>
+        )}
       </div>
     </div>
   );

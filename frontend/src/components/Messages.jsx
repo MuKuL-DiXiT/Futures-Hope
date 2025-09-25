@@ -403,7 +403,7 @@ export default function Messages() {
             </div>
 
             {/* Typing Bar - Fixed to bottom on small screens, above mobile navbar */}
-            <div className="p-4 flex items-center gap-3 rounded-b-lg fixed bottom-0 left-0 right-0 md:relative md:bottom-auto md:left-auto md:right-auto w-full z-20 bottom-[56px]">
+            <div className="p-4 flex items-center gap-3 rounded-b-lg fixed left-0 right-0 md:relative md:bottom-auto md:left-auto md:right-auto w-full z-20 bottom-[56px]">
               <input
                 value={messageContent}
                 onChange={(e) => setMessageContent(e.target.value)}
