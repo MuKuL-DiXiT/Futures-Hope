@@ -22,30 +22,31 @@ function Layout() {
   const showNavbar = location.pathname != ("/") && location.pathname != ("/signup");
 
   return (
-    <div className="flex">
-      <div>
-        {showNavbar && (
-          <>
-            <Navbar />
-          </>
-        )}
-      </div>
+    <div className="min-h-screen bg-gray-50">
       {!showNavbar && <BraveWarningBanner />}
-      <Routes >
-        <Route path="/" element={<Landing />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/Profile" element={<Profile />} />
-        <Route path="/post" element={<Post />} />
-        <Route path="/people/:id" element={<PeopleProfileWrapper />} />
-        <Route path="/messages" element={<Messages />} />
-        <Route path="/createCommunity" element={<CreateCommunityForm />} />
-        <Route path="/notification" element={<Notification />} />
-        <Route path="/community/:id" element={<CommunityPageWrapper />} />
-        <Route path="/post/:postId" element={<SinglePost />} />
-        <Route path="/connections" element={<Connections />} />
-        <Route path="/edit" element={<Edit />} />
-      </Routes>
+      
+      <div className="flex flex-col h-screen">
+        {/* Instagram-style layout */}
+        {showNavbar && <Navbar />}
+        
+        <main className={`flex-1 overflow-y-auto ${showNavbar ? 'pb-16 md:pb-0' : ''}`}>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/Profile" element={<Profile />} />
+            <Route path="/post" element={<Post />} />
+            <Route path="/people/:id" element={<PeopleProfileWrapper />} />
+            <Route path="/messages" element={<Messages />} />
+            <Route path="/createCommunity" element={<CreateCommunityForm />} />
+            <Route path="/notification" element={<Notification />} />
+            <Route path="/community/:id" element={<CommunityPageWrapper />} />
+            <Route path="/post/:postId" element={<SinglePost />} />
+            <Route path="/connections" element={<Connections />} />
+            <Route path="/edit" element={<Edit />} />
+          </Routes>
+        </main>
+      </div>
     </div>
   );
 }

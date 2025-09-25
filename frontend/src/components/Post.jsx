@@ -75,28 +75,36 @@ export default function Post() {
   };
 
   return (
-    // Adjusted padding for a fixed bottom navbar
-    // Assuming a navbar height of approximately 56px (h-14) or similar.
-    // The `pb-[80px]` ensures there's enough space above the navbar.
-    <div className="min-h-screen w-full  flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 pb-[80px] md:pb-8">
-      <div className="w-full max-w-lg bg-white rounded-xl shadow-lg overflow-hidden md:p-0">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto bg-white min-h-screen">
+        
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">Create new post</h2>
-          <button
-            type="submit"
-            onClick={handleSubmit}
-            disabled={loading || !file}
-            className="text-blue-500 font-semibold text-sm px-3 py-1 rounded-md hover:bg-blue-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? "Sharing..." : "Share"}
-          </button>
+        <div className="sticky top-0 md:top-8 lg:top-4 z-10 bg-white border-b border-gray-200 p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <PlusSquare className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <h1 className="text-xl font-semibold text-gray-900">Create Post</h1>
+                <p className="text-sm text-gray-500">Share your moment</p>
+              </div>
+            </div>
+            <button
+              type="submit"
+              onClick={handleSubmit}
+              disabled={loading || !file}
+              className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            >
+              {loading ? "Sharing..." : "Share"}
+            </button>
+          </div>
         </div>
 
-        <div className="p-5 space-y-5">
+        <div className="p-4 pb-20 md:pb-4">
           {/* File Upload / Media Selection Area */}
           {!file ? (
-            <div className="flex flex-col items-center justify-center bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-10 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
+            <div className="flex flex-col items-center justify-center bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-12 cursor-pointer hover:bg-gray-100 hover:border-gray-400 transition-all duration-200">
               <label htmlFor="upload" className="flex flex-col items-center text-center cursor-pointer">
                 <input
                   type="file"
@@ -105,39 +113,67 @@ export default function Post() {
                   id="upload"
                   className="hidden"
                 />
-                <PlusSquare className="w-12 h-12 text-gray-400 mb-3" />
-                <p className="text-gray-600 font-medium text-lg">Select media from your device</p>
-                <p className="text-gray-500 text-sm mt-1">Images or videos</p>
+                <div className="p-4 bg-blue-100 rounded-full mb-4">
+                  <PlusSquare className="w-8 h-8 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Select media from your device</h3>
+                <p className="text-gray-500">Images or videos</p>
               </label>
             </div>
           ) : (
-            <>
+            <div className="space-y-4">
               {/* Preview */}
-              <div className="rounded-lg overflow-hidden border border-gray-200 bg-black flex items-center justify-center">
+              <div className="rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
                 {mediaType === "photo" ? (
                   <img
                     src={URL.createObjectURL(file)}
                     alt="Preview"
-                    className="w-full h-80 object-contain max-h-80" // object-contain for full view
+                    className="w-full h-96 object-cover"
                   />
                 ) : (
                   <video
                     src={URL.createObjectURL(file)}
                     controls
-                    className="w-full h-80 object-contain max-h-80" // object-contain for full view
+                    className="w-full h-96 object-cover"
                   />
                 )}
               </div>
 
               {/* Caption */}
-              <textarea
-                rows="4" // Increased rows for more space
-                value={caption}
-                onChange={(e) => setCaption(e.target.value)}
-                placeholder="Write a caption..."
-                className="w-full bg-gray-50 text-gray-800 placeholder:text-gray-500 border border-gray-200 rounded-lg p-3 focus:outline-none focus:border-gray-400 resize-none text-sm"
-              />
-            </>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Caption</label>
+                <textarea
+                  rows="4"
+                  value={caption}
+                  onChange={(e) => setCaption(e.target.value)}
+                  placeholder="Write a caption for your post..."
+                  className="w-full border border-gray-200 rounded-lg p-3 text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
+                />
+              </div>
+
+              {/* File Info */}
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <div className="p-2 bg-white rounded-lg">
+                  {mediaType === "photo" ? (
+                    <ImagePlay className="w-5 h-5 text-gray-600" />
+                  ) : (
+                    <Video className="w-5 h-5 text-gray-600" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
+                  <p className="text-xs text-gray-500">
+                    {mediaType === "photo" ? "Image" : "Video"} • {(file.size / 1024 / 1024).toFixed(1)} MB
+                  </p>
+                </div>
+                <button
+                  onClick={() => setFile(null)}
+                  className="text-red-500 hover:text-red-700 text-sm font-medium transition-colors"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>

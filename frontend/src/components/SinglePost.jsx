@@ -148,104 +148,135 @@ export default function SinglePost() {
   }, [shareSearch]);
 
   if (loading || !post) return (
-    <div className="flex justify-center items-center min-h-screen">
-      <div className="flex justify-center items-center h-40">
-        <div className="relative">
-          <div className="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-8 h-8 bg-green-600 rounded-full animate-pulse"></div>
-          </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto bg-white min-h-screen">
+        <div className="flex items-center justify-center h-96">
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
         </div>
-      </div>    </div>
+      </div>
+    </div>
   );
 
   return (
-    <div className="min-h-screen w-full bg-transparent py-6 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Main Post Card */}
-        <div className="bg-teal-950/80 rounded-xl shadow-lg p-6 mb-6">
-          {/* Post Content */}
-          <div className="mb-4">
-            <h1 className="text-xl  text-gray-400 leading-relaxed">
-              <span className="text-green-500">About this post:</span> <br /> {post.caption}
-            </h1>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto bg-white min-h-screen">
+        
+        {/* Header */}
+        <div className="sticky top-0 md:top-8 lg:top-4 z-10 bg-white border-b border-gray-200 p-4">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => navigate(-1)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+            </button>
+            <div>
+              <h1 className="text-lg font-semibold text-gray-900">Post</h1>
+              <p className="text-sm text-gray-500">by {post?.user?.firstname || "Unknown"}</p>
+            </div>
           </div>
+        </div>
+
+        {/* Post Content */}
+        <div className="p-4">
+          
+          {/* Post Author */}
+          <div className="flex items-center gap-3 mb-4">
+            <NavLink to={`/people/${post.user._id}`}>
+              <img 
+                src={post?.user?.profilePic || '/dummy.png'} 
+                alt="" 
+                className="w-12 h-12 rounded-full object-cover border-2 border-gray-100" 
+              />
+            </NavLink>
+            <div className="flex-1">
+              <NavLink 
+                to={`/people/${post.user._id}`}
+                className="font-medium text-gray-900 hover:text-blue-600 transition-colors"
+              >
+                {post?.user?.firstname} {post?.user?.lastname}
+              </NavLink>
+              <p className="text-sm text-gray-500">
+                {new Date(post.createdAt).toLocaleDateString()}
+              </p>
+            </div>
+          </div>
+
+          {/* Post Caption */}
+          {post.caption && (
+            <div className="mb-4">
+              <p className="text-gray-900 leading-relaxed">{post.caption}</p>
+            </div>
+          )}
 
           {/* Media Content */}
           {post.media?.type === "photo" && post.media?.url && (
-            <div className="mb-4 flex justify-center">
+            <div className="mb-4 rounded-lg overflow-hidden border border-gray-200">
               <img
                 src={post.media.url}
-                alt="shared"
-                className="rounded-lg max-h-96 object-contain shadow-md"
+                alt="Post media"
+                className="w-full h-auto object-cover"
               />
             </div>
           )}
 
           {post.media?.type === "video" && post.media?.url && (
-            <div className="mb-4 flex justify-center">
+            <div className="mb-4 rounded-lg overflow-hidden border border-gray-200">
               <video
                 src={post.media.url}
                 controls
-                className="rounded-lg max-h-96 object-contain shadow-md"
+                className="w-full h-auto object-cover"
               />
             </div>
           )}
 
-          {/* Post Meta */}
-          <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-700">
-            <NavLink to={`/people/${post.user._id}`} className="text-sm text-gray-400">
-              Posted by: <span className="text-gray-300 font-medium">{post?.user?.firstname || "Unknown"}</span>
-            </NavLink>
-          </div>
-
-          {/* Engagement Buttons */}
-          <div className="flex items-center gap-8 mb-6">
-            <button
+          {/* Post Actions */}
+          <div className="flex items-center gap-4 py-3 border-b border-gray-200 mb-4">
+            <button 
               onClick={toggleLike}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${liked
-                ? "text-green-500 bg-red-500/10 hover:bg-red-500/20"
-                : "text-gray-400 hover:text-green-500 hover:bg-red-500/10"
-                }`}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                liked ? 'bg-red-50 text-green-600' : 'hover:bg-gray-100 text-gray-600'
+              }`}
             >
-              <Heart size={20} fill={liked ? "currentColor" : "none"} />
-              <span className="font-medium">{post.likesCount}</span>
+              <Heart className={`w-5 h-5 ${liked ? 'fill-current' : ''}`} />
+              <span className="text-sm">{post.likesCount || 0}</span>
             </button>
-
-            <div className="flex items-center gap-2 text-gray-400">
-              <MessageCircle size={20} />
-              <span className="font-medium">{post.commentsCount}</span>
-            </div>
-
-            <button
-              onClick={() => setSharePanelOpen(prev => !prev)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${sharePanelOpen
-                ? "text-blue-500 bg-blue-500/10"
-                : "text-gray-400 hover:text-blue-500 hover:bg-blue-500/10"
-                }`}
+            <button 
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"
             >
-              <Share size={20} />
-              <span className="font-medium">{post.sharesCount}</span>
+              <MessageCircle className="w-5 h-5" />
+              <span className="text-sm">{comments.length}</span>
+            </button>
+            <button 
+              onClick={() => setSharePanelOpen(!sharePanelOpen)}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"
+            >
+              <Share className="w-5 h-5" />
+              <span className="text-sm">Share</span>
             </button>
           </div>
 
           {/* Share Panel */}
           {sharePanelOpen && (
-            <div className="bg-transparent rounded-lg p-4 mb-6">
-              <h3 className="text-white font-medium mb-3">Share with friends</h3>
+            <div className="bg-gray-50 rounded-lg p-4 mb-4">
+              <h4 className="font-medium text-gray-900 mb-3">Share with</h4>
               <input
                 type="text"
                 value={shareSearch}
                 onChange={(e) => setShareSearch(e.target.value)}
-                placeholder="Search users to share..."
-                className="w-full p-3 rounded-lg bg-gray-600 text-white placeholder-gray-400 border border-gray-500 focus:border-blue-500 focus:outline-none transition-colors"
+                placeholder="Search users..."
+                className="w-full border border-gray-200 rounded-lg p-3 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 mb-3"
               />
-
               {shareSearch !== "" && (
-                <div className="mt-3 max-h-48 overflow-y-auto space-y-2">
-                  {results1.users.map((u) => (
-                    <label key={u._id} className="flex items-center justify-between p-2 bg-gray-600 rounded-lg cursor-pointer hover:bg-gray-500 transition-colors">
-                      <span className="text-white">{u.firstname} {u.lastname}</span>
+                <div className="max-h-48 overflow-y-auto space-y-2">
+                  {results1.users?.map((u) => (
+                    <label key={u._id} className="flex items-center justify-between p-2 bg-white border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center gap-2">
+                        <img src={u.profilePic || '/dummy.png'} alt="" className="w-8 h-8 rounded-full object-cover" />
+                        <span className="text-gray-900">{u.firstname} {u.lastname}</span>
+                      </div>
                       <input
                         type="checkbox"
                         checked={selectedUsers.find((sel) => sel._id === u._id)}
@@ -256,13 +287,16 @@ export default function SinglePost() {
                               : [...prev, u]
                           )
                         }
-                        className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                       />
                     </label>
                   ))}
-                  {results1.community.map((u) => (
-                    <label key={u._id} className="flex items-center justify-between p-2 bg-gray-600 rounded-lg cursor-pointer hover:bg-gray-500 transition-colors">
-                      <span className="text-white">{u.name}</span>
+                  {results1.community?.map((u) => (
+                    <label key={u._id} className="flex items-center justify-between p-2 bg-white border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center gap-2">
+                        <img src={u.profilePic || '/dummyGroup.png'} alt="" className="w-8 h-8 rounded-lg object-cover" />
+                        <span className="text-gray-900">{u.name}</span>
+                      </div>
                       <input
                         type="checkbox"
                         checked={selectedUsers.find((sel) => sel._id === u._id)}
@@ -273,17 +307,16 @@ export default function SinglePost() {
                               : [...prev, u]
                           )
                         }
-                        className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                       />
                     </label>
                   ))}
                 </div>
               )}
-
               <button
                 onClick={sharePost}
                 disabled={selectedUsers.length === 0}
-                className="w-full mt-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                className="w-full mt-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors"
               >
                 Share Post ({selectedUsers.length})
               </button>
