@@ -68,6 +68,10 @@ app.use((req, res, next) => {
 // Socket handler
 chatSocketHandler(io);
 
+//uptime robot
+app.get('/auth/up', (req, res) => {
+  res.status(200).send('OK');
+});
 // Routes
 app.use('/auth/signup', require('./routes/signup'));
 app.use('/auth/login', require('./routes/login'));

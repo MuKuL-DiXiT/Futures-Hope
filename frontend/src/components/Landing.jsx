@@ -13,6 +13,20 @@ export default function Landing() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const ping = async () => {
+      const base = import.meta.env.VITE_BACKEND_URL || "https://localhost:5173";
+      try {
+        const res = await fetch(base + "/auth/up", {
+          credentials: "include",
+        });
+        if (res.ok) {
+          console.log("working fine");
+        }
+      } catch (err) {
+        console.error("Ping error:", err);
+      }
+    };
+    ping();
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
