@@ -114,26 +114,26 @@ export default function Landing() {
           <div className="hero-blob blob-3" aria-hidden style={{ transform: `translate3d(0, ${scrollY * 0.4}px, 0)` }} />
         </div>
 
-        <div className="max-w-6xl w-full px-6 py-20 grid grid-cols-1 md:grid-cols-2 gap-12">
-          <div className="flex items-center justify-center min-h-[600px]">
+        <div className="max-w-6xl w-full px-6 sm:py-20 flex flex-col sm:grid sm:grid-cols-1 md:grid-cols-2 sm:gap-12">
+          <div className="flex items-center justify-center mt-16 sm:mt-0 min-h-[200px] sm:min-h-[600px]">
             <div className="space-y-6 w-full">
               <div className="inline-flex items-center gap-3 bg-white/60 backdrop-blur-md rounded-full px-4 py-2 shadow-sm">
                 <TreePine className="w-5 h-5 text-emerald-600" />
                 <span className="text-sm font-medium text-emerald-700">FuturesHope</span>
               </div>
 
-              <h1 className="text-4xl md:text-5xl font-extrabold leading-tight text-slate-900 fade-in" style={{ animationDelay: "120ms" }}>
+              <h1 className=" text-2xl md:text-5xl font-extrabold leading-tight text-slate-900 fade-in" style={{ animationDelay: "120ms" }}>
                 Build community. Share hope. Grow together.
               </h1>
 
-              <p className="text-lg text-slate-700 max-w-xl fade-in" style={{ animationDelay: "220ms" }}>
+              <p className="text-lg hidden sm:block text-slate-700 max-w-xl fade-in" style={{ animationDelay: "220ms" }}>
                 Join small groups, post thoughts, and connect with people who care. Simple, private, and delightful.
               </p>
 
-              <div className="flex flex-wrap gap-3 items-center mt-4">
+              <div className="flex flex-wrap gap-3 items-center sm:mt-4">
                 <button
                   onClick={() => setShowForm("signup")}
-                  className="btn-primary px-4 py-2 shadow-md fade-in"
+                  className="btn-primary rounded-full px-4 py-2 shadow-md fade-in"
                   style={{ animationDelay: "320ms" }}
                 >
                   Create account
@@ -165,8 +165,8 @@ export default function Landing() {
             </div>
           </div>
 
-          <div className="flex items-center justify-center min-h-[600px]">
-            <div className="w-full max-w-md mx-auto fade-in" style={{ animationDelay: "220ms" }}>
+          <div className="flex sm:items-center sm:mt-0 mt-16 justify-center min-h-[300px]">
+            <div className="w-full sm:max-w-md mx-auto fade-in" style={{ animationDelay: "220ms" }}>
               {showForm === "signup" ? (
               <Signup
                 showForm={showForm}
@@ -181,7 +181,7 @@ export default function Landing() {
                 handleGoogleLogin={handleGoogleLogin}
               />
             ) : (
-              <div className="w-full bg-white/70 backdrop-blur-md rounded-2xl p-6 shadow-xl">
+              <div className="w-full bg-white/70 backdrop-blur-md rounded-2xl sm:p-6 shadow-xl">
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="text-sm text-slate-600 font-medium">{showForm === "login" ? "Welcome back" : "Get started"}</div>
 

@@ -101,13 +101,13 @@ export default function Signup() {
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-b from-white to-slate-50 text-slate-900 flex items-center justify-center">
-      <div className="w-full max-w-3xl px-6 py-12">
+      <div className="w-full max-w-3xl sm:px-6 sm:py-12">
        
 
         {/* Signup Form (light themed) */}
         <form
           onSubmit={handleSubmit}
-          className="mx-auto flex flex-col gap-4 p-8 bg-white rounded-2xl shadow-md w-full max-w-md border border-gray-100"
+          className="mx-auto flex flex-col gap-4 sm:p-8 bg-white rounded-2xl shadow-md w-full max-w-md border border-gray-100"
           encType="multipart/form-data"
         >
           <h2 className="text-lg font-semibold text-slate-900 text-center mb-1">Sign Up</h2>
