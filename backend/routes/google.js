@@ -8,8 +8,9 @@ require('dotenv').config();
 
 const router = express.Router();
 
-router.use(cookieParser());
-router.use(passport.initialize());
+// No router-level cookieParser / passport.initialize() here — server.js already registers
+// cookieParser, session and passport middlewares globally. Avoid re-initializing passport
+// here which can cause session-support detection issues.
 
 // Passport Google strategy config
 passport.use(new GoogleStrategy({
@@ -40,8 +41,11 @@ router.get('/', passport.authenticate('google', {
 }));
 
 // OAuth callback route
+// Use session: false to avoid relying on express-session for OAuth callback.
+// We issue JWTs instead of creating a server session.
 router.get('/callback', passport.authenticate('google', {
-  failureRedirect: '/'
+  failureRedirect: '/',
+  session: false,
 }), (req, res) => {
   // User authenticated successfully here, set tokens and redirect
   const { accessToken, refreshToken } = generateToken(req.user);

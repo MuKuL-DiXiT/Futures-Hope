@@ -6,8 +6,6 @@ const { createServer } = require('http');
 const { Server } = require('socket.io');
 const chatSocketHandler = require('./sockets/chatSocket');
 const cookieParser = require('cookie-parser');
-const session = require('express-session');
-const MongoStore = require('connect-mongo');
 const passport = require('passport');
 const User = require('./models/Users');
 
@@ -31,33 +29,10 @@ app.set("io", io);
 // Basic Middleware
 app.use(express.json());
 app.use(cookieParser());
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  store: MongoStore.create({
-    mongoUrl: process.env.MONGO_URI,
-    collectionName: 'sessions',
-  }),
-  cookie: {
-    secure: false,
-    httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24 * 7,
-  }
-}));
+
 
 app.use(passport.initialize());
-app.use(passport.session());
 
-passport.serializeUser((user, done) => done(null, user._id));
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await User.findById(id);
-    done(null, user);
-  } catch (err) {
-    done(err);
-  }
-});
 
 // Pass io to routes via req
 app.use((req, res, next) => {
