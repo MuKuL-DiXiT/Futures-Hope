@@ -1,6 +1,8 @@
 <h1>Introduction</h1>
 
-Futures-Hope is a learning-focused project that shows how a normal person can create a complete web application using JavaScript on both frontend and backend.
+Future's Hope is a modern community-based social platform designed to bring people together around meaningful causes. It allows users to create or join communities, collaborate, communicate, and support each other — all in one place.
+
+The platform focuses on real-world impact by enabling community-driven projects and verified donations.
 
 <h2>It includes:</h2>
 -A React UI created with Vite
