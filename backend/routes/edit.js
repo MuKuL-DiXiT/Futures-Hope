@@ -11,7 +11,7 @@ router.post('/', verifyAccessToken, upload.single('profilePic'), async (req, res
     const { firstname, lastname } = req.body;
 
     if (req.file) {
-      user.profilePic = req.file.path; // assuming this is a Cloudinary URL
+      user.profilePic = req.file.path;
     }
 
     user.firstname = firstname || user.firstname;

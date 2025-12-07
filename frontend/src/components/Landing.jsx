@@ -104,29 +104,27 @@ export default function Landing() {
   }
 
   return (
-    <div className="w-full">
-      {/* Hero Section */}
-      <section className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-white to-slate-50 relative overflow-hidden">
-        {/* Decorative blobs behind content */}
+    <div className="w-full bg-noise dark:bg-black/80 bg-black/20">
+      <section className="min-h-screen w-full flex items-center justify-center relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center">
           <div className="hero-blob blob-1" aria-hidden style={{ transform: `translate3d(0, ${scrollY * 0.3}px, 0)` }} />
           <div className="hero-blob blob-2" aria-hidden style={{ transform: `translate3d(0, ${scrollY * -0.2}px, 0)` }} />
           <div className="hero-blob blob-3" aria-hidden style={{ transform: `translate3d(0, ${scrollY * 0.4}px, 0)` }} />
         </div>
 
-        <div className="max-w-6xl w-full px-6 sm:py-20 flex flex-col sm:grid sm:grid-cols-1 md:grid-cols-2 sm:gap-12">
+        <div className="max-w-6xl w-full sm:px-6 px-2 mb-20 mt-10 sm:mb-0 sm:mt-0  sm:py-20 flex flex-col sm:grid sm:grid-cols-1 md:grid-cols-2 sm:gap-12">
           <div className="flex items-center justify-center mt-16 sm:mt-0 min-h-[200px] sm:min-h-[600px]">
             <div className="space-y-6 w-full">
-              <div className="inline-flex items-center gap-3 bg-white/60 backdrop-blur-md rounded-full px-4 py-2 shadow-sm">
-                <TreePine className="w-5 h-5 text-emerald-600" />
-                <span className="text-sm font-medium text-emerald-700">FuturesHope</span>
+              <div className="inline-flex items-center gap-3 bg-white/60 backdrop-blur-md dark:bg-black/60 rounded-full px-4 py-2 shadow-sm">
+                <TreePine className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                <span className="text-sm font-medium text-purple-700 dark:text-purple-300">FuturesHope</span>
               </div>
 
-              <h1 className=" text-2xl md:text-5xl font-extrabold leading-tight text-slate-900 fade-in" style={{ animationDelay: "120ms" }}>
+              <h1 className="text-2xl md:text-5xl font-extrabold leading-tight fade-in text-black dark:text-white" style={{ animationDelay: "120ms" }}>
                 Build community. Share hope. Grow together.
               </h1>
 
-              <p className="text-lg hidden sm:block text-slate-700 max-w-xl fade-in" style={{ animationDelay: "220ms" }}>
+              <p className="text-lg hidden sm:block text-black dark:text-gray-200 font-semibold max-w-xl fade-in" style={{ animationDelay: "220ms" }}>
                 Join small groups, post thoughts, and connect with people who care. Simple, private, and delightful.
               </p>
 
@@ -140,27 +138,19 @@ export default function Landing() {
                 </button>
 
                 <button
-                  onClick={() => setShowForm("login")}
-                  className="btn-outline px-4 py-2 fade-in"
-                  style={{ animationDelay: "320ms" }}
-                >
-                  Log in
-                </button>
-
-                <button
                   onClick={handleGoogleLogin}
-                  className="flex items-center gap-2 rounded-full border px-3 py-2 text-sm bg-white/80 hover:bg-white shadow-sm fade-in"
+                  className="flex items-center gap-2 text-black dark:text-white rounded-full border px-3 py-2 text-sm bg-white/80 hover:bg-white dark:bg-black/80 dark:hover:bg-black dark:border-gray-700 shadow-sm fade-in"
                   style={{ animationDelay: "420ms" }}
                 >
                   <FaGoogle className="w-4 h-4 text-red-500" /> Sign in with Google
                 </button>
               </div>
 
-              <div className="text-sm text-slate-500 mt-6">
+              <div className="text-sm text-gray-800 dark:text-slate-300 mt-6">
                 <span>Already have an account?</span>
-                <NavLink to="/login" className="ml-2 text-emerald-700 font-medium">
+                <button onClick={() => setShowForm("login")} className="ml-2 text-black dark:text-white px-2 py-0.5 rounded-full shadow-md sm:bg-gray-100/20 shadow-black font-semibold">
                   Log in
-                </NavLink>
+                </button>
               </div>
             </div>
           </div>
@@ -181,12 +171,12 @@ export default function Landing() {
                 handleGoogleLogin={handleGoogleLogin}
               />
             ) : (
-              <div className="w-full bg-white/70 backdrop-blur-md rounded-2xl sm:p-6 shadow-xl">
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="text-sm text-slate-600 font-medium">{showForm === "login" ? "Welcome back" : "Get started"}</div>
+              <div className="w-full">
+                <form onSubmit={handleSubmit}  className="mx-auto flex flex-col bg-black/10 dark:bg-gray-800 gap-4 sm:p-8 rounded-2xl shadow-md w-full max-w-md border border-black dark:border-gray-700">
+                  <div className=" text-black text-center font-medium">{showForm === "login" ? "Welcome back" : "Get started"}</div>
 
                   <input
-                    className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-200"
+                    className="w-full rounded-xl border border-slate-200 bg-transparent text-white px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-200"
                     placeholder="Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -196,7 +186,7 @@ export default function Landing() {
 
                   <div className="relative">
                     <input
-                      className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-200 pr-12"
+                      className="w-full rounded-xl border border-slate-200 bg-transparent text-white px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-200 pr-12"
                       placeholder="Password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -228,178 +218,31 @@ export default function Landing() {
             </div>
           </div>
         </div>
-
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs text-slate-400">Made with ♥ for communities</div>
+        <button className="absolute bottom-16 left-0.45 mt-12 bg-gradient-to-br from-pink-700/40 to-white/20 hover:from-pink-700/80 hover:to-black/20 font-semibold  text-2xl rounded-full px-3 py-1 animate-bounce"><NavLink to='/home'>Explore</NavLink></button>
+        <div className="absolute bottom-6 left-0.3 sm:left-1/2  sm:-translate-x-1/2 text-xs text-slate-400">Made with ♥ for communities</div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 px-6 bg-white relative">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16 animate-on-scroll">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">What makes us different</h2>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              FuturesHope isn't just another social platform. We're building something better — focused, meaningful, and human.
-            </p>
+
+      {/* Footer */}
+      <footer className="w-full bg-black text-white py-12 border-t border-gray-800">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-2">
+            <TreePine className="w-6 h-6 text-white" />
+            <span className="text-lg font-light tracking-wider">FuturesHope</span>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="group p-6 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100 border border-blue-100 hover:shadow-lg transition-all duration-300 animate-on-scroll">
-              <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-3">Small Communities</h3>
-              <p className="text-slate-600">
-                Join intimate groups where every voice matters. No noise, no algorithms — just real people sharing real conversations.
-              </p>
-            </div>
-
-            <div className="group p-6 rounded-2xl bg-gradient-to-br from-green-50 to-emerald-100 border border-green-100 hover:shadow-lg transition-all duration-300 animate-on-scroll" style={{ animationDelay: "150ms" }}>
-              <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                <MessageCircle className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-3">Meaningful Posts</h3>
-              <p className="text-slate-600">
-                Share thoughts, projects, and ideas that matter. Every post is an opportunity to connect and inspire others.
-              </p>
-            </div>
-
-            <div className="group p-6 rounded-2xl bg-gradient-to-br from-purple-50 to-violet-100 border border-purple-100 hover:shadow-lg transition-all duration-300 animate-on-scroll" style={{ animationDelay: "300ms" }}>
-              <div className="w-12 h-12 bg-violet-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                <Shield className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-3">Safe Spaces</h3>
-              <p className="text-slate-600">
-                Thoughtful moderation and community guidelines ensure every space remains welcoming and constructive.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section className="py-20 px-6 bg-slate-50">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16 animate-on-scroll">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">How it works</h2>
-            <p className="text-lg text-slate-600">Simple steps to meaningful connections</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-            <div className="text-center group animate-on-scroll">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                <span className="text-2xl font-bold text-white">1</span>
-              </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-3">Join Communities</h3>
-              <p className="text-slate-600">
-                Discover communities that match your interests, values, and goals. From creative projects to professional growth.
-              </p>
-            </div>
-
-            <div className="text-center group animate-on-scroll" style={{ animationDelay: "150ms" }}>
-              <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                <span className="text-2xl font-bold text-white">2</span>
-              </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-3">Share & Connect</h3>
-              <p className="text-slate-600">
-                Post your thoughts, ask questions, share progress. Engage with others' content through thoughtful comments and reactions.
-              </p>
-            </div>
-
-            <div className="text-center group animate-on-scroll" style={{ animationDelay: "300ms" }}>
-              <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                <span className="text-2xl font-bold text-white">3</span>
-              </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-3">Build Relationships</h3>
-              <p className="text-slate-600">
-                Form genuine connections, collaborate on projects, and support each other's journeys in a positive environment.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Values Section */}
-      <section className="py-20 px-6 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div className="animate-on-scroll">
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6">Our values guide everything we do</h2>
-              <p className="text-lg text-slate-600 mb-8">
-                We believe technology should bring people closer together, not drive them apart. Every feature we build reflects our commitment to authentic human connection.
-              </p>
-              
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                    <Heart className="w-4 h-4 text-emerald-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-slate-900 mb-2">Human-first design</h4>
-                    <p className="text-slate-600">Every interaction is designed to feel personal and meaningful, not automated or cold.</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                    <Globe className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-slate-900 mb-2">Global community</h4>
-                    <p className="text-slate-600">Connect with like-minded people from around the world, breaking down barriers and building bridges.</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-violet-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                    <Zap className="w-4 h-4 text-violet-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-slate-900 mb-2">Continuous growth</h4>
-                    <p className="text-slate-600">We're constantly improving, learning from our community, and evolving to serve you better.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="relative animate-on-scroll">
-              <div className="w-full h-96 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-2xl flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <TreePine className="w-12 h-12 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-slate-900 mb-2">FuturesHope</h3>
-                  <p className="text-slate-600">Building tomorrow's communities today</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div className="max-w-4xl mx-auto text-center animate-on-scroll">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to build something meaningful?</h2>
-          <p className="text-xl text-blue-100 mb-8">
-            Join thousands of people creating the future of community, one conversation at a time.
-          </p>
           
-          <div className="flex flex-wrap gap-4 justify-center">
-            <button
-              onClick={() => document.querySelector('section').scrollIntoView({ behavior: 'smooth' })}
-              className="bg-white text-blue-600 font-semibold px-8 py-3 rounded-xl hover:bg-blue-50 transition-colors duration-200"
-            >
-              Get started for free
-            </button>
-            <button
-              onClick={() => document.querySelector('section').scrollIntoView({ behavior: 'smooth' })}
-              className="border-2 border-white/30 text-white font-semibold px-8 py-3 rounded-xl hover:bg-white/10 transition-colors duration-200"
-            >
-              Learn more
-            </button>
+          <div className="flex gap-8 text-sm font-light text-gray-400">
+            <a href="#" className="hover:text-white transition-colors">About</a>
+            <a href="#" className="hover:text-white transition-colors">Privacy</a>
+            <a href="#" className="hover:text-white transition-colors">Terms</a>
+            <a href="#" className="hover:text-white transition-colors">Contact</a>
+          </div>
+
+          <div className="text-xs text-gray-600 font-light">
+            © {new Date().getFullYear()} FuturesHope. All rights reserved.
           </div>
         </div>
-      </section>
+      </footer>
     </div>
   );
 }

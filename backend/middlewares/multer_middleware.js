@@ -12,7 +12,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder: "badmosi_files", // Cloudinary folder name (optional)
+    folder: "badmosi_files", 
     resource_type: "auto",     
   },
 });

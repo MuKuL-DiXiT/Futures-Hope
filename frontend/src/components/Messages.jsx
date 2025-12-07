@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { io } from "socket.io-client";
 import { Send, ArrowLeft, Trash } from "lucide-react";
 import { NavLink, useLocation } from 'react-router-dom';
+import secureFetch from "../utils/secureFetch";
 
 const socket = io(import.meta.env.VITE_BACKEND_URL, {
   transports: ["websocket"],
@@ -27,22 +28,6 @@ export default function Messages() {
   const timeoutRef = useRef(null);
   const [community, setCommunity] = useState("");
 
-
-  async function secureFetch(path, options = {}) {
-    const baseUrl = import.meta.env.VITE_BACKEND_URL;
-    const url = `${baseUrl}${path}`;
-    let res = await fetch(url, { ...options, credentials: "include" });
-    if (res.status === 401) {
-      const refresh = await fetch(`${baseUrl}/auth/refresh`, {
-        method: "POST",
-        credentials: "include",
-      });
-      if (refresh.ok) return fetch(url, { ...options, credentials: "include" });
-      await fetch(`${baseUrl}/auth/logout`, { method: "GET", credentials: "include" });
-      throw new Error("Session expired. Logged out.");
-    }
-    return res;
-  }
 
   useEffect(() => {
     const fetchChatData = async () => {
@@ -222,50 +207,50 @@ export default function Messages() {
   }, []);
 
   return (
-    <div className="flex flex-col md:flex-row h-screen w-full px-0 sm:px-0 md:pl-[80px] md:pr-4 md:mx-auto md:max-w-screen-xl pt-0">
+    <div className="flex flex-col md:flex-row h-screen w-full px-0 sm:px-0 md:pl-[80px] md:pr-4 md:mx-auto md:max-w-screen-xl pt-0 bg-white dark:bg-black transition-colors duration-300">
       {/* Left Panel: Chat List & Search Results */}
       {/* The panelStatus logic controls visibility on small screens */}
-      <div className={`md:bg-white bg-transparent overflow-y-auto w-full md:w-1/3 ${panelStatus ? "hidden md:inline-block" : "inline-block"} flex flex-col gap-2 pt-3 pb-20 md:pb-0 md:pt-8 rounded-lg shadow-lg`}>
+      <div className={`md:bg-white dark:md:bg-gray-900 bg-transparent overflow-y-auto w-full md:w-1/3 ${panelStatus ? "hidden md:inline-block" : "inline-block"} flex flex-col gap-2 pt-3 pb-20 md:pb-0 md:pt-8 rounded-lg shadow-lg border-r border-gray-200 dark:border-gray-800`}>
         <div className="flex items-center mb-4 px-4">
           <input
             type="text"
             placeholder="Search users..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="rounded-full px-4 py-2 w-full outline-none bg-gray-100 text-gray-800 placeholder-gray-500 border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all duration-200"
+            className="rounded-full px-4 py-2 w-full outline-none bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 border border-gray-300 dark:border-gray-700 focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all duration-200"
           />
         </div>
 
         {/* Search Results Panel - Always shown when searchTerm is not empty */}
         {searchTerm.trim() && (
-          <div className="mx-4 mb-5 min-h-60 bg-white border border-gray-200 rounded-lg shadow-sm max-h-60 overflow-y-auto">
+          <div className="mx-4 mb-5 min-h-60 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm max-h-60 overflow-y-auto">
             {(results.users.length > 0 || results.community.length > 0) ? (
               <>
                 {results.users.map((res) => (
                   <div
                     key={res._id}
-                    className="flex items-center gap-3 p-3 hover:bg-gray-100 cursor-pointer transition-colors"
+                    className="flex items-center gap-3 p-3 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors"
                   >
                     <button className="flex gap-3 items-center w-full text-left" onClick={() => createChat(res._id)}>
-                      <img src={res.profilePic || 'dummy.png' || "/default-avatar.png"} alt="Profile" className="w-9 h-9 rounded-full object-cover border border-gray-200" />
-                      <strong className="text-gray-800 text-base">{res.firstname} {res.lastname || ""}</strong>
+                      <img src={res.profilePic || 'dummy.png' || "/default-avatar.png"} alt="Profile" className="w-9 h-9 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
+                      <strong className="text-gray-800 dark:text-white text-base">{res.firstname} {res.lastname || ""}</strong>
                     </button>
                   </div>
                 ))}
                 {results.community.map((res) => (
                   <div
                     key={res._id}
-                    className="flex items-center gap-3 p-3 hover:bg-gray-100 cursor-pointer transition-colors"
+                    className="flex items-center gap-3 p-3 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors"
                   >
                     <button className="flex gap-3 items-center w-full text-left" onClick={() => createChat(res._id)}>
-                      <img src={res.profilePic || 'dummyGroup.png' || "/default-avatar.png"} alt="Community" className="w-9 h-9 rounded-full object-cover border border-gray-200" />
-                      <strong className="text-gray-800 text-base">@{res.name} (Community)</strong>
+                      <img src={res.profilePic || 'dummyGroup.png' || "/default-avatar.png"} alt="Community" className="w-9 h-9 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
+                      <strong className="text-gray-800 dark:text-white text-base">@{res.name} (Community)</strong>
                     </button>
                   </div>
                 ))}
               </>
             ) : (
-              <p className="text-gray-500 text-center py-4 text-sm">No users or communities found.</p>
+              <p className="text-gray-500 dark:text-gray-400 text-center py-4 text-sm">No users or communities found.</p>
             )}
           </div>
         )}
@@ -287,7 +272,7 @@ export default function Messages() {
             return (
               <div
                 key={chat._id}
-                className={`rounded-lg transition-all duration-200 ${chatOpened === chat._id ? 'bg-amber-100/50 shadow-inner' : 'hover:bg-amber-100/20'
+                className={`rounded-lg transition-all duration-200 ${chatOpened === chat._id ? 'bg-amber-100/50 dark:bg-amber-900/30 shadow-inner' : 'hover:bg-amber-100/20 dark:hover:bg-gray-800'
                   }`}
               >
                 <button
@@ -298,7 +283,7 @@ export default function Messages() {
                     getMessages(chat._id);
                     setChatWith(chat.isGroupChat ? chat : otherUser);
                   }}
-                  className="flex items-center justify-start gap-4 text-gray-800 w-full p-3"
+                  className="flex items-center justify-start gap-4 text-gray-800 dark:text-white w-full p-3"
                 >
                   <img
                     src={
@@ -307,11 +292,11 @@ export default function Messages() {
                         : otherUser?.profilePic || 'dummy.png'
                     }
                     alt="Chat avatar"
-                    className="w-12 h-12 rounded-full object-cover border border-gray-300 flex-shrink-0"
+                    className="w-12 h-12 rounded-full object-cover border border-gray-300 dark:border-gray-600 flex-shrink-0"
                   />
                   <div className="flex flex-col items-start overflow-hidden flex-grow">
                     <div className="flex items-center w-full">
-                      <strong className="text-lg text-black truncate flex-grow text-left">
+                      <strong className="text-lg text-black dark:text-white truncate flex-grow text-left">
                         {chat.isGroupChat
                           ? chat.groupName
                           : `${otherUser?.firstname || ""} ${otherUser?.lastname || ""}`.trim()}
@@ -322,8 +307,8 @@ export default function Messages() {
                     </div>
                     <p
                       className={`text-sm truncate w-full text-left ${hasUnreadMessage
-                          ? "font-bold text-gray-800"
-                          : "text-gray-600"
+                          ? "font-bold text-gray-800 dark:text-gray-200"
+                          : "text-gray-600 dark:text-gray-400"
                         }`}
                     >
                       {displayLastMessage}
@@ -338,31 +323,31 @@ export default function Messages() {
       </div>
 
       {/* Chat Window */}
-      <div className={`flex-1 bg-white relative flex flex-col rounded-lg shadow-lg h-full ${panelStatus ? '' : 'hidden md:flex'}`}>
+      <div className={`flex-1 bg-white dark:bg-gray-900 relative flex flex-col rounded-lg shadow-lg h-full ${panelStatus ? '' : 'hidden md:flex'}`}>
         {panelStatus && (
           <>
             {/* Chat Header - Fixed to top on small screens */}
-            <div className="flex items-center p-4 border-b border-gray-200 bg-white shadow-sm rounded-t-lg fixed top-0 left-0 right-0 md:relative md:top-auto md:left-auto md:right-auto w-full z-20">
-              <button className="md:hidden mr-3 text-gray-700 hover:text-gray-900" onClick={() => setPanelStatus(false)}><ArrowLeft size={24} /></button>
+            <div className="flex items-center p-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm rounded-t-lg fixed top-0 left-0 right-0 md:relative md:top-auto md:left-auto md:right-auto w-full z-20">
+              <button className="md:hidden mr-3 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white" onClick={() => setPanelStatus(false)}><ArrowLeft size={24} /></button>
               {chatWith.groupName ? (
                 <NavLink to={`/community/${community}`} className="flex items-center gap-3">
-                  <img src={chatWith.groupImage || "/default-avatar.png"} className="w-11 h-11 rounded-full object-cover border border-gray-300" alt="Group avatar" />
-                  <strong className="text-lg text-gray-800">{chatWith.groupName}</strong>
+                  <img src={chatWith.groupImage || "/default-avatar.png"} className="w-11 h-11 rounded-full object-cover border border-gray-300 dark:border-gray-600" alt="Group avatar" />
+                  <strong className="text-lg text-gray-800 dark:text-white">{chatWith.groupName}</strong>
                 </NavLink>
               ) : (
                 <NavLink to={`/people/${chatWith._id}`} className="flex items-center gap-3">
-                  <img src={chatWith.profilePic || 'dummy.png' || "/default-avatar.png"} className="w-11 h-11 rounded-full object-cover border border-gray-300" alt="User avatar" />
-                  <strong className="text-lg text-gray-800">{chatWith.firstname} {chatWith.lastname || ""}</strong>
+                  <img src={chatWith.profilePic || 'dummy.png' || "/default-avatar.png"} className="w-11 h-11 rounded-full object-cover border border-gray-300 dark:border-gray-600" alt="User avatar" />
+                  <strong className="text-lg text-gray-800 dark:text-white">{chatWith.firstname} {chatWith.lastname || ""}</strong>
                 </NavLink>
               )}
             </div>
 
             {/* Messages Area - Scrollable, with padding to account for fixed header and typing bar */}
-            <div className="flex-1 overflow-y-auto p-4 bg-gray-50 pt-[64px] pb-[120px]">
+            <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-black pt-[64px] pb-[120px]">
               {chatMessages.map((msg) => (
                 <div key={msg._id} className={`flex ${msg.sender._id === currentUserId ? 'justify-end' : 'justify-start'} mb-3`}>
                   <div
-                    className={`message-bubble max-w-[80%] sm:max-w-xs md:max-w-sm p-3 rounded-xl relative shadow-md ${msg.sender._id === currentUserId ? 'bg-green-600 text-white rounded-br-none' : 'bg-gray-200 text-gray-800 rounded-bl-none'} break-words`}
+                    className={`message-bubble max-w-[80%] sm:max-w-xs md:max-w-sm p-3 rounded-xl relative shadow-md ${msg.sender._id === currentUserId ? 'bg-green-600 text-white rounded-br-none' : 'bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-bl-none'} break-words`}
                     onContextMenu={(e) => {
                       e.preventDefault();
                       if (msg.sender._id === currentUserId && !msg.deleted) {
@@ -375,11 +360,11 @@ export default function Messages() {
                     }}
                   >
                     {msg.deleted ? (
-                      <i className="text-sm text-gray-500">This message was deleted 🚫</i>
+                      <i className="text-sm text-gray-500 dark:text-gray-400">This message was deleted 🚫</i>
                     ) : (
                       parseTextWithLinks(msg.content).map((part, idx) =>
                         part.isLink ? (
-                          <a key={idx} href={part.text} className={`underline ${msg.sender._id === currentUserId ? 'text-blue-200' : 'text-blue-700'}`} target="_blank" rel="noreferrer">{part.text}</a>
+                          <a key={idx} href={part.text} className={`underline ${msg.sender._id === currentUserId ? 'text-blue-200' : 'text-blue-700 dark:text-blue-400'}`} target="_blank" rel="noreferrer">{part.text}</a>
                         ) : (
                           <span key={idx}>{part.text}</span>
                         )
@@ -391,7 +376,7 @@ export default function Messages() {
                           e.stopPropagation();
                           deleteMessage(msg._id);
                         }}
-                        className="absolute top-full mt-1 right-0 bg-white text-red-600 text-sm px-3 py-2 rounded-lg shadow-lg cursor-pointer hover:bg-red-50 transition-colors z-10"
+                        className="absolute top-full mt-1 right-0 bg-white dark:bg-gray-800 text-red-600 dark:text-red-400 text-sm px-3 py-2 rounded-lg shadow-lg cursor-pointer hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors z-10"
                       >
                         <Trash className="inline w-4 h-4 mr-2" /> Delete
                       </div>
@@ -403,7 +388,7 @@ export default function Messages() {
             </div>
 
             {/* Typing Bar - Fixed to bottom on small screens, above mobile navbar */}
-            <div className="p-4 flex items-center gap-3 rounded-b-lg fixed left-0 right-0 md:relative md:bottom-auto md:left-auto md:right-auto w-full z-20 bottom-[56px]">
+            <div className="p-4 flex items-center gap-3 rounded-b-lg fixed left-0 right-0 md:relative md:bottom-auto md:left-auto md:right-auto w-full z-20 bottom-[56px] bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
               <input
                 value={messageContent}
                 onChange={(e) => setMessageContent(e.target.value)}
@@ -414,7 +399,7 @@ export default function Messages() {
                   }
                 }}
                 placeholder="Type a message..."
-                className="flex-1 p-3 border border-gray-300 rounded-full bg-black/40 text-white outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all duration-200"
+                className="flex-1 p-3 border border-gray-300 dark:border-gray-700 rounded-full bg-black/40 dark:bg-gray-800 text-white outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all duration-200"
               />
               <button
                 onClick={() => {
@@ -431,10 +416,11 @@ export default function Messages() {
         )}
         {!panelStatus && (
           <div className="flex items-center justify-center h-full">
-            <p className="text-gray-500 text-lg">Select a chat to start messaging😇</p>
+            <p className="text-gray-500 dark:text-gray-400 text-lg">Select a chat to start messaging😇</p>
           </div>
         )}
       </div>
+      
     </div>
   );
 }

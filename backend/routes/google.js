@@ -7,12 +7,6 @@ const User = require('../models/Users');
 require('dotenv').config();
 
 const router = express.Router();
-
-// No router-level cookieParser / passport.initialize() here — server.js already registers
-// cookieParser, session and passport middlewares globally. Avoid re-initializing passport
-// here which can cause session-support detection issues.
-
-// Passport Google strategy config
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -35,19 +29,13 @@ passport.use(new GoogleStrategy({
   }
 }));
 
-// Route to start OAuth login
 router.get('/', passport.authenticate('google', {
   scope: ['profile', 'email']
 }));
-
-// OAuth callback route
-// Use session: false to avoid relying on express-session for OAuth callback.
-// We issue JWTs instead of creating a server session.
 router.get('/callback', passport.authenticate('google', {
   failureRedirect: '/',
   session: false,
 }), (req, res) => {
-  // User authenticated successfully here, set tokens and redirect
   const { accessToken, refreshToken } = generateToken(req.user);
 
  res.cookie('accessToken', accessToken, {
@@ -61,7 +49,7 @@ res.cookie('refreshToken', refreshToken, {
   httpOnly: true,
   sameSite: 'None',       
   secure: true,           
-  maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days
+  maxAge: 7 * 24 * 60 * 60 * 1000 
 });
 
 

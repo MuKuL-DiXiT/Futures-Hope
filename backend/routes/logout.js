@@ -6,13 +6,15 @@ router.post('/', (req, res) => {
     res.clearCookie('refreshToken', {
         httpOnly: true,
         sameSite: 'Lax',
-        secure: process.env.NODE_ENV === 'production'
+        secure: process.env.NODE_ENV === 'production',
+        path:'/'
     });
 
     res.clearCookie('accessToken', {
         httpOnly: true,
         sameSite: 'Lax',
-        secure: process.env.NODE_ENV === 'production'
+        secure: process.env.NODE_ENV === 'production',
+        path:'/'
     });
 
 

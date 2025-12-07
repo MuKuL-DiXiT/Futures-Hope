@@ -57,7 +57,8 @@ app.use('/auth/google', require('./routes/google'));
 app.use('/auth/logout', require('./routes/logout'));
 app.use('/auth/people', require('./routes/people'));
 app.use('/auth/community', require('./routes/communityRoute'));
-app.use('/auth/chat', require('./routes/chatRoute'));
+// Use the more complete chatting routes (access, getChats, messages, markasread)
+app.use('/auth/chat', require('./routes/chatting'));
 app.use('/auth/bond', require('./routes/bonding'));
 app.use('/auth/notification', require('./routes/notify'));
 app.use('/auth/payment', require('./routes/paymentRoutes'));

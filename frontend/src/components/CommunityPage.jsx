@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { ImagePlay } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify'; // Import ToastContainer and toast
 import 'react-toastify/dist/ReactToastify.css'; // Import toastify CSS
+import LazyImage from "./LazyImage";
 
 export default function CommunityProfile({ comId }) {
   const [community, setCommunity] = useState(null);
@@ -142,7 +143,7 @@ export default function CommunityProfile({ comId }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen w-full bg-gradient-to-br from-amber-50 via-green-50 to-emerald-100 flex items-center justify-center">
+      <div className="min-h-screen w-full bg-gradient-to-br from-amber-50 via-green-50 to-emerald-100 dark:from-gray-900 dark:via-gray-800 dark:to-black flex items-center justify-center">
         <div className="relative">
           <div className="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
           <div className="absolute inset-0 flex items-center justify-center">
@@ -155,8 +156,8 @@ export default function CommunityProfile({ comId }) {
 
   if (!community) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-green-50 to-emerald-100 flex items-center justify-center">
-        <div className="text-amber-800 text-xl font-semibold">Community not found</div>
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-green-50 to-emerald-100 dark:from-gray-900 dark:via-gray-800 dark:to-black flex items-center justify-center">
+        <div className="text-amber-800 dark:text-amber-500 text-xl font-semibold">Community not found</div>
       </div>
     );
   }
@@ -183,7 +184,7 @@ export default function CommunityProfile({ comId }) {
               <div className="relative group mb-6 lg:mb-0">
                 <div className="absolute -inset-2 sm:-inset-4 bg-gradient-to-r from-amber-400 to-green-400 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
                 <div className="relative w-32 h-32 sm:w-48 sm:h-48 bg-white rounded-full p-2 sm:p-3 shadow-2xl">
-                  <img
+                  <LazyImage
                     src={community.profilePic}
                     alt={community.name}
                     className="w-full h-full rounded-full object-cover border-4 border-green-100"
@@ -254,7 +255,7 @@ export default function CommunityProfile({ comId }) {
       <div className="relative w-full max-w-7xl mx-auto -mt-8 sm:-mt-16">
         {/* Creator Section */}
         <div className="mb-12">
-          <div className="bg-gradient-to-br mb-8 from-amber-100 via-green-50 to-emerald-100 rounded-3xl p-6 sm:p-8 shadow-xl border border-amber-200 relative overflow-hidden">
+          <div className="bg-gradient-to-br mb-8 from-amber-100 via-green-50 to-emerald-100 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 rounded-3xl p-6 sm:p-8 shadow-xl border border-amber-200 dark:border-gray-700 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-400 to-emerald-400 rounded-full -translate-y-16 translate-x-16 opacity-10"></div>
             <div className="relative flex flex-col sm:flex-row items-center gap-6">
               <div className="relative">
@@ -272,10 +273,10 @@ export default function CommunityProfile({ comId }) {
               </div>
 
               <div className="flex-1 text-center sm:text-left">
-                <h3 className="text-xl sm:text-2xl font-bold text-amber-900 mb-2">
+                <h3 className="text-xl sm:text-2xl font-bold text-amber-900 dark:text-amber-100 mb-2">
                   {community.creator.firstname} {community.creator.lastname}
                 </h3>
-                <p className="text-green-700 font-medium mb-4 text-sm sm:text-base">{community.creator.email}</p>
+                <p className="text-green-700 dark:text-green-400 font-medium mb-4 text-sm sm:text-base">{community.creator.email}</p>
                 <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
                   <span className="px-3 py-1 bg-amber-200 text-amber-800 rounded-full text-xs font-semibold">👑 Founder</span>
                   <span className="px-3 py-1 bg-green-200 text-green-800 rounded-full text-xs font-semibold">🌱 Visionary</span>
@@ -287,8 +288,8 @@ export default function CommunityProfile({ comId }) {
 
           {(community.qrCodeUrl) && (
             <div className="mb-12">
-              <div className="bg-white bg-opacity-80 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-2xl border border-white border-opacity-50">
-                <h3 className="text-xl sm:text-2xl font-bold text-amber-900 mb-6 flex items-center gap-3">
+              <div className="bg-white bg-opacity-80 backdrop-blur-md dark:bg-gray-800 dark:bg-opacity-80 rounded-3xl p-6 sm:p-8 shadow-2xl border border-white border-opacity-50 dark:border-gray-700">
+                <h3 className="text-xl sm:text-2xl font-bold text-amber-900 dark:text-amber-100 mb-6 flex items-center gap-3">
                   <div className="w-8 h-8 bg-gradient-to-r from-amber-500 to-green-500 rounded-lg flex items-center justify-center">
                     <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
@@ -308,19 +309,19 @@ export default function CommunityProfile({ comId }) {
                     />
                   </div>
                   <div className="flex-1 w-full">
-                    <p className="text-amber-800 mb-4 text-sm sm:text-base">Scan this QR code to make a donation and help us grow our community! Upload screenshot after donating</p>
+                    <p className="text-amber-800 dark:text-amber-200 mb-4 text-sm sm:text-base">Scan this QR code to make a donation and help us grow our community! Upload screenshot after donating</p>
                     <div className="flex flex-wrap gap-2 sm:gap-3 mb-4">
                       <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">🌱 Plant Trees</span>
                       <span className="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-semibold">🌍 Save Environment</span>
                       <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-semibold">💚 Community Growth</span>
                     </div>
-                    <form onSubmit={uploadScreenshot} className='flex flex-col sm:flex-row bg-green-900/40 p-3 rounded-xl gap-3 sm:gap-4'>
+                    <form onSubmit={uploadScreenshot} className='flex flex-col sm:flex-row bg-green-900/40 dark:bg-green-900/60 p-3 rounded-xl gap-3 sm:gap-4'>
                       <input
                         type="number" // Changed type to number
                         placeholder='Amount (INR)'
                         value={amount === 0 ? '' : amount} // Handle 0 for display
                         onChange={(e) => setAmount(parseFloat(e.target.value) || 0)} // Parse as float
-                        className='bg-amber-100 rounded-full text-amber-800 focus:outline-none text-center placeholder-amber-700 focus:ring-0 ring-0 border-none px-3 py-2 text-sm flex-1'
+                        className='bg-amber-100 dark:bg-gray-700 dark:text-white rounded-full text-amber-800 focus:outline-none text-center placeholder-amber-700 dark:placeholder-gray-400 focus:ring-0 ring-0 border-none px-3 py-2 text-sm flex-1'
                         required // Made required
                       />
                       <label className='bg-green-100 text-green-800 rounded-full flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-green-200 transition-colors'>
@@ -349,7 +350,7 @@ export default function CommunityProfile({ comId }) {
         {/* Moderators Section */}
         {community.moderators?.length > 0 && (
           <div className="mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-amber-900 mb-8 text-center">
+            <h2 className="text-3xl sm:text-4xl font-bold text-amber-900 dark:text-amber-100 mb-8 text-center">
               <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                 Community Guardians
               </span>
@@ -357,7 +358,7 @@ export default function CommunityProfile({ comId }) {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               {community.moderators.map((mod, index) => (
-                <div key={mod._id} className="group relative overflow-hidden bg-white bg-opacity-70 backdrop-blur-md rounded-2xl p-4 sm:p-6 shadow-lg border border-white border-opacity-50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <div key={mod._id} className="group relative overflow-hidden bg-white bg-opacity-70 backdrop-blur-md dark:bg-gray-800 dark:bg-opacity-70 rounded-2xl p-4 sm:p-6 shadow-lg border border-white border-opacity-50 dark:border-gray-700 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                   <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-400 rounded-full -translate-y-12 translate-x-12 opacity-10 group-hover:opacity-20 transition-opacity"></div>
 
                   <div className="relative flex items-center gap-4">
@@ -375,10 +376,10 @@ export default function CommunityProfile({ comId }) {
                     </div>
 
                     <div className="flex-1">
-                      <h3 className="text-base sm:text-lg font-bold text-amber-900 mb-1">
+                      <h3 className="text-base sm:text-lg font-bold text-amber-900 dark:text-amber-100 mb-1">
                         {mod.firstname} {mod.lastname}
                       </h3>
-                      <p className="text-green-700 text-xs sm:text-sm mb-2">{mod.email}</p>
+                      <p className="text-green-700 dark:text-green-400 text-xs sm:text-sm mb-2">{mod.email}</p>
                       <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">🛡️ Guardian</span>
                     </div>
                   </div>
@@ -390,7 +391,7 @@ export default function CommunityProfile({ comId }) {
 
         {/* Members Section */}
         <div className="pb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-amber-900 mb-8 text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold text-amber-900 dark:text-amber-100 mb-8 text-center">
             <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
               Our Growing Family
             </span>
@@ -398,7 +399,7 @@ export default function CommunityProfile({ comId }) {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-6">
             {community.members.map((member, index) => (
-              <div key={member._id} className="group relative overflow-hidden bg-white bg-opacity-60 backdrop-blur-md rounded-2xl p-4 sm:p-6 shadow-lg border border-white border-opacity-40 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 text-center">
+              <div key={member._id} className="group relative overflow-hidden bg-white bg-opacity-60 backdrop-blur-md dark:bg-gray-800 dark:bg-opacity-60 rounded-2xl p-4 sm:p-6 shadow-lg border border-white border-opacity-40 dark:border-gray-700 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 text-center">
                 <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-emerald-400 opacity-0 group-hover:opacity-10 transition-opacity rounded-2xl"></div>
 
                 <div className="relative">
@@ -415,7 +416,7 @@ export default function CommunityProfile({ comId }) {
                     </div>
                   </div>
 
-                  <h3 className="text-sm sm:text-base font-bold text-amber-900 mb-2 group-hover:text-green-800 transition-colors">
+                  <h3 className="text-sm sm:text-base font-bold text-amber-900 dark:text-amber-100 mb-2 group-hover:text-green-800 dark:group-hover:text-green-400 transition-colors">
                     {member.firstname} {member.lastname}
                   </h3>
 
@@ -458,6 +459,7 @@ export default function CommunityProfile({ comId }) {
           animation: tilt 10s infinite linear;
         }
       `}</style>
+      
     </div>
   );
 }

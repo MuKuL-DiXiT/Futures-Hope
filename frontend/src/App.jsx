@@ -15,21 +15,29 @@ import SinglePost from './components/SinglePost';
 import Connections from './components/Connections';
 import BraveWarningBanner from './components/BraveWarningBanner';
 import Edit from './components/Edit';
+import NotificationPanel from './components/NotificationPanel';
 
 // This component needs to be inside BrowserRouter
 function Layout() {
   const location = useLocation();
   const showNavbar = location.pathname != ("/") && location.pathname != ("/signup");
+  const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {!showNavbar && <BraveWarningBanner />}
       
       <div className="flex flex-col h-screen">
         {/* Instagram-style layout */}
-        {showNavbar && <Navbar />}
+        {showNavbar && (
+          <Navbar 
+            onNotificationOpen={() => setIsNotificationPanelOpen(true)}
+            isNotificationOpen={isNotificationPanelOpen}
+            onNotificationClose={() => setIsNotificationPanelOpen(false)}
+          />
+        )}
         
-        <main className={`flex-1 overflow-y-auto ${showNavbar ? 'pb-16 md:pb-0' : ''}`}>
+        <main className={`flex-1 overflow-y-auto ${showNavbar ? 'pb-16 md:pb-0 md:ml-64' : ''}`}>
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/signup" element={<Signup />} />
@@ -47,6 +55,12 @@ function Layout() {
           </Routes>
         </main>
       </div>
+      
+      {/* Centralized NotificationPanel */}
+      <NotificationPanel 
+        isOpen={isNotificationPanelOpen} 
+        onClose={() => setIsNotificationPanelOpen(false)} 
+      />
     </div>
   );
 }

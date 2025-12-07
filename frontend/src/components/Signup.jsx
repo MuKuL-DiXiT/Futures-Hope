@@ -52,7 +52,7 @@ export default function Signup() {
     setFormData((prev) => ({ ...prev, profilePic: e.target.files[0] }));
   };
 
-  
+
 
   const handleGoogleLogin = () => {
     const baseUrl = import.meta.env.VITE_BACKEND_URL;
@@ -100,24 +100,24 @@ export default function Signup() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-b from-white to-slate-50 text-slate-900 flex items-center justify-center">
+    <div className="w-full min-h-screen text-slate-900 dark:text-white flex items-center justify-center">
       <div className="w-full max-w-3xl sm:px-6 sm:py-12">
-       
+
 
         {/* Signup Form (light themed) */}
         <form
           onSubmit={handleSubmit}
-          className="mx-auto flex flex-col gap-4 sm:p-8 bg-white rounded-2xl shadow-md w-full max-w-md border border-gray-100"
+          className="mx-auto flex flex-col bg-black/10 dark:bg-gray-800 gap-4 sm:p-8 rounded-2xl shadow-md w-full max-w-md border border-black dark:border-gray-700"
           encType="multipart/form-data"
         >
-          <h2 className="text-lg font-semibold text-slate-900 text-center mb-1">Sign Up</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white text-center mb-1">Sign Up</h2>
 
           <div className="flex gap-3">
             <input
               type="text"
               name="firstname"
               placeholder="First Name"
-              className="p-3 rounded-lg border border-gray-200 w-1/2 text-slate-800"
+              className="p-3 bg-transparent rounded-lg border border-gray-200 dark:border-gray-600 w-1/2 text-white"
               required
               value={formData.firstname}
               onChange={handleChange}
@@ -126,7 +126,7 @@ export default function Signup() {
               type="text"
               name="lastname"
               placeholder="Last Name"
-              className="p-3 rounded-lg border border-gray-200 w-1/2 text-slate-800"
+              className="p-3 bg-transparent rounded-lg border border-gray-200 dark:border-gray-600 w-1/2 text-white"
               required
               value={formData.lastname}
               onChange={handleChange}
@@ -136,8 +136,8 @@ export default function Signup() {
           <input
             type="number"
             name="age"
-            placeholder="Age (min 13)"
-            className="p-3 rounded-lg border border-gray-200 w-full text-slate-800"
+            placeholder="Age"
+            className="p-3 bg-transparent rounded-lg border border-gray-200 dark:border-gray-600 w-full text-white"
             required
             min={13}
             value={formData.age}
@@ -148,7 +148,7 @@ export default function Signup() {
             type="tel"
             name="mobile"
             placeholder="Mobile Number"
-            className="p-3 rounded-lg border border-gray-200 w-full text-slate-800"
+            className="p-3 bg-transparent rounded-lg border border-gray-200 dark:border-gray-600 w-full text-white"
             required
             value={formData.mobile}
             onChange={handleChange}
@@ -158,25 +158,27 @@ export default function Signup() {
             type="email"
             name="email"
             placeholder="Email"
-            className="p-3 rounded-lg border border-gray-200 w-full text-slate-800"
+            className="p-3 bg-transparent rounded-lg border border-gray-200 dark:border-gray-600 w-full text-white"
             required
             value={formData.email}
             onChange={handleChange}
           />
-
           <input
             type="password"
             name="password"
-            placeholder="Password (8+ aA1)"
-            className="p-3 rounded-lg border border-gray-200 w-full text-slate-800"
+            placeholder="Password"
+            className="p-3 bg-transparent rounded-lg border border-gray-200 dark:border-gray-600 w-full text-white"
             required
             value={formData.password}
             onChange={handleChange}
+            pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$"
+            title="Password must be at least 8 characters long and include 1 uppercase, 1 lowercase, 1 number, and 1 symbol"
           />
+
 
           <div className="flex gap-3 justify-start">
             {["male", "female", "other"].map((g) => (
-              <label key={g} className="flex items-center gap-2 text-sm text-slate-700">
+              <label key={g} className="flex items-center gap-2 text-sm text-white">
                 <input
                   type="radio"
                   name="gender"
@@ -193,7 +195,7 @@ export default function Signup() {
           <div>
             <label
               htmlFor="profilePicUpload"
-              className="cursor-pointer border border-gray-200 bg-white text-slate-700 py-3 px-4 rounded-lg flex items-center justify-center hover:bg-gray-50 transition-colors duration-150 w-full"
+              className="cursor-pointer border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-slate-700 dark:text-gray-200 py-3 px-4 rounded-lg flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-150 w-full"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -209,7 +211,7 @@ export default function Signup() {
                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
                 />
               </svg>
-              <span className="text-sm text-slate-700">{formData.profilePic ? formData.profilePic.name : "Upload Profile Picture"}</span>
+              <span className="text-sm text-slate-700 dark:text-gray-200">{formData.profilePic ? formData.profilePic.name : "Upload Profile Picture"}</span>
             </label>
             <input
               id="profilePicUpload"
@@ -232,7 +234,6 @@ export default function Signup() {
             By signing up, you agree to our <span className="text-emerald-600">Terms</span>, <span className="text-emerald-600">Privacy</span>, and <span className="text-emerald-600">Cookies</span> policies.
           </p>
 
-        
         </form>
       </div>
     </div>

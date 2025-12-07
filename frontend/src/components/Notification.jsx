@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { Bell, CheckCircle, User, UserPlus, DollarSign, Users, MessageSquare, Heart, ChevronDown, ChevronUp, Clock, Check } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import secureFetch from "../utils/secureFetch";
 
 export const socket = io(import.meta.env.VITE_BACKEND_URL, {
   withCredentials: true,
@@ -20,31 +21,6 @@ const Notification = () => {
   const [showPayments, setShowPayments] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  async function secureFetch(path, options = {}) {
-    const baseUrl = import.meta.env.VITE_BACKEND_URL;
-    const url = `${baseUrl}${path}`;
-
-    let res = await fetch(url, { ...options, credentials: "include" });
-
-    if (res.status === 401) {
-      const refresh = await fetch(`${baseUrl}/auth/refresh`, {
-        method: "POST",
-        credentials: "include",
-      });
-
-      if (refresh.ok) {
-        return fetch(url, { ...options, credentials: "include" });
-      } else {
-        await fetch(`${baseUrl}/auth/logout`, {
-          method: "GET",
-          credentials: "include",
-        });
-        throw new Error("Session expired. Logged out.");
-      }
-    }
-
-    return res;
-  }
 
   const fetchAllNotificationData = async () => {
     setLoading(true);
@@ -128,7 +104,6 @@ const Notification = () => {
     }
   };
 
-  // Notification Item Component
   const NotificationItem = ({ notification, isUnseen }) => {
     const getIcon = () => {
       switch (notification.type) {
@@ -144,23 +119,23 @@ const Notification = () => {
         onClick={() => isUnseen && setToSeen(notification._id)}
         className={`flex items-start gap-3 p-4 rounded-lg border transition-all duration-200 cursor-pointer hover:shadow-md ${
           isUnseen 
-            ? 'bg-blue-50 border-blue-200 hover:bg-blue-100' 
-            : 'bg-white border-gray-200 hover:bg-gray-50'
+            ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/30' 
+            : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800'
         }`}
       >
         <div className="flex-shrink-0 mt-1">
           {getIcon()}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-gray-900 leading-relaxed">
+          <p className="text-sm text-gray-900 dark:text-gray-100 leading-relaxed">
             {notification.message}
           </p>
           <div className="flex items-center gap-2 mt-2">
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-gray-500 dark:text-gray-400">
               {new Date(notification.createdAt).toLocaleDateString()}
             </span>
             {isUnseen && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
                 New
               </span>
             )}
@@ -170,29 +145,29 @@ const Notification = () => {
     );
   };
 
-  // Request Item Component  
+
   const RequestItem = ({ request, type, onAccept, onReject }) => {
     return (
-      <div className="flex items-center gap-4 p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-all duration-200">
+      <div className="flex items-center gap-4 p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 hover:shadow-md transition-all duration-200">
         <NavLink to={`/people/${request.requester?._id || request._id}`} className="flex-shrink-0">
           <img 
             src={request.requester?.profilePic || request.profilePic || '/dummy.png'} 
             alt="" 
-            className="w-12 h-12 rounded-full object-cover border-2 border-gray-100" 
+            className="w-12 h-12 rounded-full object-cover border-2 border-gray-100 dark:border-gray-700" 
           />
         </NavLink>
         
         <div className="flex-1 min-w-0">
           <NavLink 
             to={`/people/${request.requester?._id || request._id}`} 
-            className="font-medium text-gray-900 hover:text-blue-600 transition-colors"
+            className="font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
           >
             {request.requester?.firstname || request.firstname} {request.requester?.lastname || request.lastname}
           </NavLink>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             {type === 'bond' ? 'Wants to bond with you' : `Wants to join ${request.community?.name}`}
           </p>
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-gray-400 dark:text-gray-500">
             {new Date(request.createdAt).toLocaleDateString()}
           </span>
         </div>
@@ -215,27 +190,26 @@ const Notification = () => {
     );
   };
 
-  // Section Component
   const Section = ({ icon: Icon, title, count, isOpen, onToggle, children }) => (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-gray-100 rounded-lg">
-            <Icon className="w-5 h-5 text-gray-600" />
+          <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+            <Icon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900">{title}</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white">{title}</h3>
             {count > 0 && (
-              <span className="text-sm text-gray-500">{count} item{count !== 1 ? 's' : ''}</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">{count} item{count !== 1 ? 's' : ''}</span>
             )}
           </div>
         </div>
         <div className="flex items-center gap-2">
           {count > 0 && (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
               {count}
             </span>
           )}
@@ -243,7 +217,7 @@ const Notification = () => {
         </div>
       </button>
       {isOpen && (
-        <div className="border-t border-gray-100">
+        <div className="border-t border-gray-100 dark:border-gray-800">
           <div className="p-4 space-y-3">
             {children}
           </div>
@@ -253,18 +227,17 @@ const Notification = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto bg-white min-h-screen">
+    <div className="min-h-screen bg-gray-50 dark:bg-black transition-colors duration-300">
+      <div className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto bg-white dark:bg-black min-h-screen">
         
-        {/* Header */}
-        <div className="sticky top-0 md:top-8 lg:top-4 z-10 bg-white border-b border-gray-200 p-4">
+        <div className="sticky top-0 md:top-8 lg:top-4 z-10 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800 p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Bell className="w-6 h-6 text-blue-600" />
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <Bell className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">Notifications</h1>
-              <p className="text-sm text-gray-500">Stay updated with your activities</p>
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Notifications</h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Stay updated with your activities</p>
             </div>
           </div>
         </div>
@@ -285,20 +258,20 @@ const Notification = () => {
               onToggle={() => setShowPayments(!showPayments)}
             >
               {unverifiedPayments.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <DollarSign className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <DollarSign className="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
                   <p>No payments to verify</p>
                 </div>
               ) : (
                 unverifiedPayments.map((payment) => (
-                  <div key={payment._id} className="flex items-center gap-4 p-4 bg-green-50 rounded-lg border border-green-200">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      <DollarSign className="w-5 h-5 text-green-600" />
+                  <div key={payment._id} className="flex items-center gap-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                    <div className="p-2 bg-green-100 dark:bg-green-900/40 rounded-lg">
+                      <DollarSign className="w-5 h-5 text-green-600 dark:text-green-400" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-gray-900">₹{payment.amount}</p>
-                      <p className="text-sm text-gray-600">From {payment.name}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="font-medium text-gray-900 dark:text-white">₹{payment.amount}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">From {payment.name}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         {new Date(payment.createdAt).toLocaleDateString()}
                       </p>
                     </div>
@@ -332,8 +305,8 @@ const Notification = () => {
               onToggle={() => setShowRequests(!showRequests)}
             >
               {bondRequests.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <UserPlus className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <UserPlus className="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
                   <p>No bond requests</p>
                 </div>
               ) : (
@@ -358,8 +331,8 @@ const Notification = () => {
               onToggle={() => setShowJoinRequests(!showJoinRequests)}
             >
               {communityJoinRequests.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <Users className="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
                   <p>No join requests</p>
                 </div>
               ) : (
@@ -378,10 +351,10 @@ const Notification = () => {
             {/* New Notifications */}
             {unseen.length > 0 && (
               <div className="space-y-3">
-                <h3 className="flex items-center gap-2 font-semibold text-gray-900">
+                <h3 className="flex items-center gap-2 font-semibold text-gray-900 dark:text-white">
                   <Clock className="w-4 h-4" />
                   New Notifications
-                  <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">
+                  <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs px-2 py-0.5 rounded-full">
                     {unseen.length}
                   </span>
                 </h3>
@@ -418,9 +391,9 @@ const Notification = () => {
             {unseen.length === 0 && seen.length === 0 && bondRequests.length === 0 && 
              communityJoinRequests.length === 0 && unverifiedPayments.length === 0 && (
               <div className="text-center py-12">
-                <Bell className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">All caught up!</h3>
-                <p className="text-gray-500">You have no new notifications</p>
+                <Bell className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">All caught up!</h3>
+                <p className="text-gray-500 dark:text-gray-400">You have no new notifications</p>
               </div>
             )}
           </div>
