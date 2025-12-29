@@ -9,7 +9,7 @@ router.post('/', verifyAccessToken, upload.single('profilePic'), communityContro
 router.post('/:id/join', verifyAccessToken, communityController.joinRequest);
 router.get('/:id/status', verifyAccessToken, communityController.joinStatus);
 router.get('/allRequests', verifyAccessToken, communityController.allRequests);
-router.post('/:id/upload-qr', verifyAccessToken, upload.single('qr'), communityController.uploadQr);
+router.post('/:id/uploadAcc', verifyAccessToken, communityController.uploadAcc);
 router.get('/:id', verifyAccessToken, communityController.getCommunity);
 router.post('/accept/:joinRequestId', verifyAccessToken, communityController.acceptJoin);
 router.get('/allCommunities', verifyAccessToken, communityController.getAllCommunities);

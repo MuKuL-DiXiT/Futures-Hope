@@ -127,12 +127,14 @@ const allRequests = async (req, res) => {
   }
 };
 
-const uploadQr = async (req, res) => {
+const uploadAcc = async (req, res) => {
   try {
     const communityId = req.params.id;
     const community = await Community.findById(communityId);
     if (!community) return res.status(404).json({ error: 'Community not found' });
-    community.qrCodeUrl = req.file ? req.file.path : null;
+    const {acc} = req.body
+    community.accNumber = acc
+    console.log(community.accNumber)
     await community.save();
     res.status(200).json(community);
   } catch (error) {
@@ -219,7 +221,7 @@ module.exports = {
   joinRequest,
   joinStatus,
   allRequests,
-  uploadQr,
+  uploadAcc,
   getCommunity,
   acceptJoin,
   getAllCommunities,
