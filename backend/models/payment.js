@@ -14,18 +14,6 @@ const paymentSchema = new mongoose.Schema({
 
 
     message: String,
-
-
-    proofScreenshotUrl: {
-        type: String,
-        required: true
-    },
-
-    isVerified: {
-        type: Boolean,
-        default: false
-    },
-
     community: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Community",

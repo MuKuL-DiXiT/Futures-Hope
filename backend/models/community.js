@@ -52,7 +52,7 @@ const communitySchema = new Schema({
     default: Date.now,
     immutable: true
   },
-  qrCodeUrl: {
+  accNumber: {
   type: String,
   default: ""
 },
